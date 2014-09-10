@@ -29,11 +29,14 @@ import nachos.util.Queue;
  *
  *	broadcast() -- wake up all threads waiting on the condition
  *
- * All operations on a condition variable must be made while
- * the current thread has acquired a lock.  Indeed, all accesses
+ * All operations performed by a thread on a condition variable must be made
+ * while the thread is holding a lock.  Indeed, all accesses
  * to a given condition variable must be protected by the same lock.
  * In other words, mutual exclusion must be enforced among threads calling
- * the condition variable operations.
+ * the condition variable operations.  The await() method must only be
+ * called from a thread context.  However, signal() and broadcast() may also
+ * be called from an interrupt handler.  In that case, it is not necessary
+ * (and not possible) for the caller to be holding a lock.
  *
  * In Nachos, condition variables are assumed to obey *Mesa*-style
  * semantics.  When a Signal or Broadcast wakes up another thread,
@@ -134,7 +137,7 @@ public class Condition {
      * Wake up a thread, if any, that is waiting on the condition.
      */
     public void signal() {
-	Debug.ASSERT(conditionLock.isHeldByCurrentThread(),
+	Debug.ASSERT(NachosThread.currentThread() == null || conditionLock.isHeldByCurrentThread(),
 		"Can't signal unless we own the lock!");
 	Debug.printf('s', "Signalling condition %s\n", name);
 
@@ -155,8 +158,8 @@ public class Condition {
      * Wake up all threads waiting on the condition.
      */
     public void broadcast() {
-	Debug.ASSERT(conditionLock.isHeldByCurrentThread(),
-		"Can't signal unless we own the lock!");
+	Debug.ASSERT(NachosThread.currentThread() == null || conditionLock.isHeldByCurrentThread(),
+		"Can't broadcast unless we own the lock!");
 	Debug.printf('s', "Broadcasting condition %s\n", name);
 
 	int oldLevel = CPU.setLevel(CPU.IntOff);

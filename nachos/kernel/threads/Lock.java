@@ -94,7 +94,7 @@ public class Lock {
      */
     public boolean isHeldByCurrentThread()
     {
-	return (owner == NachosThread.currentThread());
+	return (owner != null && owner == NachosThread.currentThread());
     }
 
 }
