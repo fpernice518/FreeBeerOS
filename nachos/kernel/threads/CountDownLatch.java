@@ -12,7 +12,8 @@ package nachos.kernel.threads;
  * resetting the count and starting over.
  */
 public class CountDownLatch {
-
+    private int countdown;
+    private boolean activated;
     /**
      * Initialize a CountDownLatch with a specified
      * initial count value.
@@ -20,6 +21,11 @@ public class CountDownLatch {
      * @param count  The initial count.
      */
     public CountDownLatch(int count) {
+	if(!activated){
+	countdown = count;
+	activated = true;
+	}
+
     }
 
     /**
@@ -28,6 +34,7 @@ public class CountDownLatch {
      * and allowed to proceed.
      */
     public void countDown() {
+	countdown--;
     }
 
     /**
@@ -38,6 +45,10 @@ public class CountDownLatch {
      * returns immediately.
      */
     public void await() {
+	
+	while(countdown>0){
+	    countDown();
+	}
     }
 
 }
