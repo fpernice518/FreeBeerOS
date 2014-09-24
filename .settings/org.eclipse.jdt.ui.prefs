@@ -1,4 +1,3 @@
-#Mon Aug 23 10:06:08 EDT 2010
 eclipse.preferences.version=1
-formatter_profile=_Java Conventions [NACHOS]
-formatter_settings_version=11
+formatter_profile=_Java Frank Style
+formatter_settings_version=12
