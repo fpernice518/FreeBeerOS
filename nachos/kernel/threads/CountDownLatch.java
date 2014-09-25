@@ -48,6 +48,7 @@ public class CountDownLatch
             Debug.println('+', "Current Count : " + count);
             if(count == 0){
             semaphore.V();
+            
             }
 
         }
