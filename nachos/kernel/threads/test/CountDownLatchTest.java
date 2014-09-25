@@ -22,9 +22,7 @@ class testThread implements Runnable
     public void run()
     {
         
-//        cdl.countDown();
-          cdl.await();
-//        cdl.await(name);
+        cdl.countDown();
         Debug.println('+', "Count Downed");
         Nachos.scheduler.finishThread();
     }
@@ -34,23 +32,20 @@ class testThread implements Runnable
 class awaitThread implements Runnable
 {
     private CountDownLatch cdl;
-    private SpinLock sl;
-    private String name;
+ 
     
     awaitThread(CountDownLatch cdl, String name)
     {
         this.cdl = cdl;
-        this.name = name;
+//        this.name = name;
     }
    
     @Override
     public void run()
     {
-//        cdl.await();
-        cdl.countDown();
+        cdl.await();
         
-//        cdl.await(name);
-        Debug.println('+', "Count Downed");
+//        Debug.println('+', "count awaited");
         Nachos.scheduler.finishThread();
     }
 
@@ -65,22 +60,16 @@ public class CountDownLatchTest
     {
 
         which = w;
-        cdl = new CountDownLatch(2);
+        cdl = new CountDownLatch(20);
         NachosThread t;
         int x = 0;
-        spinLock = new SpinLock("name" + " spin lock");
         for (int i = 0; i < 1; i++)
         {
-            // t = new NachosThread("Test thread " + w, this);
-            System.out.println("Thread " + i);
+            System.out.println("Await Thread " + i);
             Nachos.scheduler.readyToRun(new NachosThread("await thread " + i,
-                    new testThread(cdl,"test "+w)));
-            //
-            
-//            Debug.println('+', i+"");
-            x = i;
+                    new awaitThread(cdl,"await test "+w)));
         }
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < 20; i++)
         {
             // t = new NachosThread("Test thread " + w, this);
             System.out.println("Thread " + i);

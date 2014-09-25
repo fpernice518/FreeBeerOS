@@ -29,7 +29,7 @@ public class CountDownLatch
     public CountDownLatch(int count)
     {
         semaphore = new Semaphore("Countdown Latch", 0);
-        on_off_switch = new Semaphore("Variable Latch", 0);
+        on_off_switch = new Semaphore("Variable Latch", 1);
         this.count = count;
     }
 
@@ -40,21 +40,19 @@ public class CountDownLatch
      */
     public void countDown()
     {
-        // if(count<=0)
-        // {
-        // semaphore.V();
+       
         on_off_switch.P();
         if (count > 0)
         {
             --count;
+            Debug.println('+', "Current Count : " + count);
+            if(count == 0){
             semaphore.V();
-            
-            
+            }
+
         }
         on_off_switch.V();
 
-        // semaphore.V();
-        // }
 
     }
 
@@ -67,26 +65,11 @@ public class CountDownLatch
     public void await()
     {
 
-        // while(count > 0)
-        // {
-        // // what thread r we at?!?!
-        // System.out.println("name  : " +name);
-        //
-        // }
+ 
 
-        // semaphore.V();
-        // System.out.println("\n\n\n\n\n\n\n\n\n"+count+"\n\n\n\n\n\n\n\n\n\n\n\n\n");
-  
+        semaphore.P();
+            Debug.println('+', count + " Flood Gates Released");
+        semaphore.V();
 
-            // for(int i = 0; i < count_const; ++i)
-        
-            semaphore.P();
-//            Debug.println('+', "Helo");
-            semaphore.V();
-
-//            Debug.println('+', "flood gate release Count ended at " + count);
-
-
-        
     }
 }
