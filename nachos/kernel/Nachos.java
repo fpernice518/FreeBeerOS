@@ -36,6 +36,7 @@ import nachos.kernel.threads.Scheduler;
 import nachos.kernel.userprog.ExceptionHandler;
 import nachos.kernel.filesys.FileSystem;
 import nachos.kernel.threads.test.CountDownLatchTest;
+import nachos.kernel.threads.test.ExchangerTest;
 import nachos.kernel.threads.test.SMPTest;
 import nachos.kernel.threads.test.ThreadTest;
 import nachos.kernel.userprog.test.ProgTest;
@@ -125,7 +126,8 @@ public class Nachos implements Runnable {
 //	if(options.CONSOLE_TEST)
 //	    ConsoleTest.start();
 	
-	CountDownLatchTest.start();
+//	CountDownLatchTest.start();
+	ExchangerTest.start();
 	
 	// Terminate the first thread, its job is done.
 	// Alternatively, you could give this thread the responsibility

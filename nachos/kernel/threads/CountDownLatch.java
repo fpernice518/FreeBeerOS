@@ -18,7 +18,6 @@ public class CountDownLatch
     private Semaphore semaphore;
     private Semaphore on_off_switch;
     private int count;
-    private boolean done = false;
 
     /**
      * Initialize a CountDownLatch with a specified initial count value.
@@ -45,7 +44,7 @@ public class CountDownLatch
         if (count > 0)
         {
             --count;
-            Debug.println('+', "Current Count : " + count);
+//            Debug.println('+', "Current Count : " + count);
             if(count == 0){
             semaphore.V();
             
@@ -69,7 +68,7 @@ public class CountDownLatch
  
 
         semaphore.P();
-            Debug.println('+', count + " Flood Gates Released");
+//            Debug.println('+', count + " Flood Gates Released");
         semaphore.V();
 
     }
