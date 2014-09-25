@@ -95,7 +95,7 @@ public class CountDownLatchTest
         for (int i = 0; i < 3; i++)
         {
             System.out.println("WaitDec Thread " + i);
-            Nachos.scheduler.readyToRun(new NachosThread("await thread " + i,
+            Nachos.scheduler.readyToRun(new NachosThread("WaitDec thread " + i,
                     new WaitDecThread(cdl,"WaitDec test "+w)));
         }
         for (int i = 0; i < 2; i++)
