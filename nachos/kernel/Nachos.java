@@ -149,6 +149,7 @@ public class Nachos implements Runnable {
       options = new Options(args);
       Debug.println('+', "Entering main");
       
+      
       // Initialize the hardware.
       Machine.init();
       

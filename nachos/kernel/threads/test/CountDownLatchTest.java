@@ -76,6 +76,7 @@ public class CountDownLatchTest
             Nachos.scheduler.readyToRun(new NachosThread("await thread " + i,
                     new testThread(cdl,"test "+w)));
             //
+            
 //            Debug.println('+', i+"");
             x = i;
         }

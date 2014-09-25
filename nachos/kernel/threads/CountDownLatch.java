@@ -48,6 +48,8 @@ public class CountDownLatch
         {
             --count;
             semaphore.V();
+            
+            
         }
         on_off_switch.V();
 
