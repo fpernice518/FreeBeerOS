@@ -1,5 +1,8 @@
 package nachos.kernel.threads;
 
+import nachos.Debug;
+import nachos.kernel.Nachos;
+
 /**
  * A CountDownLatch is an object that provides a thread with the ability to
  * block until a specified number of other activities have completed. A
@@ -13,8 +16,8 @@ package nachos.kernel.threads;
 public class CountDownLatch
 {
     private Semaphore semaphore;
+    private Semaphore on_off_switch;
     private int count;
-    private final int count_const;
     private boolean done = false;
 
     /**
@@ -25,9 +28,9 @@ public class CountDownLatch
      */
     public CountDownLatch(int count)
     {
-        semaphore = new Semaphore("Countdown Latch", count);
+        semaphore = new Semaphore("Countdown Latch", 0);
+        on_off_switch = new Semaphore("Variable Latch", 0);
         this.count = count;
-        count_const = count;
     }
 
     /**
@@ -37,12 +40,20 @@ public class CountDownLatch
      */
     public void countDown()
     {
-        if(!done)
+        // if(count<=0)
+        // {
+        // semaphore.V();
+        on_off_switch.P();
+        if (count > 0)
         {
-            semaphore.P();
             --count;
+            semaphore.V();
         }
-        
+        on_off_switch.V();
+
+        // semaphore.V();
+        // }
+
     }
 
     /**
@@ -53,13 +64,27 @@ public class CountDownLatch
      */
     public void await()
     {
-        while(count > 0);
+
+        // while(count > 0)
+        // {
+        // // what thread r we at?!?!
+        // System.out.println("name  : " +name);
+        //
+        // }
+
+        // semaphore.V();
+        // System.out.println("\n\n\n\n\n\n\n\n\n"+count+"\n\n\n\n\n\n\n\n\n\n\n\n\n");
+  
+
+            // for(int i = 0; i < count_const; ++i)
         
-        if(!done) //put marbles back just in case
-        {
-            for(int i = 0; i < count_const; ++i)
-                semaphore.V();
-            done = true;
-        }
+            semaphore.P();
+//            Debug.println('+', "Helo");
+            semaphore.V();
+
+//            Debug.println('+', "flood gate release Count ended at " + count);
+
+
+        
     }
 }

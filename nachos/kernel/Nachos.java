@@ -35,6 +35,7 @@ import nachos.kernel.devices.test.SerialTest;
 import nachos.kernel.threads.Scheduler;
 import nachos.kernel.userprog.ExceptionHandler;
 import nachos.kernel.filesys.FileSystem;
+import nachos.kernel.threads.test.CountDownLatchTest;
 import nachos.kernel.threads.test.SMPTest;
 import nachos.kernel.threads.test.ThreadTest;
 import nachos.kernel.userprog.test.ProgTest;
@@ -66,6 +67,8 @@ public class Nachos implements Runnable {
 
     /** Access to serial ports. */
     public static SerialDriver serialDriver;
+    
+    public static CountDownLatchTest countDown;
 
     /**
      * 	Nachos initialization -- performed by first Nachos thread.
@@ -107,20 +110,22 @@ public class Nachos implements Runnable {
 	// Run test/demo programs, according to the supplied options.
 	// These will typically create additional threads to do the actual
 	// work, leaving the first thread free to go on and start the rest.
-	if(options.THREAD_TEST)
-	    ThreadTest.start();
-	if(options.SMP_TEST)
-	    SMPTest.start();
-	if(options.PROG_TEST)
-	    ProgTest.start();
-	if(options.FILESYS_TEST)
-	    FileSystemTest.start();
-	if(options.SERIAL_TEST)
-	    SerialTest.start();
-	if(options.NETWORK_TEST)
-	    NetworkTest.start();
-	if(options.CONSOLE_TEST)
-	    ConsoleTest.start();
+//	if(options.THREAD_TEST)
+//	    ThreadTest.start();
+//	if(options.SMP_TEST)
+//	    SMPTest.start();
+//	if(options.PROG_TEST)
+//	    ProgTest.start();
+//	if(options.FILESYS_TEST)
+//	    FileSystemTest.start();
+//	if(options.SERIAL_TEST)
+//	    SerialTest.start();
+//	if(options.NETWORK_TEST)
+//	    NetworkTest.start();
+//	if(options.CONSOLE_TEST)
+//	    ConsoleTest.start();
+	
+	CountDownLatchTest.start();
 	
 	// Terminate the first thread, its job is done.
 	// Alternatively, you could give this thread the responsibility
