@@ -4,6 +4,7 @@ import nachos.Debug;
 import nachos.kernel.Nachos;
 import nachos.kernel.threads.CountDownLatch;
 import nachos.kernel.threads.Exchanger;
+import nachos.kernel.threads.Exchanger.TimeoutException;
 import nachos.kernel.threads.SpinLock;
 import nachos.machine.NachosThread;
 class Person{
@@ -37,10 +38,28 @@ class Person{
             for(int i = 0 ; i<30; i++){
                 Nachos.scheduler.yieldThread();
             }
+            
             System.out.println("Pre Name of thread: "+name+"\tName of object: "+p.getName());
-            p = (Person) exchanger.exchange(p);
+            try
+            {
+                p = (Person) exchanger.exchange(p,3);
+            } catch (TimeoutException e)
+            {
+                System.out.println("Shit ended");
+                Nachos.scheduler.finishThread();
+            }
             System.out.println("post Name of thread: "+name+"\tName of object: "+p.getName());
             Nachos.scheduler.finishThread();
+                    
+            
+//            Person p = new Person(name);
+//            for(int i = 0 ; i<30; i++){
+//                Nachos.scheduler.yieldThread();
+//            }
+//            System.out.println("Pre Name of thread: "+name+"\tName of object: "+p.getName());
+//            p = (Person) exchanger.exchange(p);
+//            System.out.println("post Name of thread: "+name+"\tName of object: "+p.getName());
+//            Nachos.scheduler.finishThread();
         }
 
     }
@@ -60,7 +79,7 @@ class Person{
             NachosThread t;
             
             int x = 0;
-            for (int i = 0; i < 30; i++)
+            for (int i = 0; i < 2; i++)
             {
                 System.out.println("Exchanger Thread " + i);
                 Nachos.scheduler.readyToRun(new NachosThread("thread " + i,
