@@ -13,12 +13,26 @@ import nachos.machine.InterruptHandler;
  * partner currently available the thread blocks until one arrives) and receives
  * its partner's object on return.
  */
-public class Exchanger<V> {
+public class Exchanger<V>
+{
+    private Condition cond;
+    private Lock handshake;
+    private Lock singleLock;
+    private boolean recieved_first_thread;
+    private V firstObject;
+    private V secondObject;
 
     /**
      * Creates a new Exchanger.
      */
-    public Exchanger() {
+    public Exchanger()
+    {
+
+        handshake = new Lock("Handshake Lock");
+        cond = new Condition("Handshake Condition", handshake);
+        // this lock is used for who ever gets first
+//        singleLock = new Lock("Single Lock");
+
     }
 
     /**
@@ -30,11 +44,38 @@ public class Exchanger<V> {
      *            The object to exchange
      * @return The object provided by the other thread.
      */
-    public V exchange(V x) {
-	return null;
+    public V exchange(V x)
+    {
+        handshake.acquire();
+        
+        if (!recieved_first_thread)
+        {
+            recieved_first_thread = true;
+
+            firstObject = x;
+//            singleLock.release();
+            cond.await();
+            handshake.release();
+            // after await on first thread
+
+            return secondObject;
+
+        } else
+        {
+            // we recieved the first thread now we get work done
+
+            secondObject = x;
+
+            cond.broadcast();
+            handshake.release();
+
+            return firstObject;
+        }
+
     }
 
-    public static class TimeoutException extends Exception {
+    public static class TimeoutException extends Exception
+    {
     }
 
     /**
@@ -53,8 +94,9 @@ public class Exchanger<V> {
      *             if a timeout was specified and the caller thread has been
      *             waiting that amount of time for another thread to arrive.
      */
-    public V exchange(V x, int timeout) throws TimeoutException {
-	return null;
+    public V exchange(V x, int timeout) throws TimeoutException
+    {
+        return null;
     }
 
     /**
@@ -64,10 +106,12 @@ public class Exchanger<V> {
      * just one timer device, but you will want to be able to use multiple
      * Exchanger objects at once, so it will be necessary to
      */
-    private class TimerInterruptHandler implements InterruptHandler {
-	@Override
-	public void handleInterrupt() {
-	}
+    private class TimerInterruptHandler implements InterruptHandler
+    {
+        @Override
+        public void handleInterrupt()
+        {
+        }
     }
 
 }
