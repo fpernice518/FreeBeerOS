@@ -37,9 +37,9 @@ class Person{
             for(int i = 0 ; i<30; i++){
                 Nachos.scheduler.yieldThread();
             }
-            System.out.println("Name of thread: "+name+"\tName of object: "+p.getName());
+            System.out.println("Pre Name of thread: "+name+"\tName of object: "+p.getName());
             p = (Person) exchanger.exchange(p);
-            System.out.println("Name of thread: "+name+"\tName of object: "+p.getName());
+            System.out.println("post Name of thread: "+name+"\tName of object: "+p.getName());
             Nachos.scheduler.finishThread();
         }
 
@@ -60,12 +60,19 @@ class Person{
             NachosThread t;
             
             int x = 0;
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < 30; i++)
             {
                 System.out.println("Exchanger Thread " + i);
                 Nachos.scheduler.readyToRun(new NachosThread("thread " + i,
                         new FirstThread(exchanger,"number: "+i)));
             }
+            System.out.println();
+//            for (int i = 0; i < 2; i++)
+//            {
+//                System.out.println("Exchanger Thread " + i);
+//                Nachos.scheduler.readyToRun(new NachosThread("bobthread " + i,
+//                        new FirstThread(exchanger,"bobThread: "+i)));
+//            }
 
 
             Debug.println('+', "all threads done "+(x+1));

@@ -1,5 +1,6 @@
 package nachos.kernel.threads;
 
+import nachos.kernel.Nachos;
 import nachos.machine.InterruptHandler;
 
 /**
@@ -46,16 +47,19 @@ public class Exchanger<V>
      */
     public V exchange(V x)
     {
+        
         handshake.acquire();
         
         if (!recieved_first_thread)
         {
-            recieved_first_thread = true;
+            
 
             firstObject = x;
-//            singleLock.release();
+            recieved_first_thread = true;
+            // wait for next thread
             cond.await();
             handshake.release();
+//            recieved_first_thread = false;
             // after await on first thread
 
             return secondObject;
@@ -63,12 +67,15 @@ public class Exchanger<V>
         } else
         {
             // we recieved the first thread now we get work done
-
+            
             secondObject = x;
-
-            cond.broadcast();
+            //wakeup other thread lets do this damn thing
+            cond.signal();
+           
+//            recieved_first_thread = false;
+            
             handshake.release();
-
+            recieved_first_thread = false;
             return firstObject;
         }
 
