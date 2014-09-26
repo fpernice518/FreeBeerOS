@@ -173,7 +173,7 @@ public class Exchanger<V>
                 error = true;
                 
                 cond.broadcast();
-                handshake.release();
+//                handshake.release();
                
             }
 
