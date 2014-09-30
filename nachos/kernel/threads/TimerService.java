@@ -1,32 +1,54 @@
 package nachos.kernel.threads;
 
-import nachos.machine.NachosThread;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+
+import nachos.machine.Machine;
+import nachos.machine.Timer;
+import nachos.machine.InterruptHandler;
 
 
-public class TimerService {
+public class TimerService implements InterruptHandler
+{
+
+    private Set<InterruptHandler> observers; //Set used to ensure no duplicates
+    private Timer nachosTimer;
+    private static TimerService timerService = null;
     
-   private List<NachosThread> observers 
-      = new ArrayList<NachosThread>();
-   private int state;
+    private TimerService()
+    {
+        observers = new HashSet<InterruptHandler>();
+        nachosTimer = Machine.getTimer(0); 
+        nachosTimer.setHandler(this);
+        nachosTimer.start();
+    }
 
-   public int getState() {
-      return state;
-   }
+    public void subscribe(InterruptHandler handler)
+    {
+        observers.add(handler);
+    }
 
-   public void setState(int state) {
-      this.state = state;
-      notifyAllObservers();
-   }
-
-   public void attach(NachosThread observer){
-      observers.add(observer);      
-   }
-
-   public void notifyAllObservers(){
-      for (NachosThread observer : observers) {
-//         observer.update();
-      }
-   }    
+    public void unsubscribe(InterruptHandler handler)
+    {
+        observers.remove(handler);
+    }
+    
+    @Override
+    public void handleInterrupt()
+    {
+        for (InterruptHandler observer : observers)
+        {
+            observer.handleInterrupt();
+        }
+    }
+    
+    public static TimerService getTimerService()
+    {
+        if(timerService == null)
+            timerService = new TimerService();
+        
+        return timerService;
+    }
+    
+    
 }

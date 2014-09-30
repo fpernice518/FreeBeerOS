@@ -72,10 +72,8 @@ public class Exchanger<V>
             // we recieved the first thread now we get work done
 
             secondObject = x;
-            // wakeup other thread lets do this damn thing
+            // wakeup other thread; lets do this damn thing
             cond.signal();
-
-            // recieved_first_thread = false;
 
             handshake.release();
             recieved_first_thread = false;
@@ -86,7 +84,7 @@ public class Exchanger<V>
 
     public static class TimeoutException extends Exception
     {
-        public void TimeoutException()
+        public TimeoutException()
         {
 
         }
@@ -157,11 +155,13 @@ public class Exchanger<V>
 
         private int timeout;
         private int timer;
+        
 
-        public TimerInterruptHandler(int timeout2)
+        public TimerInterruptHandler(int timeout)
         {
+            TimerService.getTimerService().subscribe(this);
             timer = 0;
-            timeout = timeout2;
+            this.timeout = timeout;
 
         }
 
