@@ -1,0 +1,23 @@
+Christian barry
+Frank pernice
+
+We created a latch for threads. The way it is made is to have a count. When the count is 0 it releases all the threads
+This is done by using two semaphores.
+
+THe other is was a exchanger for two threads. More than two threads makes no sense 
+
+we partially finished the third part.
+
+The second one we used a very similiar method of holding the the threads until computation is complete
+
+
+
+
+to run you must use -d 1 as arguments inorder to see the output
+
+THe first part will have 3 types of threads dec thread decawait thread and await thread. All are shown to work 
+
+the second part of the program will tell you what thread it is and what its being exchanged with.
+
+ 
+
