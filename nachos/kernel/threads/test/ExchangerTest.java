@@ -98,7 +98,7 @@ class SecondThread extends Observer implements Runnable
                 + p.getName());
         try
         {
-            p = (Person) exchanger.exchange(p, 3);
+            p = (Person) exchanger.exchange(p, 1);
         } catch (TimeoutException e)
         {
             System.out.println("Shit ended");
@@ -141,7 +141,7 @@ public class ExchangerTest
         {
             System.out.println("Exchanger Thread " + i);
             Nachos.scheduler.readyToRun(new NachosThread("thread " + i,
-                    new FirstThread(exchanger, "number: " + i)));
+                    new SecondThread(exchanger, "number: " + i)));
         }
         System.out.println();
         // for (int i = 0; i < 2; i++)
