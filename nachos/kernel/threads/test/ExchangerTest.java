@@ -2,14 +2,13 @@ package nachos.kernel.threads.test;
 
 import nachos.Debug;
 import nachos.kernel.Nachos;
-import nachos.kernel.threads.CountDownLatch;
 import nachos.kernel.threads.Exchanger;
 import nachos.kernel.threads.Exchanger.TimeoutException;
 import nachos.kernel.threads.Observer;
 import nachos.kernel.threads.SpinLock;
 import nachos.machine.NachosThread;
 
-//object
+//Test object
 class Person
 {
     private String name;
@@ -29,11 +28,11 @@ class Person
 
 class FirstThread implements Runnable
 {
-    private Exchanger exchanger;
+    private Exchanger<Person> exchanger;
 
     private String name;
 
-    FirstThread(Exchanger exchanger, String name)
+    FirstThread(Exchanger<Person> exchanger, String name)
     {
         this.exchanger = exchanger;
         this.name = name;
@@ -76,11 +75,11 @@ class FirstThread implements Runnable
 
 class SecondThread extends Observer implements Runnable 
 {
-    private Exchanger exchanger;
+    private Exchanger<Person> exchanger;
 
     private String name;
 
-    SecondThread(Exchanger exchanger, String name)
+    SecondThread(Exchanger<Person> exchanger, String name)
     {
         this.exchanger = exchanger;
         this.name = name;
@@ -131,18 +130,12 @@ class SecondThread extends Observer implements Runnable
 
 public class ExchangerTest
 {
-
-    private int which;
-    private Exchanger exchanger;
-    private SpinLock spinLock;
+    private Exchanger<Person> exchanger;
 
     public ExchangerTest(int w)
     {
-
-        which = w;
-        exchanger = new Exchanger();
-        NachosThread t;
-
+        exchanger = new Exchanger<Person>();
+        
         int x = 0;
         for (int i = 0; i < 2; i++)
         {

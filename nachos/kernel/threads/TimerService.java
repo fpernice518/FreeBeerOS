@@ -11,7 +11,7 @@ import nachos.machine.InterruptHandler;
 public class TimerService implements InterruptHandler
 {
 
-    private Set<InterruptHandler> observers; //Set used to ensure no duplicates
+    private Set<InterruptHandler> observers; //Use a Set to ensure no duplicates
     private Timer nachosTimer;
     private static TimerService timerService = null;
     

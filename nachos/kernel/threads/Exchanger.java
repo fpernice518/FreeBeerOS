@@ -1,10 +1,6 @@
 package nachos.kernel.threads;
 
-import nachos.kernel.Nachos;
-import nachos.machine.CPU;
 import nachos.machine.InterruptHandler;
-import nachos.machine.Machine;
-import nachos.machine.Timer;
 
 /**
  * This class is patterned after the Exchanger class in the java.util.concurrent
@@ -19,9 +15,9 @@ import nachos.machine.Timer;
  */
 public class Exchanger<V>
 {
+    TimerInterruptHandler timerInterruptHandler;
     private Condition cond;
     private Lock handshake;
-    private Lock singleLock;
     private boolean recieved_first_thread;
     private V firstObject;
     private V secondObject;
@@ -64,7 +60,7 @@ public class Exchanger<V>
             handshake.release();
             // recieved_first_thread = false;
             // after await on first thread
-
+            System.out.println("\n Returned Second Object\n");
             return secondObject;
 
         } else
@@ -77,6 +73,7 @@ public class Exchanger<V>
 
             handshake.release();
             recieved_first_thread = false;
+            System.out.println("\n Returned Second Object\n");
             return firstObject;
         }
 
@@ -116,17 +113,12 @@ public class Exchanger<V>
         } else if (timeout == 0)
         {
             return exchange(x);
-        }
-        CPU cpu = Machine.getCPU(0);
-         Timer timer = cpu.timer;
-         
-         
-//        Timer timer = cpu.timer;
+        }         
+
         V temp = null;
-        timer.setHandler(new TimerInterruptHandler(timeout));
-        timer.start();
+        timerInterruptHandler = new TimerInterruptHandler(timeout);
         temp = exchange(x);
-        timer.stop();
+        
         if (error)
         {
 
@@ -136,10 +128,6 @@ public class Exchanger<V>
         }
 
         return temp;
-
-        // V temp = exchange(x);
-
-        // return temp;
 
     }
 
