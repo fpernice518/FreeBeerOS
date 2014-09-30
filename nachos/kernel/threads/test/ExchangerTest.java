@@ -151,14 +151,14 @@ public class ExchangerTest
         // new FirstThread(exchanger,"bobThread: "+i)));
         // }
 
-        Debug.println('+', "all threads done " + (x + 1));
+        Debug.println('1', "all threads done " + (x + 1));
 
     }
 
     public static void start()
     {
 
-        Debug.println('+', "Entering ThreadTest");
+        Debug.println('1', "Entering ThreadTest");
         ExchangerTest cdlt = new ExchangerTest(1);
 
     }

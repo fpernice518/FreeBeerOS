@@ -181,6 +181,11 @@ public class Options {
     /** Should we run the network test? */
     public boolean NETWORK_TEST = false;
     
+    /** Homework Flags **/
+    /*HW1*/
+    public boolean HW1_TEST = true;
+
+    
     public Options(String[] args) {
 	argList = Arrays.asList(args);
 	parseArgList();

@@ -23,7 +23,7 @@ class testThread implements Runnable
     {
         
         cdl.countDown();
-        Debug.println('+', "Count Downed");
+        Debug.println('1', "Count Downed");
         Nachos.scheduler.finishThread();
     }
 
@@ -45,7 +45,7 @@ class WaitDecThread implements Runnable
     {
         
         cdl.countDown();
-        Debug.println('+', "Count Downed and waiting");
+        Debug.println('1', "Count Downed and waiting");
         cdl.await();
         
         Nachos.scheduler.finishThread();
@@ -107,7 +107,7 @@ public class CountDownLatchTest
             x = i;
         }
 
-        Debug.println('+', "all threads done "+x);
+        Debug.println('1', "all threads done "+x);
 
     }
 
@@ -116,7 +116,7 @@ public class CountDownLatchTest
     public static void start()
     {
 
-        Debug.println('+', "Entering ThreadTest");
+        Debug.println('1', "Entering ThreadTest");
         CountDownLatchTest cdlt =new CountDownLatchTest(1);
 
     }
