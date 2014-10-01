@@ -1,5 +1,7 @@
 package nachos.kernel.threads.test;
 
+import java.util.Random;
+
 import nachos.Debug;
 import nachos.kernel.Nachos;
 import nachos.kernel.threads.Exchanger;
@@ -25,7 +27,6 @@ class Person
 
 }
 
-
 class FirstThread implements Runnable
 {
     private Exchanger<Person> exchanger;
@@ -41,91 +42,23 @@ class FirstThread implements Runnable
     @Override
     public void run()
     {
-        Person p = new Person(name);
-        for (int i = 0; i < 30; i++)
-        {
-            Nachos.scheduler.yieldThread();
-        }
-
-        System.out.println("Pre Name of thread: " + name + "\tName of object: "
-                + p.getName());
-        try
-        {
-            p = (Person) exchanger.exchange(p, 3);
-        } catch (TimeoutException e)
-        {
-            System.out.println("Shit ended");
-            Nachos.scheduler.finishThread();
-        }
-        System.out.println("post Name of thread: " + name
-                + "\tName of object: " + p.getName());
-        Nachos.scheduler.finishThread();
-
-        // Person p = new Person(name);
-        // for(int i = 0 ; i<30; i++){
-        // Nachos.scheduler.yieldThread();
-        // }
-        // System.out.println("Pre Name of thread: "+name+"\tName of object: "+p.getName());
-        // p = (Person) exchanger.exchange(p);
-        // System.out.println("post Name of thread: "+name+"\tName of object: "+p.getName());
-        // Nachos.scheduler.finishThread();
+         Person p = new Person(name);
+         for(int i = 0 ; i<30; i++){
+         Nachos.scheduler.yieldThread();
+         }
+         
+         Random rand = new Random();
+         int randomInt = (int)rand.nextInt();
+         for(int i = 0; i < randomInt; ++i);
+         
+         Debug.println('1', "Pre Name of thread: "+name+"\tName of object: "+p.getName());
+         p = (Person) exchanger.exchange(p);
+         Debug.println('1', "post Name of thread: "+name+"\tName of object: "+p.getName());
+         Nachos.scheduler.finishThread();
     }
 
 }
 
-class SecondThread extends Observer implements Runnable 
-{
-    private Exchanger<Person> exchanger;
-
-    private String name;
-
-    SecondThread(Exchanger<Person> exchanger, String name)
-    {
-        this.exchanger = exchanger;
-        this.name = name;
-    }
-
-    @Override
-    public void run()
-    {
-        Person p = new Person(name);
-        for (int i = 0; i < 30; i++)
-        {
-            Nachos.scheduler.yieldThread();
-        }
-
-        System.out.println("Pre Name of thread: " + name + "\tName of object: "
-                + p.getName());
-        try
-        {
-            p = (Person) exchanger.exchange(p, 1);
-        } catch (TimeoutException e)
-        {
-            System.out.println("Shit ended");
-            Nachos.scheduler.finishThread();
-        }
-        System.out.println("post Name of thread: " + name
-                + "\tName of object: " + p.getName());
-        Nachos.scheduler.finishThread();
-
-        // Person p = new Person(name);
-        // for(int i = 0 ; i<30; i++){
-        // Nachos.scheduler.yieldThread();
-        // }
-        // System.out.println("Pre Name of thread: "+name+"\tName of object: "+p.getName());
-        // p = (Person) exchanger.exchange(p);
-        // System.out.println("post Name of thread: "+name+"\tName of object: "+p.getName());
-        // Nachos.scheduler.finishThread();
-    }
-
-    @Override
-    public void update()
-    {
-        
-        
-    }
-
-}
 
 
 public class ExchangerTest
@@ -135,21 +68,14 @@ public class ExchangerTest
     public ExchangerTest(int w)
     {
         exchanger = new Exchanger<Person>();
-        
+
         int x = 0;
-        for (int i = 0; i < 2; i++)
+        for (int i = 0; i < 5; i++)
         {
-            System.out.println("Exchanger Thread " + i);
+            Debug.println('1', "Exchanger Thread " + i);
             Nachos.scheduler.readyToRun(new NachosThread("thread " + i,
-                    new SecondThread(exchanger, "number: " + i)));
+                    new FirstThread(exchanger, "number: " + i)));
         }
-        System.out.println();
-        // for (int i = 0; i < 2; i++)
-        // {
-        // System.out.println("Exchanger Thread " + i);
-        // Nachos.scheduler.readyToRun(new NachosThread("bobthread " + i,
-        // new FirstThread(exchanger,"bobThread: "+i)));
-        // }
 
         Debug.println('1', "all threads done " + (x + 1));
 
@@ -158,7 +84,7 @@ public class ExchangerTest
     public static void start()
     {
 
-        Debug.println('1', "Entering ThreadTest");
+        Debug.println('1', "Entering ExchangerTest");
         ExchangerTest cdlt = new ExchangerTest(1);
 
     }

@@ -1,5 +1,6 @@
 package nachos.kernel.threads;
 
+import nachos.Debug;
 import nachos.machine.InterruptHandler;
 
 /**
@@ -60,7 +61,7 @@ public class Exchanger<V>
             handshake.release();
             // recieved_first_thread = false;
             // after await on first thread
-            System.out.println("\n Returned Second Object\n");
+            Debug.println('1', "Returned Second Object");
             return secondObject;
 
         } else
@@ -73,7 +74,7 @@ public class Exchanger<V>
 
             handshake.release();
             recieved_first_thread = false;
-            System.out.println("\n Returned Second Object\n");
+            Debug.println('1', "Returned First Object");
             return firstObject;
         }
 

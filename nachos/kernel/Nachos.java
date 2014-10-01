@@ -36,6 +36,7 @@ import nachos.kernel.threads.Scheduler;
 import nachos.kernel.userprog.ExceptionHandler;
 import nachos.kernel.filesys.FileSystem;
 import nachos.kernel.threads.test.CountDownLatchTest;
+import nachos.kernel.threads.test.ExchangeTimeoutTester;
 import nachos.kernel.threads.test.ExchangerTest;
 import nachos.kernel.threads.test.SMPTest;
 import nachos.kernel.threads.test.ThreadTest;
@@ -127,10 +128,9 @@ public class Nachos implements Runnable {
 	    ConsoleTest.start();
 	if(options.HW1_TEST)
 	{
-	    Debug.println('+', "\nExchanger Latch\n");
-	    ExchangerTest.start();
-	    Debug.println('+', "CountDown Latch\n");
-	    CountDownLatchTest.start();
+	    //CountDownLatchTest.start();
+	    //ExchangerTest.start();
+	    ExchangeTimeoutTester.start();
 	}
 	
 	

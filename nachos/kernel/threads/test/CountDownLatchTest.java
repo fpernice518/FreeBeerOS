@@ -1,11 +1,14 @@
 package nachos.kernel.threads.test;
 
+import java.util.Random;
+
 import nachos.Debug;
 import nachos.machine.NachosThread;
 import nachos.kernel.Nachos;
 import nachos.kernel.threads.CountDownLatch;
 import nachos.kernel.threads.SpinLock;
 
+//only counts down
 class testThread implements Runnable
 {
     private CountDownLatch cdl;
@@ -21,13 +24,16 @@ class testThread implements Runnable
     @Override
     public void run()
     {
-        
+        Random rand = new Random();
+        int randomInt = (int)rand.nextInt();
+        for(int i = 0; i < randomInt; ++i);
         cdl.countDown();
-        Debug.println('1', "Count Downed");
+        Debug.println('1', "Counted Down");
         Nachos.scheduler.finishThread();
     }
 
 }
+//counts down and then awaits
 class WaitDecThread implements Runnable
 {
     private CountDownLatch cdl;
@@ -43,16 +49,19 @@ class WaitDecThread implements Runnable
     @Override
     public void run()
     {
+        Random rand = new Random();
+        int randomInt = (int)rand.nextInt();
+        for(int i = 0; i < randomInt; ++i);
         
         cdl.countDown();
-        Debug.println('1', "Count Downed and waiting");
+        Debug.println('1', "Counted Down and waiting");
         cdl.await();
         
         Nachos.scheduler.finishThread();
     }
 
 }
-
+//merely awaits, never counts down
 class awaitThread implements Runnable
 {
     private CountDownLatch cdl;
@@ -67,6 +76,10 @@ class awaitThread implements Runnable
     @Override
     public void run()
     {
+        Random rand = new Random();
+        int randomInt = (int)rand.nextInt();
+        for(int i = 0; i < randomInt; ++i);
+        
         cdl.await();
         
         Nachos.scheduler.finishThread();
@@ -86,7 +99,7 @@ public class CountDownLatchTest
         cdl = new CountDownLatch(5);
         NachosThread t;
         int x = 0;
-        for (int i = 0; i < 1; i++)
+        for (int i = 0; i < 2; i++)
         {
             System.out.println("Await Thread " + i);
             Nachos.scheduler.readyToRun(new NachosThread("await thread " + i,
@@ -98,7 +111,7 @@ public class CountDownLatchTest
             Nachos.scheduler.readyToRun(new NachosThread("WaitDec thread " + i,
                     new WaitDecThread(cdl,"WaitDec test "+w)));
         }
-        for (int i = 0; i < 2; i++)
+        for (int i = 0; i < 4; i++)
         {
             System.out.println("Thread " + i);
             Nachos.scheduler.readyToRun(new NachosThread("Test thread " + i,
@@ -116,7 +129,7 @@ public class CountDownLatchTest
     public static void start()
     {
 
-        Debug.println('1', "Entering ThreadTest");
+        Debug.println('1', "Entering CountdownLatch Test");
         CountDownLatchTest cdlt =new CountDownLatchTest(1);
 
     }
