@@ -22,7 +22,7 @@ package nachos.kernel;
 
 import nachos.Options;
 import nachos.Debug;
-import nachos.machine.CPU;
+import nachos.machine.CPU;          
 import nachos.machine.Machine;
 import nachos.machine.NachosThread;
 import nachos.kernel.devices.ConsoleDriver;
