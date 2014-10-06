@@ -25,6 +25,7 @@ import nachos.Debug;
 import nachos.machine.CPU;              
 import nachos.machine.Machine;
 import nachos.machine.NachosThread;
+import nachos.util.TimerService;
 import nachos.kernel.devices.ConsoleDriver;
 import nachos.kernel.devices.DiskDriver;
 import nachos.kernel.devices.NetworkDriver;
@@ -36,7 +37,6 @@ import nachos.kernel.threads.Scheduler;
 import nachos.kernel.userprog.ExceptionHandler;
 import nachos.kernel.filesys.FileSystem;
 import nachos.kernel.threads.test.CountDownLatchTest;
-import nachos.kernel.threads.test.ExchangeTimeoutTester;
 import nachos.kernel.threads.test.ExchangerTest;
 import nachos.kernel.threads.test.SMPTest;
 import nachos.kernel.threads.test.ThreadTest;
@@ -70,6 +70,9 @@ public class Nachos implements Runnable {
     /** Access to serial ports. */
     public static SerialDriver serialDriver;
     
+    /** Access to timer service **/
+    public static TimerService timerService;
+    
     public static CountDownLatchTest countDown;
 
     /**
@@ -95,6 +98,9 @@ public class Nachos implements Runnable {
 
 	if(Machine.NUM_NETWORKS > 0)
 	    networkDriver = new NetworkDriver();
+	
+	/** Get timer  **/
+	timerService = new TimerService(Machine.getTimer(0));
 	
 	// Initialize the filesystem.
 
@@ -129,8 +135,7 @@ public class Nachos implements Runnable {
 	if(options.HW1_TEST)
 	{
 	    //CountDownLatchTest.start();
-	    //ExchangerTest.start();
-	    ExchangeTimeoutTester.start();
+	    ExchangerTest.start();
 	}
 	
 	
