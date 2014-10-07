@@ -134,24 +134,41 @@ public class ExchangerTest
 
     public ExchangerTest(int w)
     {
-        exchanger = new Exchanger<Person>();
+        
+        if(w == 1){
+            exchanger = new Exchanger<Person>();
+            
+            int x = 0;
+            for (int i = 0; i < 5; i++)
+            {
+                System.out.println("Exchanger Thread " + i);
+                Nachos.scheduler.readyToRun(new NachosThread("thread " + i,
+                        new FirstThread(exchanger, "number: " + i)));
+            }
+            System.out.println();
+           
+
+            Debug.println('1', "all threads done " + (x + 1));
+
+            
+        }
+        
+        if(w == 2){
+            exchanger = new Exchanger<Person>();
         
         int x = 0;
-        for (int i = 0; i < 2; i++)
+        for (int i = 0; i < 5; i++)
         {
             System.out.println("Exchanger Thread " + i);
             Nachos.scheduler.readyToRun(new NachosThread("thread " + i,
                     new SecondThread(exchanger, "number: " + i)));
         }
         System.out.println();
-        // for (int i = 0; i < 2; i++)
-        // {
-        // System.out.println("Exchanger Thread " + i);
-        // Nachos.scheduler.readyToRun(new NachosThread("bobthread " + i,
-        // new FirstThread(exchanger,"bobThread: "+i)));
-        // }
+       
 
         Debug.println('1', "all threads done " + (x + 1));
+        }
+       
 
     }
 
@@ -159,7 +176,10 @@ public class ExchangerTest
     {
 
         Debug.println('1', "Entering ThreadTest");
+        Debug.println('1', "Entering Exchange()");
         ExchangerTest cdlt = new ExchangerTest(1);
+        Debug.println('1', "Entering Exchange(Timeout)");
+        cdlt = new ExchangerTest(2);
 
     }
 

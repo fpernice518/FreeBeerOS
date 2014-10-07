@@ -37,13 +37,16 @@ public class ConsoleTest implements Runnable {
 	console = Nachos.consoleDriver;
 	while (true) {
 	    char ch = console.getChar();
+	    
 	    console.putChar(ch);	// echo it!
-
+	    
 	    if(ch == '\n')
 		console.putChar('\r');
+	  
 
 	    if (ch == 'q') {
 		Debug.println('+', "ConsoleTest: quitting");
+		
 		console.stop();
 		Nachos.scheduler.finishThread();    // if q, quit
 	    }

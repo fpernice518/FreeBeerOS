@@ -53,6 +53,8 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler {
 	int type = CPU.readRegister(2);
 
 	if (which == MachineException.SyscallException) {
+	    int ptr, len;
+	    byte buf[];
 
 	    switch (type) {
 	    case Syscall.SC_Halt:
@@ -65,13 +67,23 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler {
 		Syscall.exec("");
 		break;
 	    case Syscall.SC_Write:
-		int ptr = CPU.readRegister(4);
-		int len = CPU.readRegister(5);
-		byte buf[] = new byte[len];
+		ptr = CPU.readRegister(4);
+		len = CPU.readRegister(5);
+		buf = new byte[len];
 
+		// this is wrong ti should be using vmemory
+		
 		System.arraycopy(Machine.mainMemory, ptr, buf, 0, len);
 		Syscall.write(buf, len, CPU.readRegister(6));
 		break;
+	    case Syscall.SC_Read:
+	        ptr = CPU.readRegister(4);
+	        len = CPU.readRegister(5);
+	        buf = new byte[len];
+	        
+	        System.arraycopy(Machine.mainMemory, ptr, buf, 0, len);
+	        Syscall.read(buf, len, CPU.readRegister(6));
+	    break;
 	    }
 
 	    // Update the program counter to point to the next instruction

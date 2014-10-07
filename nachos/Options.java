@@ -161,16 +161,16 @@ public class Options {
     // Test/demo configuration options.
 
     /** Should we run the thread test? */
-    public boolean THREAD_TEST = true;  // Traditional Nachos behavior.
+    public boolean THREAD_TEST = false;  // Traditional Nachos behavior.
     
     /** Should we run the multiprocessor scheduling test? */
     public boolean SMP_TEST = false;
 
     /** Should we run the user program test? */
-    public boolean PROG_TEST = false;
+    public boolean PROG_TEST = true;
     
     /** Should we run the console test? */
-    public boolean CONSOLE_TEST = false;
+    public boolean CONSOLE_TEST = true;
     
     /** Should we run the filesystem test? */
     public boolean FILESYS_TEST = false;
@@ -183,7 +183,7 @@ public class Options {
     
     /** Homework Flags **/
     /*HW1*/
-    public boolean HW1_TEST = true;
+    public boolean HW1_TEST = false;
 
     
     public Options(String[] args) {

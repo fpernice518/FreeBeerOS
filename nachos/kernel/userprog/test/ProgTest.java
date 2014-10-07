@@ -71,7 +71,8 @@ public class ProgTest implements Runnable {
 	    Nachos.scheduler.finishThread();
 	    return;
 	}
-
+	
+//	Debug.print('2', "we went here");
 	space.initRegisters();		// set the initial register values
 	space.restoreState();		// load page table register
 
@@ -87,6 +88,7 @@ public class ProgTest implements Runnable {
      * creating a new ProgTest object.
      */
     public static void start() {
+
 	Debug.ASSERT(Nachos.options.FILESYS_REAL || Nachos.options.FILESYS_STUB,
 			"A filesystem is required to execute user programs");
 	final int[] count = new int[1];
