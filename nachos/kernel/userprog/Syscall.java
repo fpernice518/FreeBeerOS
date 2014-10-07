@@ -96,6 +96,7 @@ public class Syscall
      */
     public static int exec(String name)
     {
+        //someone 
         return 0;
     }
 
@@ -205,7 +206,7 @@ public class Syscall
     public static int read(byte buffer[], int size, int id)
     {
         int returnBytes = 0;
-        Debug.print('2', "OOPS");
+//        Debug.print('2', "OOPS");
         
 
 
@@ -237,6 +238,11 @@ public class Syscall
      */
     public static void close(int id)
     {
+        //exec can do the join but thats all else reject the living shit out of it
+        // check if parent is still alive.
+        // if parent isnt alive then system must deal with  it
+        // children with parents alive then it should wait
+        // clear out memory then give it back
     }
 
     /*
@@ -253,6 +259,7 @@ public class Syscall
      */
     public static void fork(int func)
     {
+         
     }
 
     /**
@@ -261,6 +268,7 @@ public class Syscall
      */
     public static void yield()
     {
+        Nachos.scheduler.yieldThread();
     }
 
 }

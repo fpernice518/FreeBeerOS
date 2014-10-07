@@ -99,7 +99,7 @@ public class AddrSpace {
     pageTable = new TranslationEntry[numPages];
     for (int i = 0; i < numPages; i++) {
       pageTable[i] = new TranslationEntry();
-      pageTable[i].virtualPage = i; // for now, virtual page# = phys page#
+      pageTable[i].virtualPage = i*128; // for now, virtual page# = phys page#
       pageTable[i].physicalPage = i;
       pageTable[i].valid = true;
       pageTable[i].use = false;
