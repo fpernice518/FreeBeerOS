@@ -23,6 +23,7 @@ import nachos.Debug;
 import nachos.machine.CPU;
 import nachos.machine.MIPS;
 import nachos.machine.Machine;
+import nachos.machine.NachosThread;
 import nachos.machine.TranslationEntry;
 import nachos.noff.NoffHeader;
 import nachos.kernel.filesys.OpenFile;
@@ -78,7 +79,7 @@ public class AddrSpace {
     
     if((noffH = NoffHeader.readHeader(executable)) == null)
 	return(-1);
-
+    
     // how big is address space?
     size = roundToPage(noffH.code.size)
 	     + roundToPage(noffH.initData.size + noffH.uninitData.size)
@@ -99,14 +100,16 @@ public class AddrSpace {
     pageTable = new TranslationEntry[numPages];
     for (int i = 0; i < numPages; i++) {
       pageTable[i] = new TranslationEntry();
-      pageTable[i].virtualPage = i*128; // for now, virtual page# = phys page#
-      pageTable[i].physicalPage = i;
+      pageTable[i].virtualPage = i; // for now, virtual page# = phys page#
+//      pageTable[i].physicalPage = i; // this needs to be changed
+      pageTable[i].physicalPage = MemAlloc.allocatePage();
       pageTable[i].valid = true;
       pageTable[i].use = false;
       pageTable[i].dirty = false;
       pageTable[i].readOnly = false;  // if code and data segments live on
 				      // separate pages, we could set code 
 				      // pages to be read-only
+   
     }
     
     // Zero out the entire address space, to zero the uninitialized data 
@@ -187,10 +190,15 @@ public class AddrSpace {
     CPU.setPageTable(pageTable);
   }
 
+
   /**
    * Utility method for rounding up to a multiple of CPU.PageSize;
    */
   private long roundToPage(long size) {
     return(Machine.PageSize * ((size+(Machine.PageSize-1))/Machine.PageSize));
+  }
+  public int exit(int i){
+    return i;
+            
   }
 }

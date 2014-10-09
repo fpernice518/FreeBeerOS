@@ -77,6 +77,7 @@ public class ProgTest implements Runnable {
 	space.restoreState();		// load page table register
 
 	CPU.runUserCode();			// jump to the user progam
+	
 	Debug.ASSERT(false);		// machine->Run never returns;
 	// the address space exits
 	// by doing the syscall "exit"
