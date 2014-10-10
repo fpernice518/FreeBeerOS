@@ -9,6 +9,7 @@ import nachos.machine.CPU;
 import nachos.machine.MIPS;
 import nachos.machine.Machine;
 import nachos.machine.MachineException;
+import nachos.machine.NachosThread;
 import nachos.kernel.userprog.Syscall;
 
 /**
@@ -58,33 +59,35 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler {
 
 	    switch (type) {
 	    case Syscall.SC_Halt:
-		Syscall.halt();
-		break;
-	    case Syscall.SC_Exit:
-		Syscall.exit(CPU.readRegister(4));
-		break;
+    		Syscall.halt();
+    		break;
+    	    case Syscall.SC_Exit:
+    		Syscall.exit(CPU.readRegister(4));
+    		break;
+    		
 	    case Syscall.SC_Exec:
-//	        Debug.print('+', "\n"+CPU.readRegister(5)+"\n");
-//		Syscall.exec(CPU.readRegister(0));
-	
-		break;
+	        Syscall.exec("");
+	        break;
+		
 	    case Syscall.SC_Write:
-		ptr = CPU.readRegister(4);
-		len = CPU.readRegister(5);
-		buf = new byte[len];
-
-		// this is wrong ti should be using vmemory
-		System.arraycopy(Machine.mainMemory, ptr, buf, 0, len);
-		Syscall.write(buf, len, CPU.readRegister(6));
-		break;
+    		ptr = CPU.readRegister(4);
+    		len = CPU.readRegister(5);
+            AddrSpace addrSpace = ((UserThread)NachosThread.currentThread()).space;
+            ptr = CPU.readRegister(4);
+            len = CPU.readRegister(5);
+            
+            byte[] prog = addrSpace.pullFromMainMemory(ptr, len);
+            Syscall.write(prog, prog.length, CPU.readRegister(6));
+            break;
+		
 	    case Syscall.SC_Read:
 	        ptr = CPU.readRegister(4);
 	        len = CPU.readRegister(5);
 	        buf = new byte[len];
-	        
+	 
 	        System.arraycopy(Machine.mainMemory, ptr, buf, 0, len);
 	        Syscall.read(buf, len, CPU.readRegister(6));
-	    break;
+	        break;
 	    }
 
 	    // Update the program counter to point to the next instruction

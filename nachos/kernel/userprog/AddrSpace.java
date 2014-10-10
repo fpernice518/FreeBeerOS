@@ -169,6 +169,24 @@ public class AddrSpace
 
         return (0);
     }
+    
+    /**
+     *  Loads this AddrSpace into 
+     */
+    public byte[] pullFromMainMemory(int ptr, int length)
+    {
+        byte[] copy = new byte[length];
+        
+        int pageNumber = ptr / Machine.PageSize;
+        int pageOffset = ptr % Machine.PageSize;
+        
+        int start = pageTable[pageNumber].physicalPage * Machine.PageSize + pageOffset;
+        
+        System.arraycopy(Machine.mainMemory, start, copy, 0, length);
+        
+        return copy;
+    }
+    
 
     /**
      * Initialize the user-level register set to values appropriate for starting

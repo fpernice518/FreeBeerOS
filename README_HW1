@@ -1,23 +1,36 @@
 Christian barry
 Frank pernice
 
-We created a latch for threads. The way it is made is to have a count. When the count is 0 it releases all the threads
-This is done by using two semaphores.
+The following paragraphs contain a summary of the CountDown Latch, the Exchanger, and the Exchanger with timeout. All the test classes were modeled after the ThreadTest class.
 
-THe other is was a exchanger for two threads. More than two threads makes no sense 
+The CountDown Latch utlilizes two semaphores; one to block the threads and another to act as a latch (to create a critical section of code where we can safely decrement the count). The latch is initialized with an arbitrary count and the simulation terminates when the count reaches zero and all threads are released.
 
-we partially finished the third part.
+The Exchanger was implemented via a handshaking method. When the exchange method is called the first time, a Lock is aquired and the object passed into it is stored in a temporary variable. A boolean flag is set to indicate that the first thread was received and then a Condition is used to perform an await. Then when a second thread calls the method, the objects are exchanged and the Lock is released. 
 
-The second one we used a very similiar method of holding the the threads until computation is complete
+The Timeout Exchanger is an extension of the afformentioned Exchanger. A seperate TimerService class implemented to act as wrapper for the CPU timer. This is implemented using a singleton and observer pattern: singleton because we only have one "hardware" timer and observer because Nachos InterruptHandler objects (in this case, TimerInterrputHandler) can subscribe to it and be notified when the timer overflows. 
+
+All the Test classes make use of Java's Random class so that the methods we are trying to test across different threads begin at different times. So the following lines of code will often be placed right before a test:
+
+         Random rand = new Random();
+         int randomInt = (int)rand.nextInt();
+         for(int i = 0; i < randomInt; ++i);
 
 
+In regards to the two Exchanger tests, a Person object(for simplicity) is passed between threads. The CountDown Latch tests make use of three different kinds of threads (a thread which immediately counts down, one which counts down and awaits, and another which merely awaits and nothing more).
 
 
-to run you must use -d 1 as arguments inorder to see the output
+In order to run these tests, pass the following arguments into the program:
+  
+   -d 1
 
-THe first part will have 3 types of threads dec thread decawait thread and await thread. All are shown to work 
+Unfortunately, since we cannot pass in any parameters associated with the '1' flag, we have to comment and uncomment lines fo code to run the different tests so that the tests do not overlap and run in parallel. We were unable to find an eloqient way to keep them from running in parallel; hopefully that will change in future assignments. In the "nachos.kernel.Nachos.java" there will be the following lines of code (lines 129 - 134)
 
-the second part of the program will tell you what thread it is and what its being exchanged with.
+        if(options.HW1_TEST)
+	{
+	    CountDownLatchTest.start();
+	    //ExchangerTest.start();
+	    //ExchangeTimeoutTester.start();
+	}
 
- 
+This will run the CountDown Latch test only. In order to run the two Exchanger tests, the appropriate test must be uncommented (and the other two commented) and then the program must be recompiled.
 
