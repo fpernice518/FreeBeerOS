@@ -114,7 +114,6 @@ public class AddrSpace
             pageTable[i].readOnly = false; // if code and data segments live on
             // separate pages, we could set code
             // pages to be read-only
-            
 
         }
 
@@ -139,7 +138,7 @@ public class AddrSpace
 
             // seek once
             executable.seek(noffH.code.inFileAddr);// this is correct keep it
-            
+
             // I dont think we are getting all of the program, i think we are
             // getting 99% of it
             for (int i = 0; i < numPages; i++)
@@ -169,24 +168,24 @@ public class AddrSpace
 
         return (0);
     }
-    
+
     /**
-     *  Loads this AddrSpace into 
+     * Loads this AddrSpace into
      */
     public byte[] pullFromMainMemory(int ptr, int length)
     {
         byte[] copy = new byte[length];
-        
+
         int pageNumber = ptr / Machine.PageSize;
         int pageOffset = ptr % Machine.PageSize;
-        
-        int start = pageTable[pageNumber].physicalPage * Machine.PageSize + pageOffset;
-        
+
+        int start = pageTable[pageNumber].physicalPage * Machine.PageSize
+                + pageOffset;
+
         System.arraycopy(Machine.mainMemory, start, copy, 0, length);
-        
+
         return copy;
     }
-    
 
     /**
      * Initialize the user-level register set to values appropriate for starting
@@ -252,6 +251,7 @@ public class AddrSpace
 
     public int exit(int i)
     {
+        MemAlloc.getInstance().deAllocatePages();
         return i;
 
     }

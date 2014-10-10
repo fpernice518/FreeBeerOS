@@ -238,6 +238,7 @@ public class Syscall
      */
     public static void close(int id)
     {
+        
         //exec can do the join but thats all else reject the living shit out of it
         // check if parent is still alive.
         // if parent isnt alive then system must deal with  it
