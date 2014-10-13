@@ -19,6 +19,8 @@
 
 package nachos.kernel.userprog;
 
+import java.util.ArrayList;
+
 import nachos.Debug;
 import nachos.machine.CPU;
 import nachos.machine.MIPS;
@@ -182,6 +184,51 @@ public class AddrSpace
         int start = pageTable[pageNumber].physicalPage * Machine.PageSize
                 + pageOffset;
 
+        System.arraycopy(Machine.mainMemory, start, copy, 0, length);
+        // System.out.println((byte)Machine.mainMemory[start]);
+        return copy;
+    }
+
+    public byte[] getNameOfProgram(int ptr)
+    {
+
+        int pageNumber = ptr / Machine.PageSize;
+        int pageOffset = ptr % Machine.PageSize;
+
+        int start = pageTable[pageNumber].physicalPage * Machine.PageSize
+                + pageOffset;
+        int locationInMemory = start;
+        int length = 0;
+        while (Machine.mainMemory[locationInMemory] != 0)
+        {
+
+            locationInMemory++;
+            length++;
+        }
+        byte[] copy = new byte[length];
+        System.arraycopy(Machine.mainMemory, start, copy, 0, length);
+
+        return copy;
+    }
+    
+    
+    public byte[] getParamter(int ptr)
+    {
+
+        int pageNumber = ptr / Machine.PageSize;
+        int pageOffset = ptr % Machine.PageSize;
+
+        int start = pageTable[pageNumber].physicalPage * Machine.PageSize
+                + pageOffset;
+        int locationInMemory = start;
+        int length = 0;
+        while (Machine.mainMemory[locationInMemory] != 0)
+        {
+
+            locationInMemory++;
+            length++;
+        }
+        byte[] copy = new byte[length];
         System.arraycopy(Machine.mainMemory, start, copy, 0, length);
 
         return copy;

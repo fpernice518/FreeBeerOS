@@ -34,7 +34,7 @@ LDFLAGS = -T script -N
 ASFLAGS = -mips1
 CPPFLAGS = -I$(INCDIR) -B$(GCCDIR)
 
-CFLAGS = -G 0 -I$(INCDIR) -B$(GCCDIR) -c -fno-builtin -S
+CFLAGS = -G 0 -I$(INCDIR) -B$(GCCDIR) -c -fno-builtin 
 SFLAGS = -G 0 -I$(INCDIR) -B$(GCCDIR) -c  -fno-builtin
 
 NACHOSDIR=..

@@ -77,7 +77,7 @@ public class MemAlloc
             {
                 process_id[i] = null;
 //                clearPage(i);
-                System.out.println("This should be null at "+i+" : "+process_id[i] + " ******************");
+//                System.out.println("This should be null at "+i+" : "+process_id[i] + " ******************");
                 returnResult = true;
 //                break;
             }
