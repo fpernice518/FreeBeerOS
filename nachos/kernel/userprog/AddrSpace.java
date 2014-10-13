@@ -172,7 +172,7 @@ public class AddrSpace
     /**
      * Loads this AddrSpace into
      */
-    public byte[] pullFromMainMemory(int ptr, int length)
+    public byte[] copyIn(int ptr, int length)
     {
         byte[] copy = new byte[length];
 
@@ -251,7 +251,7 @@ public class AddrSpace
 
     public int exit(int i)
     {
-        MemAlloc.getInstance().deAllocatePages();
+        MemAlloc.getInstance().deAllocatePages(NachosThread.currentThread());
         return i;
 
     }

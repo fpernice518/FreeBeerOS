@@ -55,22 +55,19 @@ public class MemAlloc
             Debug.println('2', "Insuffcient Pages when trying to allocate");
         }
         
-        finally{
+        finally
+        {
             lock.release();
-            
         }
-        return returnPage;
-        // lock.release();
         
-
+        return returnPage;  
     }
     
-    public boolean deAllocatePages()
+    public boolean deAllocatePages(NachosThread process_to_deallocate)
     {
         boolean returnResult = false;
         try{
             lock.acquire();
-        NachosThread process_to_deallocate = NachosThread.currentThread();
         // Lock lock = new Lock(process_to_deallocate.name);
         // lock.acquire();
 

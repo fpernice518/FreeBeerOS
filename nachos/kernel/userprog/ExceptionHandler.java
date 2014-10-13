@@ -51,6 +51,7 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
     public void handleException(int which)
     {
         int type = CPU.readRegister(2);
+        AddrSpace addrSpace;
 
         if (which == MachineException.SyscallException)
         {
@@ -64,8 +65,7 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
                 break;
             case Syscall.SC_Exit:
 //                Syscall.exit(CPU.readRegister(4));
-                AddrSpace exitSpace = ((UserThread) NachosThread
-                        .currentThread()).space;
+                AddrSpace exitSpace = ((UserThread) NachosThread.currentThread()).space;
                 exitSpace.exit(CPU.readRegister(4));
 //                Nachos.scheduler.finishThread();
                 Syscall.exit(CPU.readRegister(4));
@@ -73,18 +73,20 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
                 break;
 
             case Syscall.SC_Exec:
+                addrSpace = ((UserThread) NachosThread.currentThread()).space;
+                //addrSpace.
+                addrSpace.saveState();
                 Syscall.exec("");
                 break;
 
             case Syscall.SC_Write:
                 ptr = CPU.readRegister(4);
                 len = CPU.readRegister(5);
-                AddrSpace addrSpace = ((UserThread) NachosThread
-                        .currentThread()).space;
+                addrSpace = ((UserThread) NachosThread.currentThread()).space;
                 ptr = CPU.readRegister(4);
                 len = CPU.readRegister(5);
 
-                byte[] prog = addrSpace.pullFromMainMemory(ptr, len);
+                byte[] prog = addrSpace.copyIn(ptr, len);
                 Syscall.write(prog, prog.length, CPU.readRegister(6));
                 break;
 
