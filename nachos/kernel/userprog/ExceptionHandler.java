@@ -77,9 +77,10 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
         
                 addrSpace.saveState();
   
-                byte namechar[] = addrSpace.getNameOfProgram(CPU.readRegister(4));
+                byte namechar[] = addrSpace.getName(CPU.readRegister(4));
                 String name = new String(namechar);
                 System.out.println(name);
+                byte x[][] = addrSpace.getArgs(CPU.readRegister(5), 4);
 //                byte y[] = addrSpace.copyIn(CPU.readRegister(5));
 //                for (int i = 0; i < y.length; i++)
 //                {

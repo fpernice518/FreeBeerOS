@@ -20,6 +20,7 @@
 package nachos.kernel.userprog;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import nachos.Debug;
 import nachos.machine.CPU;
@@ -189,7 +190,7 @@ public class AddrSpace
         return copy;
     }
 
-    public byte[] getNameOfProgram(int ptr)
+    public byte[] getName(int ptr)
     {
 
         int pageNumber = ptr / Machine.PageSize;
@@ -210,28 +211,32 @@ public class AddrSpace
 
         return copy;
     }
-    
-    
-    public byte[] getParamter(int ptr)
+
+    public byte[][] getArgs(int ptr, int wordSize)
     {
-
-        int pageNumber = ptr / Machine.PageSize;
-        int pageOffset = ptr % Machine.PageSize;
-
-        int start = pageTable[pageNumber].physicalPage * Machine.PageSize
-                + pageOffset;
-        int locationInMemory = start;
-        int length = 0;
-        while (Machine.mainMemory[locationInMemory] != 0)
+        
+        ArrayList<byte[]> ba = new ArrayList<>();
+        int i = 0;
+        int longest = 0;
+        while (ptr != 0)
         {
+            ba.add(getName(ptr));
+            ptr += wordSize;
+           
+            if (longest < ba.get(i).length)
+            {
+                longest = ba.get(i).length;
 
-            locationInMemory++;
-            length++;
+            }
+            i++;
         }
-        byte[] copy = new byte[length];
-        System.arraycopy(Machine.mainMemory, start, copy, 0, length);
-
-        return copy;
+        byte[][] array = new byte[i][longest];
+        ba.trimToSize();
+        for (int j = 0; j < array.length; j++)
+        {
+            System.arraycopy(ba.get(j), 0, array[j], 0, ba.get(j).length);
+        }
+        return array;
     }
 
     /**
