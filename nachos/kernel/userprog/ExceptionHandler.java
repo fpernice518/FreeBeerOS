@@ -77,7 +77,7 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
         
                 addrSpace.saveState();
   
-                byte namechar[] = addrSpace.getName(CPU.readRegister(4));
+                byte namechar[] = addrSpace.getCString(CPU.readRegister(4));
                 String name = new String(namechar);
                 System.out.println(name);
                 byte x[][] = addrSpace.getArgs(CPU.readRegister(5), 4);
@@ -85,23 +85,9 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
                 for(int i = 0; i < x.length; ++i)
                 {
                     for(int j = 0; j < x[i].length; ++j)
-                        System.out.println((char)x[i][j]);
+                        System.out.print((char)x[i][j]);
                     System.out.println();
                 }
-                
-                
-//                byte y[] = addrSpace.copyIn(CPU.readRegister(5));
-//                for (int i = 0; i < y.length; i++)
-//                {
-//                    System.out.println((char) y[i]);
-//
-//                }
-                // System.out.println((char)x[0]);
-                // System.out.println((char)x[1]);
-                // System.out.println((char)x[2]);
-                // System.out.println((char)x[3]);
-                // System.out.println( CPU.readRegister(4));
-                // System.out.println( CPU.readRegister(5));
 
                 Syscall.exec("");
                 break;

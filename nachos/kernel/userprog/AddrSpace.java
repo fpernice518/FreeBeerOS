@@ -191,7 +191,7 @@ public class AddrSpace
         return copy;
     }
 
-    public byte[] getName(int ptr)
+    public byte[] getCString(int ptr)
     {
 
         int pageNumber = ptr / Machine.PageSize;
@@ -228,7 +228,7 @@ public class AddrSpace
             ptrin = ptrin << 8;
             ptrin |= Machine.mainMemory[ptr];
             
-            ba.add(getName(ptrin));
+            ba.add(getCString(ptrin));
 //            System.out.println(ba.get(i));
             ptr += wordSize;
 
