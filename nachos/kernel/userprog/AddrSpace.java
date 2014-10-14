@@ -163,11 +163,6 @@ public class AddrSpace
                 executable.read(Machine.mainMemory,
                         (pageTable[i].physicalPage * Machine.PageSize),
                         Machine.PageSize);
-
-            // executable.read(Machine.mainMemory, noffH.initData.virtualAddr,
-            // noffH.initData.size);
-            // executable.read(Machine.mainMemory, noffH.initData.virtualAddr,
-            // noffH.initData.size);
         }
 
         return (0);
@@ -187,7 +182,6 @@ public class AddrSpace
                 + pageOffset;
 
         System.arraycopy(Machine.mainMemory, start, copy, 0, length);
-        // System.out.println((byte)Machine.mainMemory[start]);
         return copy;
     }
 
@@ -220,13 +214,13 @@ public class AddrSpace
         int ptrin;
         while (Machine.mainMemory[ptr] != 0)
         {
-            ptrin = Machine.mainMemory[ptr + 3];
+            ptrin = (int)Machine.mainMemory[ptr + 3] & 0xFF;
             ptrin = ptrin << 8;
-            ptrin |= Machine.mainMemory[ptr + 2];
+            ptrin |= (int)Machine.mainMemory[ptr + 2] & 0xFF;
             ptrin = ptrin << 8;
-            ptrin |= Machine.mainMemory[ptr + 1];
+            ptrin |= (int)Machine.mainMemory[ptr + 1] & 0xFF;
             ptrin = ptrin << 8;
-            ptrin |= Machine.mainMemory[ptr];
+            ptrin |= (int)Machine.mainMemory[ptr] & 0xFF;
             
             ba.add(getCString(ptrin));
 //            System.out.println(ba.get(i));
