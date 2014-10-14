@@ -81,6 +81,15 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
                 String name = new String(namechar);
                 System.out.println(name);
                 byte x[][] = addrSpace.getArgs(CPU.readRegister(5), 4);
+                
+                for(int i = 0; i < x.length; ++i)
+                {
+                    for(int j = 0; j < x[i].length; ++j)
+                        System.out.println((char)x[i][j]);
+                    System.out.println();
+                }
+                
+                
 //                byte y[] = addrSpace.copyIn(CPU.readRegister(5));
 //                for (int i = 0; i < y.length; i++)
 //                {

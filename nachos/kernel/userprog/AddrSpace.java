@@ -214,27 +214,46 @@ public class AddrSpace
 
     public byte[][] getArgs(int ptr, int wordSize)
     {
-        
         ArrayList<byte[]> ba = new ArrayList<>();
         int i = 0;
         int longest = 0;
-        while (ptr != 0)
+        int ptrin;
+        while (Machine.mainMemory[ptr] != 0)
         {
-            ba.add(getName(ptr));
+            ptrin = Machine.mainMemory[ptr + 3];
+            ptrin = ptrin << 8;
+            ptrin |= Machine.mainMemory[ptr + 2];
+            ptrin = ptrin << 8;
+            ptrin |= Machine.mainMemory[ptr + 1];
+            ptrin = ptrin << 8;
+            ptrin |= Machine.mainMemory[ptr];
+
+            ba.add(getName(Machine.mainMemory[ptrin]));
+//            System.out.println(ba.get(i));
             ptr += wordSize;
-           
+
             if (longest < ba.get(i).length)
             {
                 longest = ba.get(i).length;
-
             }
             i++;
         }
+        // System.out.println(ba.get(1));
         byte[][] array = new byte[i][longest];
-        ba.trimToSize();
-        for (int j = 0; j < array.length; j++)
+        // ba.trimToSize();
+        // for (int j = 0; j < array.length; j++)
+        // {
+        // System.arraycopy(ba.get(j), 0, array[j], 0, ba.get(j).length);
+        // }
+        for (int j = 0; j < ba.size(); j++)
         {
-            System.arraycopy(ba.get(j), 0, array[j], 0, ba.get(j).length);
+            byte[] row = ba.get(j);
+            array[j] = new byte[row.length];
+            for (int k = 0; k < array[j].length; k++)
+            {
+                array[j][k]= row[k];
+            }
+
         }
         return array;
     }
