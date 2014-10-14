@@ -30,6 +30,7 @@ import nachos.machine.NachosThread;
 import nachos.machine.TranslationEntry;
 import nachos.noff.NoffHeader;
 import nachos.kernel.filesys.OpenFile;
+import java.util.Arrays;
 
 /**
  * This class manages "address spaces", which are the contexts in which user
@@ -202,7 +203,6 @@ public class AddrSpace
         int length = 0;
         while (Machine.mainMemory[locationInMemory] != 0)
         {
-
             locationInMemory++;
             length++;
         }
@@ -227,8 +227,8 @@ public class AddrSpace
             ptrin |= Machine.mainMemory[ptr + 1];
             ptrin = ptrin << 8;
             ptrin |= Machine.mainMemory[ptr];
-
-            ba.add(getName(Machine.mainMemory[ptrin]));
+            
+            ba.add(getName(ptrin));
 //            System.out.println(ba.get(i));
             ptr += wordSize;
 
