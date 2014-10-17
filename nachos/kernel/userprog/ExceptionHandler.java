@@ -81,6 +81,7 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
                 String name = new String(namechar);
                 System.out.println(name);
                 byte[][] args = addrSpace.getArgsByte(CPU.readRegister(5), 4);
+                
                 Syscall.exec(name, args);
                 break;
 

@@ -8,6 +8,8 @@ package nachos.kernel.userprog;
 
 import nachos.Debug;
 import nachos.kernel.Nachos;
+import nachos.machine.CPU;
+import nachos.machine.MIPS;
 import nachos.machine.NachosThread;
 import nachos.machine.Simulation;
 
@@ -97,6 +99,9 @@ public class Syscall
     public static int exec(String name, byte[][] args)
     {
         //someone 
+        
+        Executor x = new Executor(name, 0);
+       
         
         return 0;
     }
