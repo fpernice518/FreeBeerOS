@@ -4,6 +4,8 @@
 
 package nachos.kernel.userprog;
 
+import java.util.ArrayList;
+
 import nachos.Debug;
 import nachos.machine.CPU;
 import nachos.machine.MIPS;
@@ -74,22 +76,12 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
 
             case Syscall.SC_Exec:
                 addrSpace = ((UserThread) NachosThread.currentThread()).space;
-        
                 addrSpace.saveState();
-  
                 byte namechar[] = addrSpace.getCString(CPU.readRegister(4));
                 String name = new String(namechar);
                 System.out.println(name);
-                byte x[][] = addrSpace.getArgs(CPU.readRegister(5), 4);
-                
-                for(int i = 0; i < x.length; ++i)
-                {
-                    for(int j = 0; j < x[i].length; ++j)
-                        System.out.print((char)x[i][j]);
-                    System.out.println();
-                }
-
-                Syscall.exec("");
+                byte[][] args = addrSpace.getArgsByte(CPU.readRegister(5), 4);
+                Syscall.exec(name, args);
                 break;
 
             case Syscall.SC_Write:
@@ -99,7 +91,7 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
                 ptr = CPU.readRegister(4);
                 len = CPU.readRegister(5);
 
-                byte[] prog = addrSpace.copyIn(ptr, len);
+                byte[] prog = addrSpace.copyIntoKernel(ptr, len);
                 Syscall.write(prog, prog.length, CPU.readRegister(6));
                 break;
 

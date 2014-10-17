@@ -53,6 +53,8 @@ public class AddrSpace
 
     /** Page table that describes a virtual-to-physical address mapping. */
     private TranslationEntry pageTable[];
+    
+    private int[] savedRegisters = new int[MIPS.NumTotalRegs];
 
     /** Default size of the user stack area -- increase this as necessary! */
     private static final int UserStackSize = 1024;
@@ -108,7 +110,6 @@ public class AddrSpace
         {
             pageTable[i] = new TranslationEntry();
             pageTable[i].virtualPage = i; // for now, virtual page# = phys page#
-            // pageTable[i].physicalPage = i; // this needs to be changed
             pageTable[i].physicalPage = MemAlloc.getInstance().allocatePage();
             System.out
                     .println(pageTable[i].physicalPage + "******************");
@@ -169,9 +170,9 @@ public class AddrSpace
     }
 
     /**
-     * Loads this AddrSpace into
+     * Loads this AddrSpace into the kernel
      */
-    public byte[] copyIn(int ptr, int length)
+    public byte[] copyIntoKernel(int ptr, int length)
     {
         byte[] copy = new byte[length];
 
@@ -184,6 +185,9 @@ public class AddrSpace
         System.arraycopy(Machine.mainMemory, start, copy, 0, length);
         return copy;
     }
+    
+    //public 
+    
 
     public byte[] getCString(int ptr)
     {
@@ -206,7 +210,7 @@ public class AddrSpace
         return copy;
     }
 
-    public byte[][] getArgs(int ptr, int wordSize)
+    public byte[][] getArgsByte(int ptr, int wordSize)
     {
         ArrayList<byte[]> ba = new ArrayList<>();
         int i = 0;
@@ -223,7 +227,6 @@ public class AddrSpace
             ptrin |= (int)Machine.mainMemory[ptr] & 0xFF;
             
             ba.add(getCString(ptrin));
-//            System.out.println(ba.get(i));
             ptr += wordSize;
 
             if (longest < ba.get(i).length)
@@ -232,13 +235,8 @@ public class AddrSpace
             }
             i++;
         }
-        // System.out.println(ba.get(1));
         byte[][] array = new byte[i][longest];
-        // ba.trimToSize();
-        // for (int j = 0; j < array.length; j++)
-        // {
-        // System.arraycopy(ba.get(j), 0, array[j], 0, ba.get(j).length);
-        // }
+
         for (int j = 0; j < ba.size(); j++)
         {
             byte[] row = ba.get(j);
@@ -247,10 +245,33 @@ public class AddrSpace
             {
                 array[j][k]= row[k];
             }
-
         }
         return array;
     }
+        
+    public ArrayList<StringBuilder> getArgs(int ptr, int wordSize)
+    {
+        byte[][] bytes = getArgsByte(ptr, wordSize);
+        ArrayList<StringBuilder> args = new ArrayList<StringBuilder>();
+        StringBuilder sb;
+        
+        for(int i = 0; i < bytes.length; ++i)
+        {
+            sb = new StringBuilder();
+            
+            int j = 0;
+            while(j < bytes[i].length)
+            {
+                sb.append(((char)bytes[i][j]));
+                ++j;
+            }
+            args.add(sb);
+        }
+        
+        return args;
+        
+    }
+    
 
     /**
      * Initialize the user-level register set to values appropriate for starting
@@ -291,8 +312,10 @@ public class AddrSpace
      */
     public void saveState()
     {
-        // pageTable[]
-
+        for(int i = 0; i < MIPS.NumTotalRegs; ++i)
+            savedRegisters[i] = CPU.readRegister(i);
+        
+        //MIPS.
     }
 
     /**

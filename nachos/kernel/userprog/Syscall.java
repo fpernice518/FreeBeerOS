@@ -94,7 +94,7 @@ public class Syscall
      * @param name
      *            The name of the file to execute.
      */
-    public static int exec(String name)
+    public static int exec(String name, byte[][] args)
     {
         //someone 
         
@@ -143,6 +143,9 @@ public class Syscall
      */
     public static void create(String name)
     {
+        AddrSpace space = new AddrSpace();
+        
+        
     }
 
     /**
