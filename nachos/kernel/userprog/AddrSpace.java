@@ -53,17 +53,28 @@ public class AddrSpace
 
     /** Page table that describes a virtual-to-physical address mapping. */
     private TranslationEntry pageTable[];
-    
+
     private int[] savedRegisters = new int[MIPS.NumTotalRegs];
 
     /** Default size of the user stack area -- increase this as necessary! */
     private static final int UserStackSize = 1024;
+
+    private byte[][] args = null;
 
     /**
      * Create a new address space.
      */
     public AddrSpace()
     {
+    }
+
+    public AddrSpace(byte[][] args)
+    {
+//        if (args[0][0] != 0)
+//        {
+//            this.args = args;
+//        }
+
     }
 
     /**
@@ -106,22 +117,26 @@ public class AddrSpace
 
         // first, set up the translation
         pageTable = new TranslationEntry[numPages];
-        for (int i = 0; i < numPages; i++)
-        {
-            pageTable[i] = new TranslationEntry();
-            pageTable[i].virtualPage = i; // for now, virtual page# = phys page#
-            pageTable[i].physicalPage = MemAlloc.getInstance().allocatePage();
-            System.out
-                    .println(pageTable[i].physicalPage + "******************");
-            pageTable[i].valid = true;
-            pageTable[i].use = false;
-            pageTable[i].dirty = false;
-            pageTable[i].readOnly = false; // if code and data segments live on
-            // separate pages, we could set code
-            // pages to be read-only
+       
+            for (int i = 0; i < numPages; i++)
+            {
+                pageTable[i] = new TranslationEntry();
+                pageTable[i].virtualPage = i; // for now, virtual page# = phys
+                                              // page#
+                pageTable[i].physicalPage = MemAlloc.getInstance()
+                        .allocatePage();
+//                System.out.println(pageTable[i].physicalPage
+//                        + "******************");
+                pageTable[i].valid = true;
+                pageTable[i].use = false;
+                pageTable[i].dirty = false;
+                pageTable[i].readOnly = false; // if code and data segments live
+                                               // on
+                // separate pages, we could set code
+                // pages to be read-only
 
-        }
-
+            }
+       
         // Zero out the entire address space, to zero the uninitialized data
         // segment and the stack segment.
         for (int i = 0; i < numPages; i++)
@@ -185,9 +200,8 @@ public class AddrSpace
         System.arraycopy(Machine.mainMemory, start, copy, 0, length);
         return copy;
     }
-    
-    //public 
-    
+
+    // public
 
     public byte[] getCString(int ptr)
     {
@@ -218,14 +232,14 @@ public class AddrSpace
         int ptrin;
         while (Machine.mainMemory[ptr] != 0)
         {
-            ptrin = (int)Machine.mainMemory[ptr + 3] & 0xFF;
+            ptrin = (int) Machine.mainMemory[ptr + 3] & 0xFF;
             ptrin = ptrin << 8;
-            ptrin |= (int)Machine.mainMemory[ptr + 2] & 0xFF;
+            ptrin |= (int) Machine.mainMemory[ptr + 2] & 0xFF;
             ptrin = ptrin << 8;
-            ptrin |= (int)Machine.mainMemory[ptr + 1] & 0xFF;
+            ptrin |= (int) Machine.mainMemory[ptr + 1] & 0xFF;
             ptrin = ptrin << 8;
-            ptrin |= (int)Machine.mainMemory[ptr] & 0xFF;
-            
+            ptrin |= (int) Machine.mainMemory[ptr] & 0xFF;
+
             ba.add(getCString(ptrin));
             ptr += wordSize;
 
@@ -243,35 +257,34 @@ public class AddrSpace
             array[j] = new byte[row.length];
             for (int k = 0; k < array[j].length; k++)
             {
-                array[j][k]= row[k];
+                array[j][k] = row[k];
             }
         }
         return array;
     }
-        
+
     public ArrayList<StringBuilder> getArgs(int ptr, int wordSize)
     {
         byte[][] bytes = getArgsByte(ptr, wordSize);
         ArrayList<StringBuilder> args = new ArrayList<StringBuilder>();
         StringBuilder sb;
-        
-        for(int i = 0; i < bytes.length; ++i)
+
+        for (int i = 0; i < bytes.length; ++i)
         {
             sb = new StringBuilder();
-            
+
             int j = 0;
-            while(j < bytes[i].length)
+            while (j < bytes[i].length)
             {
-                sb.append(((char)bytes[i][j]));
+                sb.append(((char) bytes[i][j]));
                 ++j;
             }
             args.add(sb);
         }
-        
+
         return args;
-        
+
     }
-    
 
     /**
      * Initialize the user-level register set to values appropriate for starting
@@ -312,10 +325,10 @@ public class AddrSpace
      */
     public void saveState()
     {
-        for(int i = 0; i < MIPS.NumTotalRegs; ++i)
+        for (int i = 0; i < MIPS.NumTotalRegs; ++i)
             savedRegisters[i] = CPU.readRegister(i);
-        
-        //MIPS.
+
+        // MIPS.
     }
 
     /**

@@ -5,6 +5,7 @@ import nachos.Options;
 import nachos.kernel.Nachos;
 import nachos.kernel.filesys.OpenFile;
 import nachos.machine.CPU;
+import nachos.machine.MIPS;
 import nachos.machine.NachosThread;
 
 public class Executor implements Runnable
@@ -12,6 +13,7 @@ public class Executor implements Runnable
 
     /** The name of the program to execute. */
     private String execName;
+    private byte[][] args;
 
     /**
      * Start the test by creating a new address space and user thread, then
@@ -21,13 +23,14 @@ public class Executor implements Runnable
      * @param filename
      *            The name of the program to execute.
      */
-    public Executor(String filename, int num)
+    public Executor(String filename, byte[][] args, int num)
     {
         String name = "ProgTest" + num + "(" + filename + ")";
 
         Debug.println('+', "starting ProgTest: " + name);
 
         execName = filename;
+        this.args = args;
         AddrSpace space = new AddrSpace();
         UserThread t = new UserThread(name, this, space);
         Nachos.scheduler.readyToRun(t);
@@ -60,6 +63,21 @@ public class Executor implements Runnable
 
         // Debug.print('2', "we went here");
         space.initRegisters(); // set the initial register values
+        // array copy the things of bytes of said origin so thou will be fine to
+        // be or not to be that is a boolean
+        int currentStackLocation = MIPS.StackReg;
+//        if()
+        for (int i = 0; i < args.length; i++)
+        {
+            // byte[] bs = args[i];
+            for (int j = 0; j < args[i].length; j++)
+            {
+
+                
+            }
+
+        }
+
         space.restoreState(); // load page table register
 
         CPU.runUserCode(); // jump to the user progam
@@ -74,25 +92,25 @@ public class Executor implements Runnable
      * of the program to execute, then the test is started by creating a new
      * ProgTest object.
      */
-//    public static void start()
-//    {
-//
-//        Debug.ASSERT(
-//                Nachos.options.FILESYS_REAL || Nachos.options.FILESYS_STUB,
-//                "A filesystem is required to execute user programs");
-//        final int[] count = new int[1];
-        // Nachos.options.processOptions
-        // (new Options.Spec[] {
-        // new Options.Spec
-        // ("-x",
-        // new Class[] {String.class},
-        // "Usage: -x <executable file>",
-        // new Options.Action() {
-        // public void processOption(String flag, Object[] params) {
-        // new ProgTest((String)params[0], count[0]++);
-        // }
-        // })
-        // });
-//    }
+    // public static void start()
+    // {
+    //
+    // Debug.ASSERT(
+    // Nachos.options.FILESYS_REAL || Nachos.options.FILESYS_STUB,
+    // "A filesystem is required to execute user programs");
+    // final int[] count = new int[1];
+    // Nachos.options.processOptions
+    // (new Options.Spec[] {
+    // new Options.Spec
+    // ("-x",
+    // new Class[] {String.class},
+    // "Usage: -x <executable file>",
+    // new Options.Action() {
+    // public void processOption(String flag, Object[] params) {
+    // new ProgTest((String)params[0], count[0]++);
+    // }
+    // })
+    // });
+    // }
 
 }

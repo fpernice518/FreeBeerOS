@@ -100,7 +100,7 @@ public class Syscall
     {
         //someone 
         
-        Executor x = new Executor(name, 0);
+        Executor x = new Executor(name, args,0);
        
         
         return 0;
