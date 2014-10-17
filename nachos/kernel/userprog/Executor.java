@@ -1,5 +1,8 @@
 package nachos.kernel.userprog;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
 import nachos.Debug;
 import nachos.Options;
 import nachos.kernel.Nachos;
@@ -65,17 +68,32 @@ public class Executor implements Runnable
         space.initRegisters(); // set the initial register values
         // array copy the things of bytes of said origin so thou will be fine to
         // be or not to be that is a boolean
-        int currentStackLocation = MIPS.StackReg;
-//        if()
-        for (int i = 0; i < args.length; i++)
+
+        //push first argument to stack
+        int argc = args.length;
+        
+        if(args.length > 0)
         {
-            // byte[] bs = args[i];
-            for (int j = 0; j < args[i].length; j++)
+            int ptr = space.pushToStack(args.length);
+            CPU.writeRegister(4, ptr);
+            
+            int byteBuff = 0;
+            boolean gotPtr = false;
+            for(int i = 0; i < args.length; ++i)
             {
-
-                
+                for(int j = 0; j < args[i].length; ++j)
+                {
+                    byteBuff |= args[i][j];
+                    byteBuff = byteBuff << 8;
+                }
+                ptr = space.pushToStack(byteBuff);
+                if(gotPtr == false)
+                {
+                    CPU.writeRegister(5, ptr);
+                    gotPtr = true;
+                }
+                byteBuff = 0;
             }
-
         }
 
         space.restoreState(); // load page table register

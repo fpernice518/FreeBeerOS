@@ -19,6 +19,8 @@
 
 package nachos.kernel.userprog;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -30,6 +32,7 @@ import nachos.machine.NachosThread;
 import nachos.machine.TranslationEntry;
 import nachos.noff.NoffHeader;
 import nachos.kernel.filesys.OpenFile;
+
 import java.util.Arrays;
 
 /**
@@ -59,7 +62,6 @@ public class AddrSpace
     /** Default size of the user stack area -- increase this as necessary! */
     private static final int UserStackSize = 1024;
 
-    private byte[][] args = null;
 
     /**
      * Create a new address space.
@@ -356,4 +358,21 @@ public class AddrSpace
         return i;
 
     }
+    
+    public int pushToStack(int i)
+    {
+        int sp = CPU.readRegister(MIPS.StackReg);
+        byte[] b = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(i).array();
+        
+        for(int j = 3; j >= 0; --j)
+            Machine.mainMemory[sp - j] = b[3-j];
+        
+        --sp;
+        CPU.writeRegister(MIPS.StackReg, sp);
+        
+        return sp;
+    }
+    
+    
+    
 }
