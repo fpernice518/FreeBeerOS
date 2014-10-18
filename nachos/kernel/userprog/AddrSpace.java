@@ -61,7 +61,7 @@ public class AddrSpace
 
     /** Default size of the user stack area -- increase this as necessary! */
     private static final int UserStackSize = 1024;
-
+    private int argc;
 
     /**
      * Create a new address space.
@@ -70,13 +70,14 @@ public class AddrSpace
     {
     }
 
-    public AddrSpace(byte[][] args)
+    public AddrSpace(int argc,byte[][] args)
     {
 //        if (args[0][0] != 0)
 //        {
 //            this.args = args;
 //        }
 
+        this.argc = argc;
     }
 
     /**
@@ -316,6 +317,11 @@ public class AddrSpace
         // That code rightly belongs in start.s and has been moved there.
         int sp = pageTable.length * Machine.PageSize;
         CPU.writeRegister(MIPS.StackReg, sp);
+//        System.out.println(argc);
+        if(argc != 0)
+        CPU.writeRegister(4, argc);
+       
+        
         Debug.println('a', "Initializing stack register to " + sp);
     }
 
@@ -362,15 +368,19 @@ public class AddrSpace
     public int pushToStack(int i)
     {
         int sp = CPU.readRegister(MIPS.StackReg);
-        byte[] b = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(i).array();
+        byte[] b = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(i).array();
         
         for(int j = 3; j >= 0; --j)
             Machine.mainMemory[sp - j] = b[3-j];
         
-        --sp;
+        sp = sp-4;
         CPU.writeRegister(MIPS.StackReg, sp);
         
         return sp;
+    }
+    public void writeReg(int i, int x){
+        CPU.writeRegister(i, x);
+        
     }
     
     

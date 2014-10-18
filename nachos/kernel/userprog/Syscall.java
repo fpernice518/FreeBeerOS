@@ -100,8 +100,8 @@ public class Syscall
     {
         //someone 
         
-        Executor x = new Executor(name, args,0);
-       
+        Executor x = new Executor(name, args, args.length);
+//        CPU.writeRegister(4, 10);
         
         return 0;
     }
@@ -220,14 +220,14 @@ public class Syscall
 
         if (id == ConsoleInput)
         {
-            System.out.println(size);
+//            System.out.println(size);
             for (int j = 0; j < size; j++)
             {
 
                 Byte temp = (byte) Nachos.consoleDriver.getChar();
                 
                 buffer[j] = temp;
-                System.out.println((char)buffer[j]);
+//                System.out.println((char)buffer[j]);
 
 
                 returnBytes++;

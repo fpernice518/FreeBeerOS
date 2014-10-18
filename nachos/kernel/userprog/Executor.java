@@ -9,6 +9,7 @@ import nachos.kernel.Nachos;
 import nachos.kernel.filesys.OpenFile;
 import nachos.machine.CPU;
 import nachos.machine.MIPS;
+import nachos.machine.Machine;
 import nachos.machine.NachosThread;
 
 public class Executor implements Runnable
@@ -34,7 +35,7 @@ public class Executor implements Runnable
 
         execName = filename;
         this.args = args;
-        AddrSpace space = new AddrSpace();
+        AddrSpace space = new AddrSpace(num, args);
         UserThread t = new UserThread(name, this, space);
         Nachos.scheduler.readyToRun(t);
     }
@@ -66,17 +67,24 @@ public class Executor implements Runnable
 
         // Debug.print('2', "we went here");
         space.initRegisters(); // set the initial register values
-        // array copy the things of bytes of said origin so thou will be fine to
-        // be or not to be that is a boolean
+
 
         //push first argument to stack
-        int argc = args.length;
+//        int argc = args.length;
         
         if(args.length > 0)
         {
-            int ptr = space.pushToStack(args.length);
-            CPU.writeRegister(4, ptr);
-            
+            int ptr= 0;
+//            ptr = space.pushToStack(args.length);
+          
+//            System.out.println(ptr+"***********************");
+//            for(int q = 1 ; q<5; q++){
+//                System.out.println(Machine.mainMemory[ptr+q] +" pointer: "+(ptr + q));
+//               
+//            }
+//            CPU.writeRegister(4, ptr);
+//            space.writeReg(MIPS., args.length);
+           
             int byteBuff = 0;
             boolean gotPtr = false;
             for(int i = 0; i < args.length; ++i)
@@ -94,6 +102,7 @@ public class Executor implements Runnable
                 }
                 byteBuff = 0;
             }
+            
         }
 
         space.restoreState(); // load page table register
