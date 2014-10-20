@@ -86,8 +86,8 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
                 
                 int childID = Syscall.exec(name, args);
                 CPU.writeRegister(2, childID);
-                System.out.println(childID);
-                System.out.println(parentId);
+//                System.out.println(childID);
+//                System.out.println(parentId);
                 break;
 
             case Syscall.SC_Write:
@@ -130,7 +130,9 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
                 int parentid = addrSpace.getSpaceId();
                 int childid = CPU.readRegister(4);
                 System.out.println(childid);
-                MemAlloc.getInstance().setRelation(parentid, childid);
+               int exit= MemAlloc.getInstance().setRelation(parentid, childid);
+               CPU.writeRegister(2, exit);
+
                 //check if it needs to be locked
 //                MemAlloc.getInstance().waitTilChildIsDone(parentid, child);
 //                Syscall.join(addrSpace.getChild());
