@@ -7,10 +7,22 @@ import nachos.Debug;
 import nachos.Options;
 import nachos.kernel.Nachos;
 import nachos.kernel.filesys.OpenFile;
+import nachos.kernel.threads.Exchanger;
 import nachos.machine.CPU;
 import nachos.machine.MIPS;
 import nachos.machine.Machine;
 import nachos.machine.NachosThread;
+
+class exchangeItem
+{
+    private String parentname;
+
+    exchangeItem(String name)
+    {
+        this.parentname = name;
+    }
+
+}
 
 public class Executor implements Runnable
 {
@@ -18,6 +30,12 @@ public class Executor implements Runnable
     /** The name of the program to execute. */
     private String execName;
     private byte[][] args;
+    // private Exchanger exchanger[];
+    private int child;
+    private AddrSpace space;
+
+    // private Exchanger exchanger[];
+    private int spaceId;
 
     /**
      * Start the test by creating a new address space and user thread, then
@@ -27,7 +45,10 @@ public class Executor implements Runnable
      * @param filename
      *            The name of the program to execute.
      */
-    public Executor(String filename, byte[][] args, int num)
+    // private int returnExit(){
+    // return space.exit(i);
+    // }
+    public Executor(String filename, byte[][] args, int num, int parent)
     {
         String name = "ProgTest" + num + "(" + filename + ")";
 
@@ -35,9 +56,26 @@ public class Executor implements Runnable
 
         execName = filename;
         this.args = args;
-        AddrSpace space = new AddrSpace(num, args);
+        // exchanger = new Exchanger();
+
+        space = new AddrSpace(num, args);
+        spaceId = space.getSpaceId();
+        // spaceid=
         UserThread t = new UserThread(name, this, space);
         Nachos.scheduler.readyToRun(t);
+
+    }
+    public int getspaceId(){
+        return spaceId;
+    }
+    public void setChild(int x)
+    {
+        this.child = x;
+    }
+
+    public int getChild()
+    {
+        return child;
     }
 
     /**
@@ -68,41 +106,53 @@ public class Executor implements Runnable
         // Debug.print('2', "we went here");
         space.initRegisters(); // set the initial register values
 
+        // push first argument to stack
+        // int argc = args.length;
 
-        //push first argument to stack
-//        int argc = args.length;
-        
-        if(args.length > 0)
+        if (args.length > 0)
         {
-            int ptr= 0;
-//            ptr = space.pushToStack(args.length);
-          
-//            System.out.println(ptr+"***********************");
-//            for(int q = 1 ; q<5; q++){
-//                System.out.println(Machine.mainMemory[ptr+q] +" pointer: "+(ptr + q));
-//               
-//            }
-//            CPU.writeRegister(4, ptr);
-//            space.writeReg(MIPS., args.length);
-           
+            int ptr = 0;
+            // ptr = space.pushToStack(args.length);
+
+            // System.out.println(ptr+"***********************");
+            // for(int q = 1 ; q<5; q++){
+            // System.out.println(Machine.mainMemory[ptr+q] +" pointer: "+(ptr +
+            // q));
+            //
+            // }
+            // CPU.writeRegister(4, ptr);
+            // space.writeReg(MIPS., args.length);
+            int[] pointerArray = new int[args.length];
+            // System.out.println(args.length);
             int byteBuff = 0;
             boolean gotPtr = false;
-            for(int i = 0; i < args.length; ++i)
+            for (int i = 0; i < args.length; ++i)
             {
-                for(int j = 0; j < args[i].length; ++j)
+                pointerArray[i] = CPU.readRegister(MIPS.StackReg) - 4;
+                for (int j = 0; j < args[i].length; ++j)
                 {
                     byteBuff |= args[i][j];
                     byteBuff = byteBuff << 8;
                 }
                 ptr = space.pushToStack(byteBuff);
-                if(gotPtr == false)
+                // System.out.println(ptr);
+                // pointerArray[i] = ptr;
+                if (gotPtr == false)
                 {
+                    // pointerArray[i] = ptr;
                     CPU.writeRegister(5, ptr);
                     gotPtr = true;
                 }
-                byteBuff = 0;
+                // byteBuff = 0;
             }
-            
+            // System.out.println();
+            for (int i = 0; i < args.length; i++)
+            {
+                // System.out.println(pointerArray[i]);
+                System.out.println(space.pushToStack(pointerArray[i]));
+            }
+            // CPU.writeRegister(4, args.length);
+
         }
 
         space.restoreState(); // load page table register

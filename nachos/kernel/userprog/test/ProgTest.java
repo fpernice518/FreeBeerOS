@@ -31,6 +31,8 @@ public class ProgTest implements Runnable {
 
     /** The name of the program to execute. */
     private String execName;
+    private int child;
+    private int spaceId;
 
     /**
      * Start the test by creating a new address space and user thread,
@@ -39,6 +41,9 @@ public class ProgTest implements Runnable {
      *
      * @param filename The name of the program to execute.
      */
+    public int getSpaceId(){
+        return spaceId;
+    }
     public ProgTest(String filename, int num) {
 	String name = "ProgTest"+ num + "(" + filename + ")";
 	
@@ -46,10 +51,17 @@ public class ProgTest implements Runnable {
 
 	execName = filename;
 	AddrSpace space = new AddrSpace();
+	spaceId = space.getSpaceId();
 	UserThread t = new UserThread(name, this, space);
 	Nachos.scheduler.readyToRun(t);
     }
 
+    public void setChild(int x){
+        this.child = x;
+    }
+    public int getChild(){
+       return child;
+    }
     /**
      * Entry point for the thread created to run the user program.
      * The specified executable file is used to initialize the address

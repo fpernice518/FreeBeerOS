@@ -99,11 +99,13 @@ public class Syscall
     public static int exec(String name, byte[][] args)
     {
         //someone 
+       
         
-        Executor x = new Executor(name, args, args.length);
+        Executor x = new Executor(name, args, args.length, NachosThread.currentThread().hashCode());
+        
 //        CPU.writeRegister(4, 10);
-        
-        return 0;
+       
+        return x.getspaceId();
     }
 
     /**
@@ -116,7 +118,12 @@ public class Syscall
      */
     public static int join(int id)
     {
-        return 0;
+        
+//        if(!MemAlloc.getInstance().searchPrcoess(NachosThread.currentThread().hashCode())){
+//            
+//        }
+       
+        return 1;
     }
 
     /*

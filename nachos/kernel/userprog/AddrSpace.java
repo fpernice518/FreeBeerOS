@@ -62,24 +62,34 @@ public class AddrSpace
     /** Default size of the user stack area -- increase this as necessary! */
     private static final int UserStackSize = 1024;
     private int argc;
+    private int child;
+    private int spaceId;
 
     /**
      * Create a new address space.
      */
     public AddrSpace()
     {
+        spaceId = MemAlloc.getInstance().getSpaceId();
     }
-
+    public int getSpaceId(){
+        return spaceId;
+    }
     public AddrSpace(int argc,byte[][] args)
     {
 //        if (args[0][0] != 0)
 //        {
 //            this.args = args;
 //        }
-
+        spaceId = MemAlloc.getInstance().getSpaceId();
         this.argc = argc;
     }
-
+    public void setChild(int x){
+        this.child = x;
+    }
+    public int getChild(){
+        return child;
+     }
     /**
      * Load the program from a file "executable", and set everything up so that
      * we can start executing user instructions.
@@ -128,6 +138,7 @@ public class AddrSpace
                                               // page#
                 pageTable[i].physicalPage = MemAlloc.getInstance()
                         .allocatePage();
+                
 //                System.out.println(pageTable[i].physicalPage
 //                        + "******************");
                 pageTable[i].valid = true;
@@ -365,6 +376,10 @@ public class AddrSpace
 
     }
     
+    public int peakOnStack(){
+        
+        return CPU.readRegister(MIPS.StackReg);
+    }
     public int pushToStack(int i)
     {
         int sp = CPU.readRegister(MIPS.StackReg);
