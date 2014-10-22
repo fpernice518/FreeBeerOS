@@ -1,7 +1,12 @@
 package nachos.kernel.userprog;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
+import java.util.Collections;
 
 import nachos.Debug;
 import nachos.Options;
@@ -30,24 +35,15 @@ public class Executor implements Runnable
     /** The name of the program to execute. */
     private String execName;
     private byte[][] args;
+    private ArrayList<byte[]> argList;
     // private Exchanger exchanger[];
     private int child;
     private AddrSpace space;
 
     // private Exchanger exchanger[];
     private int spaceId;
+    private ArrayList<byte[]> argsList;
 
-    /**
-     * Start the test by creating a new address space and user thread, then
-     * arranging for the new thread to begin executing the run() method of this
-     * class.
-     *
-     * @param filename
-     *            The name of the program to execute.
-     */
-    // private int returnExit(){
-    // return space.exit(i);
-    // }
     public Executor(String filename, byte[][] args, int num, int parent)
     {
         String name = "ProgTest" + num + "(" + filename + ")";
@@ -58,16 +54,34 @@ public class Executor implements Runnable
         this.args = args;
         // exchanger = new Exchanger();
 
-        space = new AddrSpace(num, args);
+        space = new AddrSpace(num);
         spaceId = space.getSpaceId();
-        // spaceid=
+
+        UserThread t = new UserThread(name, this, space);
+        Nachos.scheduler.readyToRun(t);
+    }
+
+    public Executor(String filename, ArrayList<byte[]> args, int num, int parent)
+    {
+        String name = "ProgTest" + num + "(" + filename + ")";
+
+        Debug.println('+', "starting ProgTest: " + name);
+
+        execName = filename;
+        this.argsList = args;
+
+        space = new AddrSpace(num);
+        spaceId = space.getSpaceId();
         UserThread t = new UserThread(name, this, space);
         Nachos.scheduler.readyToRun(t);
 
     }
-    public int getspaceId(){
+
+    public int getspaceId()
+    {
         return spaceId;
     }
+
     public void setChild(int x)
     {
         this.child = x;
@@ -109,85 +123,249 @@ public class Executor implements Runnable
         // push first argument to stack
         // int argc = args.length;
 
-        if (args.length > 0)
-        {
-            int ptr = 0;
-            // ptr = space.pushToStack(args.length);
-
-            // System.out.println(ptr+"***********************");
-            // for(int q = 1 ; q<5; q++){
-            // System.out.println(Machine.mainMemory[ptr+q] +" pointer: "+(ptr +
-            // q));
-            //
-            // }
-            // CPU.writeRegister(4, ptr);
-            // space.writeReg(MIPS., args.length);
-            int[] pointerArray = new int[args.length];
-            // System.out.println(args.length);
-            int byteBuff = 0;
-            boolean gotPtr = false;
-            for (int i = 0; i < args.length; ++i)
-            {
-                pointerArray[i] = CPU.readRegister(MIPS.StackReg) - 4;
-                for (int j = 0; j < args[i].length; ++j)
-                {
-                    byteBuff |= args[i][j];
-                    byteBuff = byteBuff << 8;
-                }
-                ptr = space.pushToStack(byteBuff);
-                // System.out.println(ptr);
-                // pointerArray[i] = ptr;
-                if (gotPtr == false)
-                {
-                    // pointerArray[i] = ptr;
-                    CPU.writeRegister(5, ptr);
-                    gotPtr = true;
-                }
-                // byteBuff = 0;
-            }
-            // System.out.println();
-            for (int i = 0; i < args.length; i++)
-            {
-                // System.out.println(pointerArray[i]);
-                System.out.println(space.pushToStack(pointerArray[i]));
-            }
-            // CPU.writeRegister(4, args.length);
-
-        }
+        passArguments(space);
 
         space.restoreState(); // load page table register
 
-        CPU.runUserCode(); // jump to the user progam
+        CPU.runUserCode(); // jump to the user program
 
-        Debug.ASSERT(false); // machine->Run never returns;
-        // the address space exits
-        // by doing the syscall "exit"
+        Debug.ASSERT(false);
     }
 
-    /**
-     * Entry point for the test. Command line arguments are checked for the name
-     * of the program to execute, then the test is started by creating a new
-     * ProgTest object.
-     */
-    // public static void start()
+    private void passArguments(AddrSpace space)
+    {
+
+        int ptr = 0;
+        int byteBuff = 0;
+        ArrayList<Integer> ptrs = new ArrayList<Integer>();
+        boolean gotPtr = false;
+
+        for (int i = 0; i < args.length; ++i)
+        {
+            int numWords = args[i].length / 4;
+            int numBytesLeft = args[i].length % 4;
+
+            for (int j = 0; j < numWords; ++j)
+            {
+                byteBuff = args[i][j];
+                byteBuff = byteBuff << 8;
+
+                byteBuff |= args[i][j + 1];
+                byteBuff = byteBuff << 8;
+
+                byteBuff |= args[i][j + 2];
+                byteBuff = byteBuff << 8;
+
+                byteBuff |= args[i][j + 3];
+
+                if (gotPtr == false)
+                {
+                    ptr = space.pushToStack(byteBuff);
+                    gotPtr = true;
+                } else
+                    space.pushToStack(byteBuff);
+            }
+
+            if (numBytesLeft > 0)
+            {
+                for (int j = 0; j < 3; ++j)
+                {
+                    if (numBytesLeft == 0)
+                    {
+                        byteBuff |= 0;
+                        byteBuff = byteBuff << 8;
+                    } else
+                    {
+                        byteBuff |= args[i][j];
+                        byteBuff = byteBuff << 8;
+                    }
+
+                    --numBytesLeft;
+                }
+
+                if (gotPtr == false)
+                {
+                    ptr = space.pushToStack(byteBuff);
+                    gotPtr = true;
+                } else
+                    space.pushToStack(byteBuff);
+            }
+            ptrs.add(ptr);
+            gotPtr = false;
+        }
+
+        gotPtr = false;
+        // Collections.reverse(ptrs);
+        for (int i = 0; i < ptrs.size(); ++i)
+        {
+            if (false == gotPtr)
+            {
+                ptr = space.pushToStack(ptrs.get(i));
+                gotPtr = true;
+            } else
+                space.pushToStack(ptrs.get(i));
+        }
+        space.pushToStack(0);
+        CPU.writeRegister(5, ptr);
+    }
+
+    // private void passArgs(AddrSpace space)
     // {
+    // int index = CPU.readRegister(MIPS.StackReg) - 1;
+    // ArrayList<Integer> ptrs = new ArrayList<Integer>();
     //
-    // Debug.ASSERT(
-    // Nachos.options.FILESYS_REAL || Nachos.options.FILESYS_STUB,
-    // "A filesystem is required to execute user programs");
-    // final int[] count = new int[1];
-    // Nachos.options.processOptions
-    // (new Options.Spec[] {
-    // new Options.Spec
-    // ("-x",
-    // new Class[] {String.class},
-    // "Usage: -x <executable file>",
-    // new Options.Action() {
-    // public void processOption(String flag, Object[] params) {
-    // new ProgTest((String)params[0], count[0]++);
+    // //push strings onto stack
+    // for(int i = 0; i < args.length; ++i)
+    // {
+    // int j = 0;
+    // while(j < args[i].length)
+    // {
+    // space.pushToMemory(index, args[i][j]);
+    // System.out.println("Data Addr= " + index + " Data = " +
+    // (char)args[i][j]);
+    // --index;
+    // ++j;
     // }
-    // })
-    // });
+    // space.pushToMemory(index, (byte) 0); //push null character
+    // System.out.println("Data Addr= " + index + " Data = " + 0);
+    // --index;
+    // }
+    //
+    // //index to new aligned spot in memory
+    // while((index % 4) != 0)
+    // --index;
+    //
+    //
+    // int masterPtr = index;
+    // //push child pointers to stack
+    // for(int i = 0; i < ptrs.size(); ++i)
+    // {
+    // byte[] b = ByteBuffer.allocate(4).putInt(ptrs.get(i)).array();
+    //
+    // System.out.println("Ptr Addr= " + index + " Ptr Value = " + ptrs.get(i));
+    // for(int j = 0; j < b.length; ++j)
+    // {
+    // space.pushToMemory(index, b[j]);
+    // System.out.println("Byte = " + j + " Value = " + Integer.toHexString(b[j]
+    // & 0xFF));
+    // --index;
+    // }
+    // }
+    //
+    // System.out.println("Master Ptr Value = " + masterPtr);
+    //
+    // CPU.writeRegister(4, args.length);
+    // CPU.writeRegister(5, masterPtr);
+    // CPU.writeRegister(MIPS.StackReg, index);
+    //
+    // try
+    // {
+    // Executor.write("Debug Me", Machine.mainMemory);
+    // } catch (IOException e)
+    // {
+    // // TODO Auto-generated catch block
+    // e.printStackTrace();
+    // }
     // }
 
+    // private void newPassArgs(AddrSpace space)
+    // {
+    // int numChars = 0;
+    // int numPointers = argsList.size();
+    // int sp = CPU.readRegister(MIPS.StackReg);
+    // int spCopy;
+    // int[] ptrs = new int[numPointers];
+    //
+    // for(int i = 0; i < argsList.size(); ++i)
+    // numChars += argsList.get(i).length;
+    // numChars += argsList.size();
+    //
+    // System.out.println("^^^^^^^^^" + sp);
+    // sp -= numChars;
+    // spCopy = sp;
+    //
+    // for(int i = argsList.size() - 1; i >= 0; --i)
+    // {
+    // space.pushToMemory(sp, (byte) 0);
+    // ++sp;
+    //
+    // for(int j = argsList.get(i).length -1; j >= 0 ; --j)
+    // {
+    // space.pushToMemory(sp, argsList.get(i)[j]);
+    // ++sp;
+    // }
+    //
+    // ptrs[i] = sp-1;
+    // }
+    //
+    // sp = spCopy;
+    // sp -= (numPointers * 4);
+    //
+    //
+    // while(sp % 4 != 0) --sp;
+    // spCopy = sp;
+    //
+    // int masterPtr = sp;
+    //
+    // for(int i = ptrs.length - 1; i >= 0; --i)
+    // {
+    // byte[] b =
+    // ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(ptrs[i]).array();
+    //
+    // for(int j = 0; j < b.length; ++j)
+    // {
+    // space.pushToMemory(sp, b[j]);
+    // ++sp;
+    // }
+    // }
+    //
+    // CPU.writeRegister(5, masterPtr);
+    // CPU.writeRegister(MIPS.StackReg, spCopy);
+    //
+    // int k = 0xDEADBEEF;
+    // System.out.println(k);
+    //
+    // // linearArray = new byte[numChars];
+    // //
+    // // int k = 0;
+    // // for(int i = argsList.size()-1; i >= 0 ; --i)
+    // // {
+    // // for(int j = argsList.get(i).length - 1; j >= 0; --j)
+    // // {
+    // // linearArray[k] = argsList.get(i)[j];
+    // // ++k;
+    // // }
+    // // linearArray[k] = 0;
+    // // ++k;
+    // // }
+    //
+    // }
+
+    /*
+     * Dumps the contents of main memory to a file
+     */
+    private static void write(String filename, byte[] mainmemory)
+            throws IOException
+    {
+        BufferedWriter outputWriter = null;
+        outputWriter = new BufferedWriter(new FileWriter(filename));
+
+        int j = 0;
+
+        for (int i = mainmemory.length - 1; i >= 0; i--)
+        {
+
+            outputWriter.write(Integer.toHexString(mainmemory[i] & 0xFF)
+                    + "    ");
+            ++j;
+            if (j == 4)
+            {
+                outputWriter.newLine();
+                j = 0;
+            }
+
+        }
+        outputWriter.flush();
+        outputWriter.close();
+    }
 }

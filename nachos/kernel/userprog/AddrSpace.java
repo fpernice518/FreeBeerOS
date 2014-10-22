@@ -72,24 +72,28 @@ public class AddrSpace
     {
         spaceId = MemAlloc.getInstance().getSpaceId();
     }
-    public int getSpaceId(){
+
+    public int getSpaceId()
+    {
         return spaceId;
     }
-    public AddrSpace(int argc,byte[][] args)
+
+    public AddrSpace(int argc)
     {
-//        if (args[0][0] != 0)
-//        {
-//            this.args = args;
-//        }
         spaceId = MemAlloc.getInstance().getSpaceId();
         this.argc = argc;
     }
-    public void setChild(int x){
+
+    public void setChild(int x)
+    {
         this.child = x;
     }
-    public int getChild(){
+
+    public int getChild()
+    {
         return child;
-     }
+    }
+
     /**
      * Load the program from a file "executable", and set everything up so that
      * we can start executing user instructions.
@@ -130,27 +134,26 @@ public class AddrSpace
 
         // first, set up the translation
         pageTable = new TranslationEntry[numPages];
-       
-            for (int i = 0; i < numPages; i++)
-            {
-                pageTable[i] = new TranslationEntry();
-                pageTable[i].virtualPage = i; // for now, virtual page# = phys
-                                              // page#
-                pageTable[i].physicalPage = MemAlloc.getInstance()
-                        .allocatePage();
-                
-//                System.out.println(pageTable[i].physicalPage
-//                        + "******************");
-                pageTable[i].valid = true;
-                pageTable[i].use = false;
-                pageTable[i].dirty = false;
-                pageTable[i].readOnly = false; // if code and data segments live
-                                               // on
-                // separate pages, we could set code
-                // pages to be read-only
 
-            }
-       
+        for (int i = 0; i < numPages; i++)
+        {
+            pageTable[i] = new TranslationEntry();
+            pageTable[i].virtualPage = i; // for now, virtual page# = phys
+                                          // page#
+            pageTable[i].physicalPage = MemAlloc.getInstance().allocatePage();
+
+            // System.out.println(pageTable[i].physicalPage
+            // + "******************");
+            pageTable[i].valid = true;
+            pageTable[i].use = false;
+            pageTable[i].dirty = false;
+            pageTable[i].readOnly = false; // if code and data segments live
+                                           // on
+            // separate pages, we could set code
+            // pages to be read-only
+
+        }
+
         // Zero out the entire address space, to zero the uninitialized data
         // segment and the stack segment.
         for (int i = 0; i < numPages; i++)
@@ -205,26 +208,15 @@ public class AddrSpace
     {
         byte[] copy = new byte[length];
 
-        int pageNumber = ptr / Machine.PageSize;
-        int pageOffset = ptr % Machine.PageSize;
-
-        int start = pageTable[pageNumber].physicalPage * Machine.PageSize
-                + pageOffset;
+        int start = getPhysicalAddress(ptr);
 
         System.arraycopy(Machine.mainMemory, start, copy, 0, length);
         return copy;
     }
 
-    // public
-
     public byte[] getCString(int ptr)
     {
-
-        int pageNumber = ptr / Machine.PageSize;
-        int pageOffset = ptr % Machine.PageSize;
-
-        int start = pageTable[pageNumber].physicalPage * Machine.PageSize
-                + pageOffset;
+        int start = getPhysicalAddress(ptr);
         int locationInMemory = start;
         int length = 0;
         while (Machine.mainMemory[locationInMemory] != 0)
@@ -277,27 +269,25 @@ public class AddrSpace
         return array;
     }
 
-    public ArrayList<StringBuilder> getArgs(int ptr, int wordSize)
+    public ArrayList<byte[]> getArgsList(int ptr, int wordSize)
     {
-        byte[][] bytes = getArgsByte(ptr, wordSize);
-        ArrayList<StringBuilder> args = new ArrayList<StringBuilder>();
-        StringBuilder sb;
-
-        for (int i = 0; i < bytes.length; ++i)
+        ArrayList<byte[]> ba = new ArrayList<>();
+        int longest = 0;
+        int ptrin;
+        while (Machine.mainMemory[ptr] != 0)
         {
-            sb = new StringBuilder();
+            ptrin = (int) Machine.mainMemory[ptr + 3] & 0xFF;
+            ptrin = ptrin << 8;
+            ptrin |= (int) Machine.mainMemory[ptr + 2] & 0xFF;
+            ptrin = ptrin << 8;
+            ptrin |= (int) Machine.mainMemory[ptr + 1] & 0xFF;
+            ptrin = ptrin << 8;
+            ptrin |= (int) Machine.mainMemory[ptr] & 0xFF;
 
-            int j = 0;
-            while (j < bytes[i].length)
-            {
-                sb.append(((char) bytes[i][j]));
-                ++j;
-            }
-            args.add(sb);
+            ba.add(getCString(ptrin));
+            ptr += wordSize;
         }
-
-        return args;
-
+        return ba;
     }
 
     /**
@@ -328,11 +318,9 @@ public class AddrSpace
         // That code rightly belongs in start.s and has been moved there.
         int sp = pageTable.length * Machine.PageSize;
         CPU.writeRegister(MIPS.StackReg, sp);
-//        System.out.println(argc);
-        if(argc != 0)
-        CPU.writeRegister(4, argc);
-       
-        
+        if (argc != 0)
+            CPU.writeRegister(4, argc);
+
         Debug.println('a', "Initializing stack register to " + sp);
     }
 
@@ -346,8 +334,6 @@ public class AddrSpace
     {
         for (int i = 0; i < MIPS.NumTotalRegs; ++i)
             savedRegisters[i] = CPU.readRegister(i);
-
-        // MIPS.
     }
 
     /**
@@ -373,31 +359,42 @@ public class AddrSpace
     {
         MemAlloc.getInstance().deAllocatePages(NachosThread.currentThread());
         return i;
+    }
 
-    }
-    
-    public int peakOnStack(){
-        
-        return CPU.readRegister(MIPS.StackReg);
-    }
     public int pushToStack(int i)
     {
         int sp = CPU.readRegister(MIPS.StackReg);
-        byte[] b = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(i).array();
-        
-        for(int j = 3; j >= 0; --j)
-            Machine.mainMemory[sp - j] = b[3-j];
-        
-        sp = sp-4;
+        byte[] b = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN)
+                .putInt(i).array();
+
+        sp -= 4;
+
+        int start = getPhysicalAddress(sp);
+
+        for (int j = 0; j < 4; ++j)
+        {
+            // System.out.println((start+j) + " <- " + Integer.toHexString(b[j]
+            // & 0xFF) + "   --" + (sp+j));
+            Machine.mainMemory[start + j] = b[j];
+        }
+
         CPU.writeRegister(MIPS.StackReg, sp);
-        
-        return sp;
+
+        return sp + 4;
     }
-    public void writeReg(int i, int x){
-        CPU.writeRegister(i, x);
-        
+
+    public void pushToMemory(int virtAddr, byte b)
+    {
+        int physAddr = getPhysicalAddress(virtAddr);
+        Machine.mainMemory[physAddr] = b;
     }
-    
-    
-    
+
+    private int getPhysicalAddress(int virtAddr)
+    {
+        int pageNumber = virtAddr / Machine.PageSize;
+        int pageOffset = virtAddr % Machine.PageSize;
+
+        return pageTable[pageNumber].physicalPage * Machine.PageSize
+                + pageOffset;
+    }
 }

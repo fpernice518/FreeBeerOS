@@ -6,6 +6,8 @@
 
 package nachos.kernel.userprog;
 
+import java.util.ArrayList;
+
 import nachos.Debug;
 import nachos.kernel.Nachos;
 import nachos.machine.CPU;
@@ -98,13 +100,22 @@ public class Syscall
      */
     public static int exec(String name, byte[][] args)
     {
-        //someone 
-       
-        
-        Executor x = new Executor(name, args, args.length, NachosThread.currentThread().hashCode());
-        
-//        CPU.writeRegister(4, 10);
-       
+        Executor x = new Executor(name, args, args.length, NachosThread
+                .currentThread().hashCode());
+        return x.getspaceId();
+    }
+
+    /**
+     * Run the executable, stored in the Nachos file "name", and return the
+     * address space identifier.
+     *
+     * @param name
+     *            The name of the file to execute.
+     */
+    public static int exec(String name, ArrayList<byte[]> args)
+    {
+        Executor x = new Executor(name, args, args.size(), NachosThread
+                .currentThread().hashCode());
         return x.getspaceId();
     }
 
@@ -118,11 +129,11 @@ public class Syscall
      */
     public static int join(int id)
     {
-        
-//        if(!MemAlloc.getInstance().searchPrcoess(NachosThread.currentThread().hashCode())){
-//            
-//        }
-       
+
+        // if(!MemAlloc.getInstance().searchPrcoess(NachosThread.currentThread().hashCode())){
+        //
+        // }
+
         return 1;
     }
 
@@ -156,8 +167,7 @@ public class Syscall
     public static void create(String name)
     {
         AddrSpace space = new AddrSpace();
-        
-        
+
     }
 
     /**
@@ -203,6 +213,7 @@ public class Syscall
             }
         }
     }
+
     /**
      * Read "size" bytes from the open file into "buffer". Return the number of
      * bytes actually read -- if the open file isn't long enough, or if it is an
@@ -221,21 +232,16 @@ public class Syscall
     public static int read(byte buffer[], int size, int id)
     {
         int returnBytes = 0;
-//        Debug.print('2', "OOPS");
-        
-
+        // Debug.print('2', "OOPS");
 
         if (id == ConsoleInput)
         {
-//            System.out.println(size);
             for (int j = 0; j < size; j++)
             {
 
                 Byte temp = (byte) Nachos.consoleDriver.getChar();
-                
-                buffer[j] = temp;
-//                System.out.println((char)buffer[j]);
 
+                buffer[j] = temp;
 
                 returnBytes++;
             }
@@ -253,10 +259,11 @@ public class Syscall
      */
     public static void close(int id)
     {
-        
-        //exec can do the join but thats all else reject the living shit out of it
+
+        // exec can do the join but thats all else reject the living shit out of
+        // it
         // check if parent is still alive.
-        // if parent isnt alive then system must deal with  it
+        // if parent isnt alive then system must deal with it
         // children with parents alive then it should wait
         // clear out memory then give it back
     }
@@ -275,7 +282,7 @@ public class Syscall
      */
     public static void fork(int func)
     {
-         
+
     }
 
     /**

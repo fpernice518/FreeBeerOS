@@ -1,0 +1,37 @@
+Frank Pernice
+Christian Barry
+
+CSE 306 
+HW2 README
+
+--------------------------------
+
+The following paragraphs contains a summary of work performed during this homewor. While we were not able to finish the homework in its entirety, we believe we were able to accomplish a fair amount of the assignment.
+
+MemAlloc, our memory allocation class works linearly in that it searches for the first unused page in sequence. This is a singleton which manages the pages across all running processes by storing arrays of both SpaceID's and NachosThreads. In order to do this, it must place locks on the thread it is allocating space for. As described later, the allocator is also used to set relationships between parent and child threads (used for the Join system call).
+
+
+The Join system call is rather simple. It puts the parent process into a sleep state until the child class finishes its process. This is performed while the child process is exiting. When any program is finished it checks on the memory allocator (MemAlloc) to see if any process is currently waiting on it to finish; if so then it wakes up its parent and exchanges they both exchange exit states provided in the exit status register (2). When the exchange is complete the Exchanger releases both programs and allows them to continue.
+
+Out of convenience, we implemented the Yield() system call, which merely consisted of one lime of code. This allowed us to prove that our context-switching mechanism works.
+
+Unfortunately, we were not able to finish the Exec() system call completely; however, we believe we made a decent amount of headway and we should be able to finish 
+it later on (when we have more time and less stress). The call manages to  read arguments from the parent process and store them in the AddrSpace of the child 
+process. The call is able to perform the necessary context switch and run a child process. However, we were not able to successfully pass arguments into the child 
+process on its stack due to our own misunderstanding of how the address space works. It does, to a degree work. When printing an argument, one needs to 
+(incorrectly) design their calls to Write like so:
+                                                             Write(&argv[0], 8, ConsoleOutput);
+
+
+
+in the /test folder, two simple test programs are proveded (mytest.c and mytest2.c).
+
+Fully implemented calls:
+-Join
+-Exit
+-Yield
+-Write
+-Read
+
+Partially implemented calls:
+-Exec

@@ -70,8 +70,9 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
                 addrSpace = ((UserThread) NachosThread.currentThread()).space;
                 addrSpace.exit(CPU.readRegister(4));
                 // Nachos.scheduler.finishThread();
-//                Syscall.exit(CPU.readRegister(4));
-                MemAlloc.getInstance().checkIfChildThatAreWaitedOn(addrSpace.getSpaceId(), CPU.readRegister(4));
+                // Syscall.exit(CPU.readRegister(4));
+                MemAlloc.getInstance().checkWaitStatus(
+                        addrSpace.getSpaceId(), CPU.readRegister(4));
                 Syscall.exit(CPU.readRegister(4));
                 break;
 
@@ -81,35 +82,34 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
                 int parentId = addrSpace.getSpaceId();
                 byte namechar[] = addrSpace.getCString(CPU.readRegister(4));
                 String name = new String(namechar);
-//                System.out.println(name);
                 byte[][] args = addrSpace.getArgsByte(CPU.readRegister(5), 4);
-                
+                // ArrayList<byte[]> args =
+                // addrSpace.getArgsList(CPU.readRegister(5), 4);
+
                 int childID = Syscall.exec(name, args);
                 CPU.writeRegister(2, childID);
-//                System.out.println(childID);
-//                System.out.println(parentId);
                 break;
 
             case Syscall.SC_Write:
-                
+
                 addrSpace = ((UserThread) NachosThread.currentThread()).space;
                 ptr = CPU.readRegister(4);
-//                System.out.println(ptr+"****************");
-//                System.out.println(Machine.mainMemory[ptr-2]);
+                // System.out.println(ptr+"****************");
+                // System.out.println(Machine.mainMemory[ptr-2]);
                 len = CPU.readRegister(5);
-//                System.out.println(len);
-//                System.out.println((char)Machine.mainMemory[ptr-4]);
+                // System.out.println(len);
+                // System.out.println((char)Machine.mainMemory[ptr-4]);
                 int currentPointerLocation = 0;
-                for(int i =0; i < len; i++){
-                    currentPointerLocation = ptr+(i);
-//                    System.out.println(currentPointerLocation);
-//                    System.out.println(addrSpace.peakOnStack());
-//                    if(Machine.mainMemory[currentPointerLocation]!=0){}
-//                    System.out.println((char)Machine.mainMemory[currentPointerLocation]);
-                    
+                for (int i = 0; i < len; i++)
+                {
+                    currentPointerLocation = ptr + (i);
+                    // System.out.println(currentPointerLocation);
+                    // System.out.println(addrSpace.peakOnStack());
+                    // if(Machine.mainMemory[currentPointerLocation]!=0){}
+                    // System.out.println((char)Machine.mainMemory[currentPointerLocation]);
+
                 }
-                    
-                
+
                 byte[] prog = addrSpace.copyIntoKernel(ptr, len);
                 Syscall.write(prog, prog.length, CPU.readRegister(6));
                 break;
@@ -129,14 +129,15 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
                 addrSpace = ((UserThread) NachosThread.currentThread()).space;
                 int parentid = addrSpace.getSpaceId();
                 int childid = CPU.readRegister(4);
-                System.out.println(childid);
-               int exit= MemAlloc.getInstance().setRelation(parentid, childid);
-               CPU.writeRegister(2, exit);
+                // System.out.println(childid);
+                int exit = MemAlloc.getInstance()
+                        .setRelation(parentid, childid);
+                CPU.writeRegister(2, exit);
 
-                //check if it needs to be locked
-//                MemAlloc.getInstance().waitTilChildIsDone(parentid, child);
-//                Syscall.join(addrSpace.getChild());
-                
+                // check if it needs to be locked
+                // MemAlloc.getInstance().waitTilChildIsDone(parentid, child);
+                // Syscall.join(addrSpace.getChild());
+
                 break;
 
             }
