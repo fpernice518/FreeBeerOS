@@ -82,8 +82,8 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
                 int parentId = addrSpace.getSpaceId();
                 byte namechar[] = addrSpace.getCString(CPU.readRegister(4));
                 String name = new String(namechar);
-                byte[][] args = addrSpace.getArgsByte(CPU.readRegister(5), 4);
-                // ArrayList<byte[]> args =
+                //byte[][] args = addrSpace.getArgsByte(CPU.readRegister(5), 4);
+                ArrayList<byte[]> args = addrSpace.getArgsList(CPU.readRegister(5), 4);
                 // addrSpace.getArgsList(CPU.readRegister(5), 4);
 
                 int childID = Syscall.exec(name, args);

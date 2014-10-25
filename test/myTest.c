@@ -7,7 +7,7 @@
 main()
 {
      int i;
-     char* args[] = {(char *)0};
+     char* args[] = {"-arrrgh\n\r", "-I'm a pirate\n\r",(char *)0};
 
     Join(Exec("test/myTest2", args));
 

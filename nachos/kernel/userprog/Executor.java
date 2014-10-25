@@ -123,13 +123,22 @@ public class Executor implements Runnable
         // push first argument to stack
         // int argc = args.length;
 
-        passArguments(space);
-
+        passArggs(space);
+        try
+        {
+            this.write("debugMe", Machine.mainMemory);
+        } catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         space.restoreState(); // load page table register
 
         CPU.runUserCode(); // jump to the user program
 
         Debug.ASSERT(false);
+        
+        
     }
 
     private void passArguments(AddrSpace space)
@@ -209,138 +218,167 @@ public class Executor implements Runnable
         CPU.writeRegister(5, ptr);
     }
 
-    // private void passArgs(AddrSpace space)
-    // {
-    // int index = CPU.readRegister(MIPS.StackReg) - 1;
-    // ArrayList<Integer> ptrs = new ArrayList<Integer>();
-    //
-    // //push strings onto stack
-    // for(int i = 0; i < args.length; ++i)
-    // {
-    // int j = 0;    
-    // while(j < args[i].length)
-    // {
-    // space.pushToMemory(index, args[i][j]);
-    // System.out.println("Data Addr= " + index + " Data = " +
-    // (char)args[i][j]);
-    // --index;
-    // ++j;
-    // }
-    // space.pushToMemory(index, (byte) 0); //push null character
-    // System.out.println("Data Addr= " + index + " Data = " + 0);
-    // --index;
-    // }
-    //
-    // //index to new aligned spot in memory
-    // while((index % 4) != 0)
-    // --index;
-    //
-    //
-    // int masterPtr = index;
-    // //push child pointers to stack
-    // for(int i = 0; i < ptrs.size(); ++i)
-    // {
-    // byte[] b = ByteBuffer.allocate(4).putInt(ptrs.get(i)).array();
-    //
-    // System.out.println("Ptr Addr= " + index + " Ptr Value = " + ptrs.get(i));
-    // for(int j = 0; j < b.length; ++j)
-    // {
-    // space.pushToMemory(index, b[j]);
-    // System.out.println("Byte = " + j + " Value = " + Integer.toHexString(b[j]
-    // & 0xFF));
-    // --index;
-    // }
-    // }
-    //
-    // System.out.println("Master Ptr Value = " + masterPtr);
-    //
-    // CPU.writeRegister(4, args.length);
-    // CPU.writeRegister(5, masterPtr);
-    // CPU.writeRegister(MIPS.StackReg, index);
-    //
-    // try
-    // {
-    // Executor.write("Debug Me", Machine.mainMemory);
-    // } catch (IOException e)
-    // {
-    // // TODO Auto-generated catch block
-    // e.printStackTrace();
-    // }
-    // }
+    private void passArgs(AddrSpace space)
+    {
+        int numPtrs = argsList.size();
+        int numChars = 0;
+        int sp = CPU.readRegister(MIPS.StackReg);
+        int[] ptrList = new int[numPtrs];
 
-    // private void newPassArgs(AddrSpace space)
-    // {
-    // int numChars = 0;
-    // int numPointers = argsList.size();
-    // int sp = CPU.readRegister(MIPS.StackReg);
-    // int spCopy;
-    // int[] ptrs = new int[numPointers];
-    //
-    // for(int i = 0; i < argsList.size(); ++i)
-    // numChars += argsList.get(i).length;
-    // numChars += argsList.size();
-    //
-    // System.out.println("^^^^^^^^^" + sp);
-    // sp -= numChars;
-    // spCopy = sp;
-    //
-    // for(int i = argsList.size() - 1; i >= 0; --i)
-    // {
-    // space.pushToMemory(sp, (byte) 0);
-    // ++sp;
-    //
-    // for(int j = argsList.get(i).length -1; j >= 0 ; --j)
-    // {
-    // space.pushToMemory(sp, argsList.get(i)[j]);
-    // ++sp;
-    // }
-    //
-    // ptrs[i] = sp-1;
-    // }
-    //
-    // sp = spCopy;
-    // sp -= (numPointers * 4);
-    //
-    //
-    // while(sp % 4 != 0) --sp;
-    // spCopy = sp;
-    //
-    // int masterPtr = sp;
-    //
-    // for(int i = ptrs.length - 1; i >= 0; --i)
-    // {
-    // byte[] b =
-    // ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(ptrs[i]).array();
-    //
-    // for(int j = 0; j < b.length; ++j)
-    // {
-    // space.pushToMemory(sp, b[j]);
-    // ++sp;
-    // }
-    // }
-    //
-    // CPU.writeRegister(5, masterPtr);
-    // CPU.writeRegister(MIPS.StackReg, spCopy);
-    //
-    // int k = 0xDEADBEEF;
-    // System.out.println(k);
-    //
-    // // linearArray = new byte[numChars];
-    // //
-    // // int k = 0;
-    // // for(int i = argsList.size()-1; i >= 0 ; --i)
-    // // {
-    // // for(int j = argsList.get(i).length - 1; j >= 0; --j)
-    // // {
-    // // linearArray[k] = argsList.get(i)[j];
-    // // ++k;
-    // // }
-    // // linearArray[k] = 0;
-    // // ++k;
-    // // }
-    //
-    // }
+        // guarantee word alignment
+        // if (sp % 4 != 0)
+        // {
+        // sp = sp - (sp%4);
+        // }
 
+        for (byte[] element : argsList)
+        {
+            numChars += element.length + 1; // +1 for null
+            /*
+             * check if needs padding // while(sp % 4!=0){ // ++numChars; //
+             * --sp; // }
+             * 
+             * // for(int i = 0 ; i < element.length+1; i++) // { // --sp; // }
+             */
+
+        }
+        ArrayList<byte[]> buffer = new ArrayList<>();
+        ArrayList<Integer> pointLocation = new ArrayList<>();
+        int count = 0;
+        byte[] array;
+        for (byte[] element : argsList)
+        {
+            if (element.length % 4 != 0)
+            {
+                // append until you cant then append nulls
+                int amountThatDoesFit = element.length / 4;
+                int index = 0;
+                pointLocation.add(new Integer(count));
+                for (int i = 0; i < amountThatDoesFit; i++)
+                {
+                    array = new byte[4];
+                    for (int j = 0; j < 4; j++)
+                    {
+                       array[j]= element[index];
+                       index++;
+                        
+                    }
+                    count ++;
+                    buffer.add(array);
+                }
+                
+                // append the rest
+                array = new byte[4];
+                for(int i = 0 ; i<4; i++){
+                    if(index<element.length){
+                        array[i]= element[index];
+                        index++;
+                    }
+                    else{
+                        array[i]= (char)0;
+                    }
+                }
+                count++;
+                buffer.add(array);
+            } else
+            {
+                int amountThatDoesFit = element.length / 4;
+                int index = 0;
+                pointLocation.add(new Integer(count));
+                for (int i = 0; i < amountThatDoesFit; i++)
+                {
+                    array = new byte[4];
+                    for (int j = 0; j < 4; j++)
+                    {
+                       array[j]= element[index];
+                       index++;
+                        
+                    }
+                    count++;
+                    buffer.add(array);
+                }
+                array = new byte[4];
+                for (int i = 0; i < 4; i++)
+                {
+                 array[i]= (char)0;   
+                }
+                count++;
+                buffer.add(array);
+                // append a row of nulls
+            }
+
+        }
+        System.out.println();
+        // if(sp%4 != 0){
+        // sp= sp-numChars;
+        // }
+
+    }
+
+    
+    private void passArggs(AddrSpace space)
+    {
+        int numPtrs = argsList.size();
+        int sp = CPU.readRegister(MIPS.StackReg);
+        int ptrs[] = new int[numPtrs];
+        int masterPtr, stackTop;
+        
+        while(sp % 4 != 0) 
+            --sp;
+        
+        int i = 0;
+        for(byte[] bytes : argsList)
+        {
+            sp -= 4*wordAllign(bytes);
+            ptrs[i] = sp;
+            ++i;
+        }
+        
+        sp -= 4;
+        space.pushToMemory(sp, (int) 0);
+        sp -= numPtrs * 4;
+        
+        masterPtr = sp;
+        stackTop = masterPtr - 4;
+        for(int ptr : ptrs)
+        {
+            space.pushToMemory(sp, ptr);
+            sp += 4;
+        }
+        
+        sp += 4;
+        for(int j = 0; j < argsList.size(); ++j)
+        {
+            sp = ptrs[j];
+            for(int k = 0; k < argsList.get(j).length; ++k)
+            {
+                space.pushToMemory(sp, argsList.get(j)[k]);
+                ++sp;
+            }
+            space.pushToMemory(sp, (byte) 0);
+        }
+        
+        CPU.writeRegister(5, masterPtr);
+        CPU.writeRegister(MIPS.StackReg, stackTop);
+    }
+    
+    /**
+     * Returns the number of words needed to
+     * place an alligned string into memory
+     * 
+     * @param bytes The string
+     * @return number of words
+     */
+    private int wordAllign(byte[] bytes)
+    {
+        int i = (bytes.length + 1) / 4; //+1 for null char
+        if((bytes.length + 1)%4 != 0) ++i;
+        return i;
+    }
+    
+    
+    
+    
     /*
      * Dumps the contents of main memory to a file
      */
@@ -352,11 +390,10 @@ public class Executor implements Runnable
 
         int j = 0;
 
-        for (int i = mainmemory.length - 1; i >= 0; i--)
+        for (int i = 0; i < mainmemory.length; ++i)
         {
 
-            outputWriter.write(Integer.toHexString(mainmemory[i] & 0xFF)
-                    + "    ");
+            outputWriter.write(String.format("0x%2s", Integer.toHexString(mainmemory[i] & 0xFF)).replace(' ', '0') + "    ");
             ++j;
             if (j == 4)
             {

@@ -388,6 +388,23 @@ public class AddrSpace
         int physAddr = getPhysicalAddress(virtAddr);
         Machine.mainMemory[physAddr] = b;
     }
+    
+    /**
+     * Pushes a 1 word quantity to memory. Assumes that programer has allocated
+     * proper space above the provided virtual address
+     * @param virtAddr -address to begin pushing data
+     * @param i word to push.
+     */
+    public void pushToMemory(int virtAddr, int i)
+    {
+        byte[] bytes = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(i).array();
+        
+        for(byte b : bytes)
+        {
+            pushToMemory(virtAddr, b);
+            ++virtAddr;
+        }
+    }
 
     private int getPhysicalAddress(int virtAddr)
     {
