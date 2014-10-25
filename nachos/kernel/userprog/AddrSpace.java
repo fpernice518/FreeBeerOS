@@ -361,28 +361,6 @@ public class AddrSpace
         return i;
     }
 
-    public int pushToStack(int i)
-    {
-        int sp = CPU.readRegister(MIPS.StackReg);
-        byte[] b = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN)
-                .putInt(i).array();
-
-        sp -= 4;
-
-        int start = getPhysicalAddress(sp);
-
-        for (int j = 0; j < 4; ++j)
-        {
-            // System.out.println((start+j) + " <- " + Integer.toHexString(b[j]
-            // & 0xFF) + "   --" + (sp+j));
-            Machine.mainMemory[start + j] = b[j];
-        }
-
-        CPU.writeRegister(MIPS.StackReg, sp);
-
-        return sp + 4;
-    }
-
     public void pushToMemory(int virtAddr, byte b)
     {
         int physAddr = getPhysicalAddress(virtAddr);

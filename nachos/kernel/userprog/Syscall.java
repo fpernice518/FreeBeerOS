@@ -98,20 +98,6 @@ public class Syscall
      * @param name
      *            The name of the file to execute.
      */
-    public static int exec(String name, byte[][] args)
-    {
-        Executor x = new Executor(name, args, args.length, NachosThread
-                .currentThread().hashCode());
-        return x.getspaceId();
-    }
-
-    /**
-     * Run the executable, stored in the Nachos file "name", and return the
-     * address space identifier.
-     *
-     * @param name
-     *            The name of the file to execute.
-     */
     public static int exec(String name, ArrayList<byte[]> args)
     {
         Executor x = new Executor(name, args, args.size(), NachosThread

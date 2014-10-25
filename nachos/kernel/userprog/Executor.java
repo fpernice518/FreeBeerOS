@@ -20,46 +20,19 @@ import nachos.machine.NachosThread;
 
 class exchangeItem
 {
-    private String parentname;
-
     exchangeItem(String name)
     {
-        this.parentname = name;
     }
 
 }
 
 public class Executor implements Runnable
 {
-
-    /** The name of the program to execute. */
     private String execName;
-    private byte[][] args;
-    private ArrayList<byte[]> argList;
-    // private Exchanger exchanger[];
     private int child;
     private AddrSpace space;
-
-    // private Exchanger exchanger[];
     private int spaceId;
     private ArrayList<byte[]> argsList;
-
-    public Executor(String filename, byte[][] args, int num, int parent)
-    {
-        String name = "ProgTest" + num + "(" + filename + ")";
-
-        Debug.println('+', "starting ProgTest: " + name);
-
-        execName = filename;
-        this.args = args;
-        // exchanger = new Exchanger();
-
-        space = new AddrSpace(num);
-        spaceId = space.getSpaceId();
-
-        UserThread t = new UserThread(name, this, space);
-        Nachos.scheduler.readyToRun(t);
-    }
 
     public Executor(String filename, ArrayList<byte[]> args, int num, int parent)
     {
@@ -117,21 +90,10 @@ public class Executor implements Runnable
             return;
         }
 
-        // Debug.print('2', "we went here");
         space.initRegisters(); // set the initial register values
 
-        // push first argument to stack
-        // int argc = args.length;
+        passArgs(space);
 
-        passArggs(space);
-        try
-        {
-            this.write("debugMe", Machine.mainMemory);
-        } catch (IOException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
         space.restoreState(); // load page table register
 
         CPU.runUserCode(); // jump to the user program
@@ -141,182 +103,7 @@ public class Executor implements Runnable
         
     }
 
-    private void passArguments(AddrSpace space)
-    {
-
-        int ptr = 0;
-        int byteBuff = 0;
-        ArrayList<Integer> ptrs = new ArrayList<Integer>();
-        boolean gotPtr = false;
-
-        for (int i = 0; i < args.length; ++i)
-        {
-            int numWords = args[i].length / 4;
-            int numBytesLeft = args[i].length % 4;
-
-            for (int j = 0; j < numWords; ++j)
-            {
-                byteBuff = args[i][j];
-                byteBuff = byteBuff << 8;
-
-                byteBuff |= args[i][j + 1];
-                byteBuff = byteBuff << 8;
-
-                byteBuff |= args[i][j + 2];
-                byteBuff = byteBuff << 8;
-
-                byteBuff |= args[i][j + 3];
-
-                if (gotPtr == false)
-                {
-                    ptr = space.pushToStack(byteBuff);
-                    gotPtr = true;
-                } else
-                    space.pushToStack(byteBuff);
-            }
-
-            if (numBytesLeft > 0)
-            {
-                for (int j = 0; j < 3; ++j)
-                {
-                    if (numBytesLeft == 0)
-                    {
-                        byteBuff |= 0;
-                        byteBuff = byteBuff << 8;
-                    } else
-                    {
-                        byteBuff |= args[i][j];
-                        byteBuff = byteBuff << 8;
-                    }
-
-                    --numBytesLeft;
-                }
-
-                if (gotPtr == false)
-                {
-                    ptr = space.pushToStack(byteBuff);
-                    gotPtr = true;
-                } else
-                    space.pushToStack(byteBuff);
-            }
-            ptrs.add(ptr);
-            gotPtr = false;
-        }
-
-        gotPtr = false;
-        // Collections.reverse(ptrs);
-        for (int i = 0; i < ptrs.size(); ++i)
-        {
-            if (false == gotPtr)
-            {
-                ptr = space.pushToStack(ptrs.get(i));
-                gotPtr = true;
-            } else
-                space.pushToStack(ptrs.get(i));
-        }
-        space.pushToStack(0);
-        CPU.writeRegister(5, ptr);
-    }
-
     private void passArgs(AddrSpace space)
-    {
-        int numPtrs = argsList.size();
-        int numChars = 0;
-        int sp = CPU.readRegister(MIPS.StackReg);
-        int[] ptrList = new int[numPtrs];
-
-        // guarantee word alignment
-        // if (sp % 4 != 0)
-        // {
-        // sp = sp - (sp%4);
-        // }
-
-        for (byte[] element : argsList)
-        {
-            numChars += element.length + 1; // +1 for null
-            /*
-             * check if needs padding // while(sp % 4!=0){ // ++numChars; //
-             * --sp; // }
-             * 
-             * // for(int i = 0 ; i < element.length+1; i++) // { // --sp; // }
-             */
-
-        }
-        ArrayList<byte[]> buffer = new ArrayList<>();
-        ArrayList<Integer> pointLocation = new ArrayList<>();
-        int count = 0;
-        byte[] array;
-        for (byte[] element : argsList)
-        {
-            if (element.length % 4 != 0)
-            {
-                // append until you cant then append nulls
-                int amountThatDoesFit = element.length / 4;
-                int index = 0;
-                pointLocation.add(new Integer(count));
-                for (int i = 0; i < amountThatDoesFit; i++)
-                {
-                    array = new byte[4];
-                    for (int j = 0; j < 4; j++)
-                    {
-                       array[j]= element[index];
-                       index++;
-                        
-                    }
-                    count ++;
-                    buffer.add(array);
-                }
-                
-                // append the rest
-                array = new byte[4];
-                for(int i = 0 ; i<4; i++){
-                    if(index<element.length){
-                        array[i]= element[index];
-                        index++;
-                    }
-                    else{
-                        array[i]= (char)0;
-                    }
-                }
-                count++;
-                buffer.add(array);
-            } else
-            {
-                int amountThatDoesFit = element.length / 4;
-                int index = 0;
-                pointLocation.add(new Integer(count));
-                for (int i = 0; i < amountThatDoesFit; i++)
-                {
-                    array = new byte[4];
-                    for (int j = 0; j < 4; j++)
-                    {
-                       array[j]= element[index];
-                       index++;
-                        
-                    }
-                    count++;
-                    buffer.add(array);
-                }
-                array = new byte[4];
-                for (int i = 0; i < 4; i++)
-                {
-                 array[i]= (char)0;   
-                }
-                count++;
-                buffer.add(array);
-                // append a row of nulls
-            }
-
-        }
-        System.out.println();
-        // if(sp%4 != 0){
-        // sp= sp-numChars;
-        // }
-
-    }
-
-    
-    private void passArggs(AddrSpace space)
     {
         int numPtrs = argsList.size();
         int sp = CPU.readRegister(MIPS.StackReg);
@@ -375,34 +162,39 @@ public class Executor implements Runnable
         if((bytes.length + 1)%4 != 0) ++i;
         return i;
     }
-    
-    
-    
-    
+
     /*
-     * Dumps the contents of main memory to a file
+     * Dumps the contents of main memory to a file for debugging 
+     * purposes
      */
     private static void write(String filename, byte[] mainmemory)
-            throws IOException
     {
-        BufferedWriter outputWriter = null;
-        outputWriter = new BufferedWriter(new FileWriter(filename));
-
-        int j = 0;
-
-        for (int i = 0; i < mainmemory.length; ++i)
+        try
         {
-
-            outputWriter.write(String.format("0x%2s", Integer.toHexString(mainmemory[i] & 0xFF)).replace(' ', '0') + "    ");
-            ++j;
-            if (j == 4)
+            BufferedWriter outputWriter = null;
+            outputWriter = new BufferedWriter(new FileWriter(filename));
+    
+            int j = 0;
+    
+            
+            for (int i = 0; i < mainmemory.length; ++i)
             {
-                outputWriter.newLine();
-                j = 0;
+    
+                outputWriter.write(String.format("0x%2s", Integer.toHexString(mainmemory[i] & 0xFF)).replace(' ', '0') + "    ");
+                ++j;
+                if (j == 4)
+                {
+                    outputWriter.newLine();
+                    j = 0;
+                }
+    
             }
-
+            outputWriter.flush();
+            outputWriter.close();
+            }
+        catch(Exception e)
+        {
+            System.out.println("Could not write to file " + filename);
         }
-        outputWriter.flush();
-        outputWriter.close();
     }
 }
