@@ -122,22 +122,21 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
                 System.arraycopy(Machine.mainMemory, ptr, buf, 0, len);
                 Syscall.read(buf, len, CPU.readRegister(6));
                 break;
+            
             case Syscall.SC_Yield:
                 Syscall.yield();
                 break;
+            
             case Syscall.SC_Join:
                 addrSpace = ((UserThread) NachosThread.currentThread()).space;
                 int parentid = addrSpace.getSpaceId();
                 int childid = CPU.readRegister(4);
-                // System.out.println(childid);
-                int exit = MemAlloc.getInstance()
-                        .setRelation(parentid, childid);
+                int exit = MemAlloc.getInstance().setRelation(parentid, childid);
                 CPU.writeRegister(2, exit);
-
-                // check if it needs to be locked
-                // MemAlloc.getInstance().waitTilChildIsDone(parentid, child);
-                // Syscall.join(addrSpace.getChild());
-
+            
+            case Syscall.SC_Sleep:
+                int ticks = CPU.readRegister(4);
+                System.out.println("****   " + ticks);
                 break;
 
             }

@@ -65,6 +65,9 @@ public class Syscall
 
     /** Integer code identifying the "Remove" system call. */
     public static final byte SC_Remove = 11;
+    
+    /** Integer code identifying the "Sleep" system call. */
+    public static final byte SC_Sleep = 12;
 
     /**
      * Stop Nachos, and print out performance stats.

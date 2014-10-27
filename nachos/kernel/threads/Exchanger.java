@@ -1,6 +1,7 @@
 package nachos.kernel.threads;
 
 import nachos.machine.InterruptHandler;
+import nachos.util.TimerService;
 
 /**
  * This class is patterned after the Exchanger class in the java.util.concurrent
