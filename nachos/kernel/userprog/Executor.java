@@ -110,8 +110,8 @@ public class Executor implements Runnable
         int ptrs[] = new int[numPtrs];
         int masterPtr, stackTop;
         
-        while(sp % 4 != 0) 
-            --sp;
+        //calculate space
+        sp -= sp % 4;
         
         int i = 0;
         for(byte[] bytes : argsList)
@@ -127,6 +127,8 @@ public class Executor implements Runnable
         
         masterPtr = sp;
         stackTop = masterPtr - 4;
+        
+        //add data
         for(int ptr : ptrs)
         {
             space.pushToMemory(sp, ptr);

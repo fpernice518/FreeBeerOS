@@ -12,7 +12,7 @@ main()
     Join(Exec("test/myTest2", args));
 
     for(i = 0; i < 10; ++i)
-      Write("This is test 1!\n\r", 31, ConsoleOutput);
+      Write("This is test 1!\n\r", 17, ConsoleOutput);
 
     Exit(0);
 }
