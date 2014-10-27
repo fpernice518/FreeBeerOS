@@ -135,7 +135,6 @@ public class Executor implements Runnable
             sp += 4;
         }
         
-        sp += 4;
         for(int j = 0; j < argsList.size(); ++j)
         {
             sp = ptrs[j];
