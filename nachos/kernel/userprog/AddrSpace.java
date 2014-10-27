@@ -209,7 +209,7 @@ public class AddrSpace
         byte[] copy = new byte[length];
 
         int start = getPhysicalAddress(ptr);
-
+        //TODO: fix for non-contiguous pages
         System.arraycopy(Machine.mainMemory, start, copy, 0, length);
         return copy;
     }
@@ -230,49 +230,9 @@ public class AddrSpace
         return copy;
     }
 
-    public byte[][] getArgsByte(int ptr, int wordSize)
-    {
-        ArrayList<byte[]> ba = new ArrayList<>();
-        int i = 0;
-        int longest = 0;
-        int ptrin;
-        while (Machine.mainMemory[ptr] != 0)
-        {
-            ptrin = (int) Machine.mainMemory[ptr + 3] & 0xFF;
-            ptrin = ptrin << 8;
-            ptrin |= (int) Machine.mainMemory[ptr + 2] & 0xFF;
-            ptrin = ptrin << 8;
-            ptrin |= (int) Machine.mainMemory[ptr + 1] & 0xFF;
-            ptrin = ptrin << 8;
-            ptrin |= (int) Machine.mainMemory[ptr] & 0xFF;
-
-            ba.add(getCString(ptrin));
-            ptr += wordSize;
-
-            if (longest < ba.get(i).length)
-            {
-                longest = ba.get(i).length;
-            }
-            i++;
-        }
-        byte[][] array = new byte[i][longest];
-
-        for (int j = 0; j < ba.size(); j++)
-        {
-            byte[] row = ba.get(j);
-            array[j] = new byte[row.length];
-            for (int k = 0; k < array[j].length; k++)
-            {
-                array[j][k] = row[k];
-            }
-        }
-        return array;
-    }
-
     public ArrayList<byte[]> getArgsList(int ptr, int wordSize)
     {
         ArrayList<byte[]> ba = new ArrayList<>();
-        int longest = 0;
         int ptrin;
         while (Machine.mainMemory[ptr] != 0)
         {

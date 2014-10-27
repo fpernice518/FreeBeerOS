@@ -82,9 +82,7 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
                 int parentId = addrSpace.getSpaceId();
                 byte namechar[] = addrSpace.getCString(CPU.readRegister(4));
                 String name = new String(namechar);
-                //byte[][] args = addrSpace.getArgsByte(CPU.readRegister(5), 4);
                 ArrayList<byte[]> args = addrSpace.getArgsList(CPU.readRegister(5), 4);
-                // addrSpace.getArgsList(CPU.readRegister(5), 4);
 
                 int childID = Syscall.exec(name, args);
                 CPU.writeRegister(2, childID);
@@ -94,31 +92,15 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
 
                 addrSpace = ((UserThread) NachosThread.currentThread()).space;
                 ptr = CPU.readRegister(4);
-                // System.out.println(ptr+"****************");
-                // System.out.println(Machine.mainMemory[ptr-2]);
                 len = CPU.readRegister(5);
-                // System.out.println(len);
-                // System.out.println((char)Machine.mainMemory[ptr-4]);
-                int currentPointerLocation = 0;
-                for (int i = 0; i < len; i++)
-                {
-                    currentPointerLocation = ptr + (i);
-                    // System.out.println(currentPointerLocation);
-                    // System.out.println(addrSpace.peakOnStack());
-                    // if(Machine.mainMemory[currentPointerLocation]!=0){}
-                    // System.out.println((char)Machine.mainMemory[currentPointerLocation]);
-
-                }
-
                 byte[] prog = addrSpace.copyIntoKernel(ptr, len);
-                Syscall.write(prog, prog.length, CPU.readRegister(6));
+                Syscall.write(prog, len, CPU.readRegister(6));
                 break;
 
             case Syscall.SC_Read:
                 ptr = CPU.readRegister(4);
                 len = CPU.readRegister(5);
                 buf = new byte[len];
-
                 System.arraycopy(Machine.mainMemory, ptr, buf, 0, len);
                 Syscall.read(buf, len, CPU.readRegister(6));
                 break;
