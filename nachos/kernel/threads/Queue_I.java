@@ -1,6 +1,6 @@
 package nachos.kernel.threads;
 
-public interface Scheduler_I <T>
+public interface Queue_I <T>
 {
     boolean offer(T thread);
     

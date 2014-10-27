@@ -51,7 +51,7 @@ public class Scheduler
 {
 
     /** Queue of threads that are ready to run, but not running. */
-    private final Queue<NachosThread> readyList;
+    private final Queue_I<NachosThread> readyList;
 
     /** Queue of CPUs that are idle. */
     private final Queue<CPU> cpuList;
@@ -62,6 +62,7 @@ public class Scheduler
     /** Spin lock for mutually exclusive access to scheduler state. */
     private final SpinLock mutex = new SpinLock("scheduler mutex");
 
+    
     /**
      * Initialize the scheduler. Set the list of ready but not running threads
      * to empty. Initialize the list of CPUs to contain all the available CPUs.
@@ -71,7 +72,8 @@ public class Scheduler
      */
     public Scheduler(NachosThread firstThread)
     {
-        readyList = new FIFOQueue<NachosThread>();
+//        readyList = new FIFOQueue<NachosThread>();
+        readyList =  new OriginalQueue();
         cpuList = new FIFOQueue<CPU>();
 
         Debug.println('t', "Initializing scheduler");
@@ -95,6 +97,7 @@ public class Scheduler
 
         // Dispatch firstThread on the first CPU.
         CPU firstCPU = cpuList.poll();
+//        ticketsInUse= 1;
         firstCPU.dispatch(firstThread);
     };
 
@@ -448,4 +451,6 @@ public class Scheduler
         }
 
     }
+
+    
 }
