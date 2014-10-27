@@ -1,13 +1,11 @@
 package nachos.kernel.threads;
 
-import nachos.machine.NachosThread;
-
-public interface Scheduler_I
+public interface Scheduler_I <T>
 {
-    boolean offer(NachosThread thread);
+    boolean offer(T thread);
     
     boolean isEmpty();
     
-    NachosThread poll();
+    T poll();
     
 }
