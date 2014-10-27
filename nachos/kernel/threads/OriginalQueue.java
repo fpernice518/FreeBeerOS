@@ -34,4 +34,11 @@ public class OriginalQueue implements Queue_I<NachosThread>
         return readyList.poll();
     }
 
+    @Override
+    public NachosThread peek()
+    {
+        // TODO Auto-generated method stub
+        return readyList.peek();
+    }
+
 }

@@ -33,5 +33,11 @@ public class LotteryQueue implements Queue_I
         // TODO Auto-generated method stub
         return null;
     }
+    @Override
+    public Object peek()
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
 }
