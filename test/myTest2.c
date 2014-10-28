@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
     Write(argv[0], 9, ConsoleOutput);
     Write(argv[1], 15, ConsoleOutput);
 
-    for(i = 0; i < 20; ++i)
+    for(i = 0; i < 2; ++i)
     {
       Write("This is test 2!\n\r", 17, ConsoleOutput);
       Yield();
