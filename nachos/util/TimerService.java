@@ -53,7 +53,7 @@ public class TimerService implements InterruptHandler
         return nachosTimer.interval;
     }
 
-    public static TimerService getTimerService()
+    public static TimerService getInstance()
     {
         if (timerService == null)
             timerService = new TimerService();

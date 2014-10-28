@@ -148,7 +148,7 @@ public class Exchanger<V>
 
         public TimerInterruptHandler(int timeout)
         {
-            TimerService.getTimerService().subscribe(this);
+            TimerService.getInstance().subscribe(this);
             timer = 0;
             this.timeout = timeout;
 

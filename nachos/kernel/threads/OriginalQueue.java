@@ -7,37 +7,32 @@ import nachos.util.Queue;
 public class OriginalQueue implements Queue_I<NachosThread>
 {
     private final Queue<NachosThread> readyList;
-  
 
-
-    OriginalQueue(){
+    OriginalQueue()
+    {
         readyList = new FIFOQueue<NachosThread>();
     }
 
     public boolean offer(NachosThread thread)
     {
-        // TODO Auto-generated method stub
         return readyList.offer(thread);
     }
 
     @Override
     public boolean isEmpty()
     {
-        // TODO Auto-generated method stub
         return readyList.isEmpty();
     }
 
     @Override
     public NachosThread poll()
     {
-        // TODO Auto-generated method stub
         return readyList.poll();
     }
 
     @Override
     public NachosThread peek()
     {
-        // TODO Auto-generated method stub
         return readyList.peek();
     }
 

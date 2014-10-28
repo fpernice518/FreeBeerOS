@@ -23,6 +23,7 @@ import nachos.machine.Timer;
 import nachos.machine.InterruptHandler;
 import nachos.util.FIFOQueue;
 import nachos.util.Queue;
+import nachos.util.TimerService;
 
 /**
  * The scheduler is responsible for maintaining a list of threads that are ready
@@ -406,6 +407,7 @@ public class Scheduler
         public TimerInterruptHandler(Timer timer)
         {
             this.timer = timer;
+            //TimerService.getTimerService().subscribe(this);
         }
 
         public void handleInterrupt()
