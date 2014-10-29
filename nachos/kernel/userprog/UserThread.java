@@ -10,8 +10,12 @@
 
 package nachos.kernel.userprog;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+
 import nachos.Debug;
 import nachos.kernel.Nachos;
+import nachos.kernel.threads.Ticket;
 import nachos.machine.InterruptHandler;
 import nachos.machine.MIPS;
 import nachos.machine.NachosThread;
@@ -33,6 +37,7 @@ public class UserThread extends NachosThread
     /** The context in which this thread will execute. */
     public final AddrSpace space;
     private UserThreadInterruptHandler handler;
+    private ArrayList<Ticket> tickets;
 
     // A thread running a user program actually has *two* sets of
     // CPU registers -- one for its state while executing user code,
@@ -60,9 +65,28 @@ public class UserThread extends NachosThread
         super(name, runObj);
         space = addrSpace;
         handler = new UserThreadInterruptHandler();
+        tickets = new ArrayList<Ticket>();
         TimerService.getInstance().subscribe(handler);
     }
-
+    public void addTicket(Ticket x){
+        this.tickets.add(x);
+    }
+    
+    public boolean findTicket(Ticket x){
+        boolean isfound = false;
+            if(tickets.size()!=0){
+                for (Iterator iterator = tickets.iterator(); iterator.hasNext();)
+                {
+                    Ticket ticket = (Ticket) iterator.next();
+                    if(ticket.getTicketNumber()== x.getTicketNumber()){
+                        return true;
+                    }
+                }
+            }
+        
+        return isfound;
+    }
+    
     /**
      * Save the CPU state of a user program on a context switch.
      */
