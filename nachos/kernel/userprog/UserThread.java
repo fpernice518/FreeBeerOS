@@ -80,14 +80,14 @@ public class UserThread extends NachosThread
         super.saveState();
     }
     
-    public int getInterruptCount()
+    public int getTickCount()
     {
-        return handler.getInterruptCount();
+        return handler.getTickCount();
     }
     
-    public void resetInterruptCount()
+    public void resetTickCount()
     {
-        handler.resetInterruptCount();
+        handler.resetTickCount();
     }
 
     /**
@@ -116,29 +116,29 @@ public class UserThread extends NachosThread
 
 class UserThreadInterruptHandler implements InterruptHandler
 {
-    private int interruptCount = 0;
+    private int tickCount = 0;
     private static final int quantum = 1000;
 
     @Override
     public void handleInterrupt()
     {
-        interruptCount += TimerService.getInstance().getResolution();
+        tickCount += TimerService.getInstance().getResolution();
         
-        if(interruptCount >= quantum)
+        if(tickCount >= quantum)
         {
             CPU.setOnInterruptReturn(new UTRunnable());
-            resetInterruptCount();
+            resetTickCount();
         }
     }
     
-    public void resetInterruptCount()
+    public void resetTickCount()
     {
-        interruptCount = 0; 
+        tickCount = 0; 
     }
 
-    public int getInterruptCount()
+    public int getTickCount()
     {
-        return interruptCount;
+        return tickCount;
     }
 
 }
@@ -152,7 +152,7 @@ class UTRunnable implements Runnable
         {
             Debug.println('t', "Yielding current thread on interrupt return");
             Nachos.scheduler.yieldThread();
-            ((UserThread)NachosThread.currentThread()).resetInterruptCount();
+            ((UserThread)NachosThread.currentThread()).resetTickCount();
         } else
         {
             Debug.println('i',
