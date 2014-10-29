@@ -16,6 +16,7 @@ package nachos.kernel.threads;
 
 import nachos.Debug;
 import nachos.kernel.Nachos;
+import nachos.kernel.userprog.UserThread;
 import nachos.machine.CPU;
 import nachos.machine.Machine;
 import nachos.machine.NachosThread;
@@ -440,9 +441,9 @@ public class Scheduler
                 {
                     if (NachosThread.currentThread() != null)
                     {
-                        Debug.println('t',
-                                "Yielding current thread on interrupt return");
+                        Debug.println('t', "Yielding current thread on interrupt return");
                         Nachos.scheduler.yieldThread();
+                        ((UserThread)NachosThread.currentThread()).resetInterruptCount();
                     } else
                     {
                         Debug.println('i',

@@ -11,6 +11,7 @@
 package nachos.kernel.userprog;
 
 import nachos.Debug;
+import nachos.kernel.Nachos;
 import nachos.machine.InterruptHandler;
 import nachos.machine.MIPS;
 import nachos.machine.NachosThread;
@@ -105,16 +106,30 @@ public class UserThread extends NachosThread
         // Restore state associated with the address space.
         space.restoreState();
     }
+    
+    protected void finalize() throws Throwable
+    {
+        TimerService.getInstance().unsubscribe(handler);
+        super.finalize();
+    }
 }
 
 class UserThreadInterruptHandler implements InterruptHandler
 {
     private int interruptCount = 0;
+    private static final int quantum = 1000;
 
     @Override
     public void handleInterrupt()
     {
         interruptCount += TimerService.getInstance().getResolution();
+        
+        if(interruptCount >= quantum)
+        {
+            CPU.setOnInterruptReturn(new UTRunnable());
+            System.out.println("Checking against quantum ***");
+            resetInterruptCount();
+        }
     }
     
     public void resetInterruptCount()
@@ -127,4 +142,24 @@ class UserThreadInterruptHandler implements InterruptHandler
         return interruptCount;
     }
 
+}
+
+class UTRunnable implements Runnable
+{
+    @Override
+    public void run()
+    {
+        if (NachosThread.currentThread() != null)
+        {
+            Debug.println('t', "Yielding current thread on interrupt return");
+            Nachos.scheduler.yieldThread();
+            ((UserThread)NachosThread.currentThread()).resetInterruptCount();
+        } else
+        {
+            Debug.println('i',
+                    "No current thread on interrupt return, skipping yield");
+        }
+        
+        System.out.println("In run ***");
+    }
 }
