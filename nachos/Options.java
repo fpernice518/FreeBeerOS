@@ -182,8 +182,15 @@ public class Options {
     public boolean NETWORK_TEST = false;
     
     /** Homework Flags **/
-    /*HW1*/
+    /** HW1 **/
     public boolean HW1_TEST = false;
+    
+   /** HW2 **/
+    public boolean HW2_TEST = false;
+    
+    /** HW3 **/
+    public boolean HW3_TEST = false;
+    public boolean LOTTERY = false;
 
     
     public Options(String[] args) {
@@ -307,7 +314,17 @@ public class Options {
 			    public void processOption(String flag, Object[] params) {
 				DISK_FILE_NAME = (String)params[0];
 			    }
-			 })
+			 }),
+			 
+        new Spec("-lot",  // enable lottery scheduling
+                new Class[] { },
+                null,
+                new Options.Action() {
+                   public void processOption(String flag, Object[] params) {
+                   LOTTERY = true;
+                   }
+                }),
+		
 	});
     }
     
