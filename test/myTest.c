@@ -1,18 +1,12 @@
-/* Hello World program */
-
 #include "syscall.h"
 
-//int k = 7;
-
-main()
+int main(void)
 {
-     int i;
-     char* args[] = {"-arrrgh\n\r", "-I'm a pirate\n\r",(char *)0};
+  int i;
+  for(i = 0; i < 696969696969; i++)
+  {
+    Write("TWO\n\r", 5, ConsoleOutput);
+  }
 
-    Join(Exec("test/myTest2", args));
-
-    for(i = 0; i < 1; ++i)
-      Write("This is test 1!\n\r", 17, ConsoleOutput);
-
-    Exit(0);
+  Exit(0);
 }

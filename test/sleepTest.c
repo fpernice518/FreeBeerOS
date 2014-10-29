@@ -2,10 +2,11 @@
 
 int main(void)
 {
-	int i =0 ;
-	for(i; i< 8000;i++){
-		
+	int i;
+	for(i = 0; i < 10000000; i++)
+  {
+		Write("ONE\n\r", 5, ConsoleOutput);
 	}
 
-  Write("Ello!!!\n\r", 9, ConsoleOutput);
+  Exit(0);
 }

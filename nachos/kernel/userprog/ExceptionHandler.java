@@ -89,7 +89,6 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
                 break;
 
             case Syscall.SC_Write:
-
                 addrSpace = ((UserThread) NachosThread.currentThread()).space;
                 ptr = CPU.readRegister(4);
                 len = CPU.readRegister(5);

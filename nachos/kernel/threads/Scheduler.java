@@ -75,8 +75,8 @@ public class Scheduler
     public Scheduler(NachosThread firstThread)
     {
 //        readyList = new FIFOQueue<NachosThread>();
-//        readyList =  new OriginalQueue();
-        readyList =  new LotteryQueue<NachosThread>();
+        readyList =  new OriginalQueue();
+//        readyList =  new LotteryQueue<NachosThread>();
         cpuList = new FIFOQueue<CPU>();
 
         Debug.println('t', "Initializing scheduler");
@@ -444,7 +444,6 @@ public class Scheduler
                     {
                         Debug.println('t', "Yielding current thread on interrupt return");
                         Nachos.scheduler.yieldThread();
-                        ((UserThread)NachosThread.currentThread()).resetInterruptCount();
                     } else
                     {
                         Debug.println('i',
