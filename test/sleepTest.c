@@ -2,5 +2,7 @@
 
 int main(void)
 {
-	Sleep(6969);
+	Sleep(696);
+
+  Write("Ello!!!\n\r", 9, ConsoleOutput);
 }

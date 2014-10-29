@@ -10,6 +10,8 @@ import java.util.ArrayList;
 
 import nachos.Debug;
 import nachos.kernel.Nachos;
+import nachos.kernel.threads.Exchanger;
+import nachos.kernel.threads.Exchanger.TimeoutException;
 import nachos.machine.CPU;
 import nachos.machine.MIPS;
 import nachos.machine.NachosThread;
@@ -281,6 +283,18 @@ public class Syscall
     public static void yield()
     {
         Nachos.scheduler.yieldThread();
+    }
+    
+    public static void sleep(int timeout)
+    {
+        Exchanger e = new Exchanger<>();
+        try
+        {
+            e.exchange(new Integer(timeout), timeout);
+        } catch (TimeoutException e1)
+        {
+            Debug.println('3', "Thread timed out");
+        }
     }
 
 }

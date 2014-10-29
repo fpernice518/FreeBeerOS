@@ -127,7 +127,6 @@ class UserThreadInterruptHandler implements InterruptHandler
         if(interruptCount >= quantum)
         {
             CPU.setOnInterruptReturn(new UTRunnable());
-            System.out.println("Checking against quantum ***");
             resetInterruptCount();
         }
     }
@@ -159,7 +158,5 @@ class UTRunnable implements Runnable
             Debug.println('i',
                     "No current thread on interrupt return, skipping yield");
         }
-        
-        System.out.println("In run ***");
     }
 }
