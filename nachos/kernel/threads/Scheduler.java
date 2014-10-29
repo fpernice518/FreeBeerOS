@@ -75,7 +75,8 @@ public class Scheduler
     public Scheduler(NachosThread firstThread)
     {
 //        readyList = new FIFOQueue<NachosThread>();
-        readyList =  new OriginalQueue();
+//        readyList =  new OriginalQueue();
+        readyList =  new LotteryQueue<NachosThread>();
         cpuList = new FIFOQueue<CPU>();
 
         Debug.println('t', "Initializing scheduler");

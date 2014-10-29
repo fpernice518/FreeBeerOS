@@ -2,7 +2,10 @@
 
 int main(void)
 {
-	Sleep(696);
+	int i =0 ;
+	for(i; i< 8000;i++){
+		
+	}
 
   Write("Ello!!!\n\r", 9, ConsoleOutput);
 }

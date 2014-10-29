@@ -118,6 +118,7 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
             
             case Syscall.SC_Sleep:
                 int ticks = CPU.readRegister(4);
+                Syscall.sleep(ticks);
                 System.out.println("****   " + ticks);
                 break;
 
