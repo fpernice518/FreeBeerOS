@@ -8,10 +8,12 @@ public class Ticket
     Ticket(int ticketNumber){
         this.ticketNumber = ticketNumber;
     }
+    
     Ticket(int ticketNumber, boolean inuse){
         this.ticketNumber = ticketNumber;
         this.inUse = inuse;
     }
+    
     public int getTicketNumber()
     {
         return ticketNumber;

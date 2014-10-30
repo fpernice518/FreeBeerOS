@@ -2,11 +2,11 @@ package nachos.kernel.threads;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Random;
 
 import nachos.kernel.userprog.UserThread;
 
-public class LotteryQueue<T> extends java.util.LinkedList<T> implements
-        Queue_I<T>
+public class LotteryQueue<T> extends java.util.LinkedList<T> implements Queue_I<T>
 {
     // final int maxTickets = 42;
     // final int minTickets = 1;
@@ -30,8 +30,7 @@ public class LotteryQueue<T> extends java.util.LinkedList<T> implements
             return foundATicket;
         } else
         {
-            for (Iterator iterator = ticketsInUse.iterator(); iterator
-                    .hasNext();)
+            for (Iterator iterator = ticketsInUse.iterator(); iterator.hasNext();)
             {
                 Ticket ticket = (Ticket) iterator.next();
                 if (!ticket.isInUse())
@@ -50,30 +49,30 @@ public class LotteryQueue<T> extends java.util.LinkedList<T> implements
     @Override
     public boolean offer(T thread)
     {
+        if ((thread instanceof UserThread) == false)
+            return false;
 
         currentTicketsInUse++;
         Ticket ticket = getNextTicket();
-        if (thread instanceof UserThread)
+        
+        if (ticket == null)
         {
-            if (ticket == null)
-            {
-                ticket = new Ticket(currentTicketsInUse, true);
-                ticketsInUse.add(ticket);
-                UserThread usrt = ((UserThread) thread);
-                usrt.addTicket(ticket);
+            ticket = new Ticket(currentTicketsInUse, true);
+            ticketsInUse.add(ticket);
+            UserThread usrt = ((UserThread) thread);
+            usrt.addTicket(ticket);
 
-                // we could not find another ticket so we need to create a new
-                // one
-                // and append it
-            } else
-            {
-                // we found one now use the damn thing
-                UserThread usrt = ((UserThread) thread);
-                usrt.addTicket(ticket);
+            // we could not find another ticket so we need to create a new
+            // one
+            // and append it
+        } else
+        {
+            // we found one now use the damn thing
+            UserThread usrt = ((UserThread) thread);
+            usrt.addTicket(ticket);
 
-            }
-            System.out.println(ticket.getTicketNumber());
         }
+        System.out.println(ticket.getTicketNumber());
         return this.add(thread);
     }
 
@@ -85,16 +84,21 @@ public class LotteryQueue<T> extends java.util.LinkedList<T> implements
 
     @Override
     public T poll()
-    {
-        if (!isEmpty())
+    {     
+        Random rand = new Random();
+        int ticket = (rand.nextInt() % currentTicketsInUse) + 1;
+        
+        for(int i = 0; i < this.size(); ++i)
         {
-            return this.pollFirst();
+            T thread = this.get(i);
+            
+            if(((UserThread) thread).findTicket(ticket) == true)
+            {
+                return thread;
+            }
         }
-
-        else
-        {
-            return null;
-        }
+        
+        return null;
     }
 
     @Override

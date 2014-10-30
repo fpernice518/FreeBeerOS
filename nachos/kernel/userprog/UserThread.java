@@ -37,7 +37,7 @@ public class UserThread extends NachosThread
     /** The context in which this thread will execute. */
     public final AddrSpace space;
     private UserThreadInterruptHandler handler;
-    private ArrayList<Ticket> tickets;
+    private ArrayList<Ticket> tickets = null;
 
     // A thread running a user program actually has *two* sets of
     // CPU registers -- one for its state while executing user code,
@@ -65,28 +65,38 @@ public class UserThread extends NachosThread
         super(name, runObj);
         space = addrSpace;
         handler = new UserThreadInterruptHandler();
-        tickets = new ArrayList<Ticket>();
         TimerService.getInstance().subscribe(handler);
     }
-    public void addTicket(Ticket x){
+
+    public void addTicket(Ticket x)
+    {
+        /*
+         * ensures we don't create a new list of tickets unless
+         * we actually use them (ie, if we are using round-robin
+         * we will not instantiate the new list)
+         */
+        if(tickets == null)
+            tickets = new ArrayList<Ticket>();
+        
         this.tickets.add(x);
     }
-    
-    public boolean findTicket(Ticket x){
-        boolean isfound = false;
-            if(tickets.size()!=0){
-                for (Iterator iterator = tickets.iterator(); iterator.hasNext();)
+
+    public boolean findTicket(int x)
+    {
+        if (tickets.size() != 0)
+        {
+            for (Iterator<Ticket> iterator = tickets.iterator(); iterator.hasNext();)
+            {
+                Ticket ticket = (Ticket) iterator.next();
+                if (ticket.getTicketNumber() == x)
                 {
-                    Ticket ticket = (Ticket) iterator.next();
-                    if(ticket.getTicketNumber()== x.getTicketNumber()){
-                        return true;
-                    }
+                    return true;
                 }
             }
-        
-        return isfound;
+        }
+        return false;
     }
-    
+
     /**
      * Save the CPU state of a user program on a context switch.
      */
@@ -103,12 +113,12 @@ public class UserThread extends NachosThread
         // Save kernel-level CPU state.
         super.saveState();
     }
-    
+
     public int getTickCount()
     {
         return handler.getTickCount();
     }
-    
+
     public void resetTickCount()
     {
         handler.resetTickCount();
@@ -130,7 +140,7 @@ public class UserThread extends NachosThread
         // Restore state associated with the address space.
         space.restoreState();
     }
-    
+
     protected void finalize() throws Throwable
     {
         TimerService.getInstance().unsubscribe(handler);
@@ -147,17 +157,17 @@ class UserThreadInterruptHandler implements InterruptHandler
     public void handleInterrupt()
     {
         tickCount += TimerService.getInstance().getResolution();
-        
-        if(tickCount >= quantum)
+
+        if (tickCount >= quantum)
         {
             CPU.setOnInterruptReturn(new UTRunnable());
             resetTickCount();
         }
     }
-    
+
     public void resetTickCount()
     {
-        tickCount = 0; 
+        tickCount = 0;
     }
 
     public int getTickCount()
@@ -176,7 +186,7 @@ class UTRunnable implements Runnable
         {
             Debug.println('t', "Yielding current thread on interrupt return");
             Nachos.scheduler.yieldThread();
-            ((UserThread)NachosThread.currentThread()).resetTickCount();
+            ((UserThread) NachosThread.currentThread()).resetTickCount();
         } else
         {
             Debug.println('i',
