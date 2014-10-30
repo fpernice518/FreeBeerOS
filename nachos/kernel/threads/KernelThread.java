@@ -19,7 +19,8 @@ public class KernelThread extends NachosThread
     public KernelThread(String name, Runnable runObj)
     {
         super(name, runObj);
-
+        if (tickets == null)
+            tickets = new ArrayList<Ticket>();
         handler = new UserThreadInterruptHandler();
         TimerService.getInstance().subscribe(handler);
     }
@@ -36,7 +37,9 @@ public class KernelThread extends NachosThread
 
         this.tickets.add(x);
     }
-
+    public boolean hasTickets(){
+        return (tickets.size() != 0);
+    }
     public boolean findTicket(int x)
     {
         if (tickets.size() != 0)
