@@ -5,8 +5,9 @@ import java.util.Iterator;
 import java.util.Random;
 
 import nachos.kernel.userprog.UserThread;
+import nachos.util.Queue;
 
-public class LotteryQueue<T> extends java.util.LinkedList<T> implements Queue_I<T>
+public class LotteryQueue<T> extends java.util.LinkedList<T> implements Queue<T>
 {
     // final int maxTickets = 42;
     // final int minTickets = 1;

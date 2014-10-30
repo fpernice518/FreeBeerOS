@@ -12,6 +12,7 @@ package nachos.kernel.devices.test;
 import nachos.Debug;
 import nachos.kernel.Nachos;
 import nachos.kernel.devices.ConsoleDriver;
+import nachos.kernel.threads.KernelThread;
 import nachos.machine.NachosThread;
 
 /**
@@ -62,7 +63,7 @@ public class ConsoleTest implements Runnable {
      * onto the output.  The test ends when a 'q' is read.
      */
     public static void start() {
-	NachosThread thread = new NachosThread("Console test", new ConsoleTest());
+	KernelThread thread = new KernelThread("Console test", new ConsoleTest());
 	Nachos.scheduler.readyToRun(thread);
     }
 }

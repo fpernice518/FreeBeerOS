@@ -16,6 +16,7 @@ package nachos.kernel.threads.test;
 import nachos.Debug;
 import nachos.machine.NachosThread;
 import nachos.kernel.Nachos;
+import nachos.kernel.threads.KernelThread;
 
 /**
  * Set up a ping-pong between two threads, by forking two threads
@@ -38,7 +39,7 @@ public class ThreadTest implements Runnable {
      */
     public ThreadTest(int w) {
 	which = w;
-	NachosThread t = new NachosThread("Test thread " + w, this);
+	KernelThread t = new KernelThread("Test thread " + w, this);
 	Nachos.scheduler.readyToRun(t);
     }
 

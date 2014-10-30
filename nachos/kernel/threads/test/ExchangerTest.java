@@ -4,6 +4,7 @@ import nachos.Debug;
 import nachos.kernel.Nachos;
 import nachos.kernel.threads.Exchanger;
 import nachos.kernel.threads.Exchanger.TimeoutException;
+import nachos.kernel.threads.KernelThread;
 import nachos.kernel.threads.Observer;
 import nachos.kernel.threads.SpinLock;
 import nachos.machine.NachosThread;
@@ -142,7 +143,7 @@ public class ExchangerTest
             for (int i = 0; i < 5; i++)
             {
                 System.out.println("Exchanger Thread " + i);
-                Nachos.scheduler.readyToRun(new NachosThread("thread " + i,
+                Nachos.scheduler.readyToRun(new KernelThread("thread " + i,
                         new FirstThread(exchanger, "number: " + i)));
             }
             System.out.println();
@@ -160,7 +161,7 @@ public class ExchangerTest
         for (int i = 0; i < 5; i++)
         {
             System.out.println("Exchanger Thread " + i);
-            Nachos.scheduler.readyToRun(new NachosThread("thread " + i,
+            Nachos.scheduler.readyToRun(new KernelThread("thread " + i,
                     new SecondThread(exchanger, "number: " + i)));
         }
         System.out.println();

@@ -71,7 +71,7 @@ public class Condition {
     private final Lock conditionLock;
 
     /** Who's waiting on this condition? */
-    private final Queue<NachosThread> waitingThreads;
+    private final Queue<KernelThread> waitingThreads;
 
     /**
      * Spin lock used to obtain exclusive access to condition state
@@ -88,7 +88,7 @@ public class Condition {
     public Condition(String debugName, Lock lock) {
 	name = debugName;
 	conditionLock = lock;;
-	waitingThreads = new FIFOQueue<NachosThread>();
+	waitingThreads = new FIFOQueue<KernelThread>();
 	spinLock = new SpinLock(name + " spin lock");
     }
 
@@ -116,7 +116,7 @@ public class Condition {
 	int oldLevel = CPU.setLevel(CPU.IntOff);	// disable interrupts
 	spinLock.acquire();				// exclude other CPUs
 
-	waitingThreads.offer(NachosThread.currentThread());
+	waitingThreads.offer((KernelThread) NachosThread.currentThread());
 	conditionLock.release();
 	Nachos.scheduler.sleepThread(spinLock);
 
@@ -147,7 +147,7 @@ public class Condition {
 	NachosThread newThread = waitingThreads.poll();
 	if (newThread != null) {
 	    Debug.printf('s', "Waking up thread %s\n", newThread.name);
-	    Nachos.scheduler.readyToRun(newThread);
+	    Nachos.scheduler.readyToRun((KernelThread) newThread);
 	}
 
 	spinLock.release();
@@ -168,7 +168,7 @@ public class Condition {
 	NachosThread newThread = waitingThreads.poll();
 	while (newThread != null) {
 	    Debug.printf('s', "Waking thread %s\n", newThread.name);
-	    Nachos.scheduler.readyToRun(newThread);
+	    Nachos.scheduler.readyToRun((KernelThread) newThread);
 	    newThread = waitingThreads.poll();
 	}
 

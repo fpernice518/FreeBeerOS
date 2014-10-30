@@ -111,7 +111,7 @@ public class Semaphore {
      * 	Increment semaphore value, waking up a waiter if necessary.
      */
     public void V() {
-	NachosThread thread;
+    KernelThread thread;
 	/*
 	 *	As with P(), this operation must be atomic, so we need to disable
 	 *	interrupts.
@@ -119,7 +119,7 @@ public class Semaphore {
 	int oldLevel = CPU.setLevel(CPU.IntOff);
 	spinLock.acquire();				// exclude other CPUs
 
-	thread = queue.poll();
+	thread = (KernelThread) queue.poll();
 	if (thread != null)  // make thread ready, consuming the V immediately
 	    Nachos.scheduler.readyToRun(thread);
 	

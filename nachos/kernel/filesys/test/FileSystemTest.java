@@ -19,6 +19,7 @@ import nachos.machine.NachosThread;
 import nachos.machine.Simulation;
 import nachos.kernel.Nachos;
 import nachos.kernel.filesys.OpenFile;
+import nachos.kernel.threads.KernelThread;
 
 /**
  * This class implements some simple test routines for the file system.
@@ -293,7 +294,7 @@ public class FileSystemTest implements Runnable {
      * Entry point for the FileSystem test.
      */
     public static void start() {
-	NachosThread thread = new NachosThread("Filesystem test", new FileSystemTest());
+    KernelThread thread = new KernelThread("Filesystem test", new FileSystemTest());
 	Nachos.scheduler.readyToRun(thread);
     }
 }

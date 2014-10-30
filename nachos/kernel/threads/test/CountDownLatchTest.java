@@ -4,6 +4,7 @@ import nachos.Debug;
 import nachos.machine.NachosThread;
 import nachos.kernel.Nachos;
 import nachos.kernel.threads.CountDownLatch;
+import nachos.kernel.threads.KernelThread;
 import nachos.kernel.threads.SpinLock;
 
 class testThread implements Runnable
@@ -89,19 +90,19 @@ public class CountDownLatchTest
         for (int i = 0; i < 1; i++)
         {
             System.out.println("Await Thread " + i);
-            Nachos.scheduler.readyToRun(new NachosThread("await thread " + i,
+            Nachos.scheduler.readyToRun(new KernelThread("await thread " + i,
                     new awaitThread(cdl,"await test "+w)));
         }
         for (int i = 0; i < 3; i++)
         {
             System.out.println("WaitDec Thread " + i);
-            Nachos.scheduler.readyToRun(new NachosThread("WaitDec thread " + i,
+            Nachos.scheduler.readyToRun(new KernelThread("WaitDec thread " + i,
                     new WaitDecThread(cdl,"WaitDec test "+w)));
         }
         for (int i = 0; i < 2; i++)
         {
             System.out.println("Thread " + i);
-            Nachos.scheduler.readyToRun(new NachosThread("Test thread " + i,
+            Nachos.scheduler.readyToRun(new KernelThread("Test thread " + i,
                     new testThread(cdl,"test "+w)));
 
             x = i;

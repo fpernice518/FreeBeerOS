@@ -32,6 +32,7 @@ import nachos.kernel.devices.SerialDriver;
 import nachos.kernel.devices.test.ConsoleTest;
 import nachos.kernel.devices.test.NetworkTest;
 import nachos.kernel.devices.test.SerialTest;
+import nachos.kernel.threads.KernelThread;
 import nachos.kernel.threads.Scheduler;
 import nachos.kernel.userprog.ExceptionHandler;
 import nachos.kernel.filesys.FileSystem;
@@ -164,7 +165,7 @@ public class Nachos implements Runnable {
       // Nachos thread, but right now we are only in a Java thread.
       // So, we need to create the first Nachos thread and start it running
       // under the control of the Nachos scheduler.
-      NachosThread firstThread = new NachosThread("FirstThread", new Nachos());
+      NachosThread firstThread = new KernelThread("FirstThread", new Nachos());
       scheduler = new Scheduler(firstThread);
       
       // The Nachos thread we just created will begin running in the run()

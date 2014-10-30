@@ -2,6 +2,7 @@ package nachos.kernel.threads.test;
 
 import nachos.Debug;
 import nachos.kernel.Nachos;
+import nachos.kernel.threads.KernelThread;
 import nachos.machine.CPU;
 import nachos.machine.NachosThread;
 
@@ -23,8 +24,8 @@ public class SMPTest {
     public static void start() {
 	Debug.println('+', "Entering SMPTest");
 	for(int i = 0; i < 8; i++) {
-	    NachosThread looper =
-		    new NachosThread
+	    KernelThread looper =
+		    new KernelThread
 		    ("SMP" + i,
 		     new Runnable() {
 			public void run() {

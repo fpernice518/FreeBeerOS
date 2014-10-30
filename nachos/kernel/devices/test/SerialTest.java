@@ -12,6 +12,7 @@ import nachos.Debug;
 import nachos.machine.NachosThread;
 import nachos.kernel.Nachos;
 import nachos.kernel.devices.SerialDriver;
+import nachos.kernel.threads.KernelThread;
 
 /**
  * Loopback test for serial port.
@@ -43,8 +44,8 @@ public class SerialTest {
 	Debug.ASSERT(driver != null);
 	driver.openPort(0);
 
-	NachosThread sender =
-	    new NachosThread
+	KernelThread sender =
+	    new KernelThread
 	    ("Sender thread",
 	     new Runnable() {
 		    public void run() {
@@ -60,8 +61,8 @@ public class SerialTest {
 		    }
 		});
 
-	NachosThread receiver =
-	    new NachosThread
+	KernelThread receiver =
+	    new KernelThread
 	    ("Receiver thread",
 	     new Runnable() {
 		    public void run() {

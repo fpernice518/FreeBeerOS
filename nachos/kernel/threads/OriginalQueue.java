@@ -4,16 +4,16 @@ import nachos.machine.NachosThread;
 import nachos.util.FIFOQueue;
 import nachos.util.Queue;
 
-public class OriginalQueue implements Queue_I<NachosThread>
+public class OriginalQueue implements Queue<KernelThread>
 {
-    private final Queue<NachosThread> readyList;
+    private final Queue<KernelThread> readyList;
 
     OriginalQueue()
     {
-        readyList = new FIFOQueue<NachosThread>();
+        readyList = new FIFOQueue<KernelThread>();
     }
 
-    public boolean offer(NachosThread thread)
+    public boolean offer(KernelThread thread)
     {
         return readyList.offer(thread);
     }
@@ -25,13 +25,13 @@ public class OriginalQueue implements Queue_I<NachosThread>
     }
 
     @Override
-    public NachosThread poll()
+    public KernelThread poll()
     {
         return readyList.poll();
     }
 
     @Override
-    public NachosThread peek()
+    public KernelThread peek()
     {
         return readyList.peek();
     }

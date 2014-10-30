@@ -53,7 +53,7 @@ public class Scheduler
 {
 
     /** Queue of threads that are ready to run, but not running. */
-    private final Queue_I<NachosThread> readyList;
+    private final Queue<KernelThread> readyList;
 
     /** Queue of CPUs that are idle. */
     private final Queue<CPU> cpuList;
@@ -77,7 +77,7 @@ public class Scheduler
 //        readyList = new FIFOQueue<NachosThread>();
         
         if(Nachos.options.LOTTERY == true)
-            readyList =  new LotteryQueue<NachosThread>();
+            readyList =  new LotteryQueue<KernelThread>();
         else
             readyList =  new OriginalQueue();
             
@@ -134,7 +134,7 @@ public class Scheduler
      * @param thread
      *            The thread to be put on the ready list.
      */
-    public void readyToRun(NachosThread thread)
+    public void readyToRun(KernelThread thread)
     {
         int oldLevel = CPU.setLevel(CPU.IntOff);
         mutex.acquire();
@@ -158,17 +158,17 @@ public class Scheduler
      * is currently not running), or in the process of dispatching the thread,
      * which is done with the scheduler mutex held.
      *
-     * @param thread
+     * @param currentThread
      *            The thread to be put on the ready list.
      */
-    private void makeReady(NachosThread thread)
+    private void makeReady(KernelThread currentThread)
     {
         Debug.ASSERT(CPU.getLevel() == CPU.IntOff && mutex.isLocked());
 
-        Debug.println('t', "Putting thread on ready list: " + thread.name);
+        Debug.println('t', "Putting thread on ready list: " + currentThread.name);
 
-        thread.setStatus(NachosThread.READY);
-        readyList.offer(thread);
+        currentThread.setStatus(NachosThread.READY);
+        readyList.offer(currentThread);
     }
 
     /**
@@ -182,7 +182,7 @@ public class Scheduler
         Debug.ASSERT(CPU.getLevel() == CPU.IntOff && mutex.isLocked());
         while (!readyList.isEmpty() && !cpuList.isEmpty())
         {
-            NachosThread thread = readyList.poll();
+            KernelThread thread = readyList.poll();
             CPU cpu = cpuList.poll();
             Debug.println('t', "Dispatching " + thread.name + " on " + cpu.name);
             cpu.dispatch(thread);
@@ -234,7 +234,7 @@ public class Scheduler
     {
         Debug.ASSERT(CPU.getLevel() == CPU.IntOff);
         CPU currentCPU = CPU.currentCPU();
-        NachosThread currentThread = NachosThread.currentThread();
+        KernelThread currentThread = (KernelThread) NachosThread.currentThread();
         NachosThread nextThread = findNextToRun();
 
         // If the current thread wants to keep running and there is no other
