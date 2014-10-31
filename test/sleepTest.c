@@ -3,7 +3,7 @@
 int main(void)
 {
 	int i;
-	for(i = 0; i < 100; i++)
+	for(i = 0; i < 10; i++)
   {
 		Write("ONE\n\r", 5, ConsoleOutput);
 	}

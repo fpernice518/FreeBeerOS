@@ -66,7 +66,6 @@ public class Scheduler
     /** Spin lock for mutually exclusive access to scheduler state. */
     private final SpinLock mutex = new SpinLock("scheduler mutex");
 
-    
     /**
      * Initialize the scheduler. Set the list of ready but not running threads
      * to empty. Initialize the list of CPUs to contain all the available CPUs.
@@ -76,13 +75,13 @@ public class Scheduler
      */
     public Scheduler(NachosThread firstThread)
     {
-//        readyList = new FIFOQueue<NachosThread>();
-        
-        if(Nachos.options.LOTTERY == true)
-            readyList =  new LotteryQueue<KernelThread>();
+        // readyList = new FIFOQueue<NachosThread>();
+
+        if (Nachos.options.LOTTERY == true)
+            readyList = new LotteryQueue<KernelThread>();
         else
-            readyList =  new OriginalQueue();
-            
+            readyList = new OriginalQueue();
+
         cpuList = new FIFOQueue<CPU>();
 
         Debug.println('t', "Initializing scheduler");
@@ -106,7 +105,7 @@ public class Scheduler
 
         // Dispatch firstThread on the first CPU.
         CPU firstCPU = cpuList.poll();
-//        ticketsInUse= 1;
+        // ticketsInUse= 1;
         firstCPU.dispatch(firstThread);
     };
 
@@ -167,7 +166,8 @@ public class Scheduler
     {
         Debug.ASSERT(CPU.getLevel() == CPU.IntOff && mutex.isLocked());
 
-        Debug.println('t', "Putting thread on ready list: " + currentThread.name);
+        Debug.println('t', "Putting thread on ready list: "
+                + currentThread.name);
 
         currentThread.setStatus(NachosThread.READY);
         readyList.offer(currentThread);
@@ -236,7 +236,8 @@ public class Scheduler
     {
         Debug.ASSERT(CPU.getLevel() == CPU.IntOff);
         CPU currentCPU = CPU.currentCPU();
-        KernelThread currentThread = (KernelThread) NachosThread.currentThread();
+        KernelThread currentThread = (KernelThread) NachosThread
+                .currentThread();
         NachosThread nextThread = findNextToRun();
 
         // If the current thread wants to keep running and there is no other
@@ -366,7 +367,8 @@ public class Scheduler
     public void finishThread()
     {
         CPU.setLevel(CPU.IntOff);
-        KernelThread currentThread = (KernelThread) KernelThread.currentThread();
+        KernelThread currentThread = (KernelThread) KernelThread
+                .currentThread();
 
         Debug.println('t', "Finishing thread: " + currentThread.name);
 
@@ -374,15 +376,17 @@ public class Scheduler
         // before making it the thread to be destroyed, because we don't want
         // someone to try to destroy a thread that is not FINISHED.
         currentThread.setStatus(NachosThread.FINISHED);
-        
-        if(Nachos.options.LOTTERY == true)
+
+        if (Nachos.options.LOTTERY == true)
         {
-            ((LotteryQueue)readyList).decrementTicketCount(currentThread.getTickCount());
+            ((LotteryQueue) readyList).decrementTicketCount(currentThread
+                    .getTickCount());
             currentThread.releaseAllTickets();
-            ArrayList<Ticket> ticketsToGiveBack=  currentThread.getTickets();
+            ArrayList<Ticket> ticketsToGiveBack = currentThread.getTickets();
             for (Ticket ticket : ticketsToGiveBack)
             {
-                ((LotteryQueue)readyList).setTicket(ticket.getTicketNumber(), ticket);
+                ((LotteryQueue) readyList).setTicket(
+                        ticket.getTicketNumber() - 1, ticket);
             }
         }
 
@@ -426,7 +430,7 @@ public class Scheduler
         public TimerInterruptHandler(Timer timer)
         {
             this.timer = timer;
-            //TimerService.getTimerService().subscribe(this);
+            // TimerService.getTimerService().subscribe(this);
         }
 
         public void handleInterrupt()
@@ -459,7 +463,8 @@ public class Scheduler
                 {
                     if (NachosThread.currentThread() != null)
                     {
-                        Debug.println('t', "Yielding current thread on interrupt return");
+                        Debug.println('t',
+                                "Yielding current thread on interrupt return");
                         Nachos.scheduler.yieldThread();
                     } else
                     {
@@ -472,5 +477,4 @@ public class Scheduler
 
     }
 
-    
 }

@@ -24,9 +24,12 @@ public class KernelThread extends NachosThread
         handler = new UserThreadInterruptHandler();
         TimerService.getInstance().subscribe(handler);
     }
-    public ArrayList<Ticket> getTickets(){
+
+    public ArrayList<Ticket> getTickets()
+    {
         return tickets;
     }
+
     public void addTicket(Ticket x)
     {
         /*
@@ -39,9 +42,12 @@ public class KernelThread extends NachosThread
 
         this.tickets.add(x);
     }
-    public boolean hasTickets(){
+
+    public boolean hasTickets()
+    {
         return (tickets.size() != 0);
     }
+
     public boolean findTicket(int x)
     {
         if (tickets.size() != 0)
@@ -59,6 +65,23 @@ public class KernelThread extends NachosThread
         return false;
     }
 
+//    public KernelThread findThread(Ticket x)
+//    {
+//        if (tickets.size() != 0)
+//        {
+//            for (Iterator<Ticket> iterator = tickets.iterator(); iterator
+//                    .hasNext();)
+//            {
+//                Ticket ticket = (Ticket) iterator.next();
+//                if (ticket.getTicketNumber() == x.getTicketNumber())
+//                {
+//                    return this;
+//                }
+//            }
+//        }
+//        return null;
+//    }
+    
     public int getTickCount()
     {
         return handler.getTickCount();
@@ -68,12 +91,12 @@ public class KernelThread extends NachosThread
     {
         handler.resetTickCount();
     }
-    
+
     public int getTicketCount()
     {
         return tickets.size();
     }
-    
+
     public void releaseAllTickets()
     {
         for (Iterator iterator = tickets.iterator(); iterator.hasNext();)
@@ -82,7 +105,7 @@ public class KernelThread extends NachosThread
             ticket.setInUse(false);
         }
     }
-    
+
     @Override
     public void destroy()
     {

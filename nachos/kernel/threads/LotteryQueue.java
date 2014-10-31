@@ -22,9 +22,12 @@ public class LotteryQueue<T> extends java.util.LinkedList<T> implements
         ticketsInUse = new ArrayList<Ticket>();
         currentTicketsInUse = 0;
     }
-    public void setTicket(int location ,Ticket x){
+
+    public void setTicket(int location, Ticket x)
+    {
         ticketsInUse.set(location, x);
     }
+
     private Ticket getNextTicket()
     {
         Ticket foundATicket = null;
@@ -57,7 +60,6 @@ public class LotteryQueue<T> extends java.util.LinkedList<T> implements
         // if ((thread instanceof UserThread) == false)
         // return false;
 
-        
         if (!((KernelThread) thread).hasTickets())
         {
             currentTicketsInUse++;
@@ -80,12 +82,12 @@ public class LotteryQueue<T> extends java.util.LinkedList<T> implements
                 usrt.addTicket(ticket);
 
             }
-        }
-        else if(true){
+        } else if (true)
+        {
             // we check to see if this thread yeilded by itself
         }
-        
-//        System.out.println(ticket.getTicketNumber());
+
+        // System.out.println(ticket.getTicketNumber());
         return this.add(thread);
     }
 
@@ -99,26 +101,42 @@ public class LotteryQueue<T> extends java.util.LinkedList<T> implements
     public T poll()
     {
         Random rand = new Random();
-        int ticket = (rand.nextInt() % currentTicketsInUse) + 1;
-        boolean found = false;
+//        int ticket = (rand.nextInt() % currentTicketsInUse) + 1;
+//        boolean found = false;
 
-//
-//        for (int i = 0; i < this.size(); ++i)
-//        {
-//            T thread = this.get(i);
-//
-//            if (((KernelThread) thread).findTicket(ticket) == true)
-//            {
-//                // System.out.println("Hello");
-//                found = true;
-//                return this.remove(i);
-//
-//            }
-//        }
+        ArrayList<Ticket> usedTicketsByTreads = new ArrayList<>();
+
+        for (int i = 0; i < ticketsInUse.size(); i++)
+        {
+            System.out.println(ticketsInUse.size()+" size");
+            if (ticketsInUse.get(i).isInUse())
+            {
+                usedTicketsByTreads.add(ticketsInUse.get(i));
+            }
+
+        }
+        int ticket = (rand.nextInt(usedTicketsByTreads.size()) );
+        System.out.println(ticket+"************");
+        Ticket ticketObjectChosen = usedTicketsByTreads.get(ticket);
+//        getThreadWithTicket(ticketObjectChosen);
+      return this.remove(getThreadWithTicket(ticketObjectChosen));
+        //
+        // for (int i = 0; i < this.size(); ++i)
+        // {
+        // T thread = this.get(i);
+        //
+        // if (((KernelThread) thread).findTicket(ticket) == true)
+        // {
+        // // System.out.println("Hello");
+        // found = true;
+        // return this.remove(i);
+        //
+        // }
+        // }
 
         // System.out.println("Its been nulled");
-//        return null;
-         return this.pollFirst();
+        // return null;
+//        return this.pollFirst();
     }
 
     @Override
@@ -126,7 +144,20 @@ public class LotteryQueue<T> extends java.util.LinkedList<T> implements
     {
         return null;
     }
-    
+
+    public int getThreadWithTicket(Ticket x)
+    {
+        int ticketNumber = x.getTicketNumber();
+        for (int i = 0; i < this.size(); i++)
+        {
+            if (((KernelThread) this.get(i)).findTicket(ticketNumber))
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     public void decrementTicketCount(int count)
     {
         currentTicketsInUse -= count;
