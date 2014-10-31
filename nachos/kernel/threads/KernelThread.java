@@ -14,7 +14,7 @@ import nachos.util.TimerService;
 public class KernelThread extends NachosThread
 {
     private UserThreadInterruptHandler handler;
-    private int numTickets = 0;
+    private int numTickets = 1;
 
     public KernelThread(String name, Runnable runObj)
     {

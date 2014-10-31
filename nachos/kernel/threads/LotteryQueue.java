@@ -59,6 +59,9 @@ public class LotteryQueue implements Queue<KernelThread>
         KernelThread selectedThread = null;
         Random rand = new Random();
         
+        if(runningThreads.size() <= 0)
+            return selectedThread;
+        
         //tally up all tickets currently in play
         count = 0;
         for(KernelThread thread : runningThreads)
@@ -67,6 +70,7 @@ public class LotteryQueue implements Queue<KernelThread>
         }
         
         //select a ticket
+        System.out.println(count);
         selectedTicket = rand.nextInt(count);
         
         //find the corresponding thread
