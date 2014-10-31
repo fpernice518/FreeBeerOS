@@ -70,8 +70,9 @@ public class LotteryQueue implements Queue<KernelThread>
         }
         
         //select a ticket
-        System.out.println(count);
+        System.out.println("Ticket Count: " + count);
         selectedTicket = rand.nextInt(count);
+        System.out.println("Ticket Selected: " + selectedTicket);
         
         //find the corresponding thread
         count = 0;
