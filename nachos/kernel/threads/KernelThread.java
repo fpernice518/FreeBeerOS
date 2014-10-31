@@ -14,96 +14,39 @@ import nachos.util.TimerService;
 public class KernelThread extends NachosThread
 {
     private UserThreadInterruptHandler handler;
-    private ArrayList<Ticket> tickets = null;
+    private int numTickets = 0;
 
     public KernelThread(String name, Runnable runObj)
     {
         super(name, runObj);
-        if (tickets == null)
-            tickets = new ArrayList<Ticket>();
         handler = new UserThreadInterruptHandler();
         TimerService.getInstance().subscribe(handler);
     }
-
-    public ArrayList<Ticket> getTickets()
+    
+    public KernelThread(String name, Runnable runObj, int numTickets)
     {
-        return tickets;
+        this(name, runObj);
+        this.numTickets = numTickets;
+    }
+    
+    public void setnumTickets(int numTickets)
+    {
+        this.numTickets = numTickets;
     }
 
-    public void addTicket(Ticket x)
+    public int getNumTickets()
     {
-        /*
-         * ensures we don't create a new list of tickets unless we actually use
-         * them (ie, if we are using round-robin we will not instantiate the new
-         * list)
-         */
-        if (tickets == null)
-            tickets = new ArrayList<Ticket>();
-
-        this.tickets.add(x);
+        return numTickets;
     }
-
-    public boolean hasTickets()
-    {
-        return (tickets.size() != 0);
-    }
-
-    public boolean findTicket(int x)
-    {
-        if (tickets.size() != 0)
-        {
-            for (Iterator<Ticket> iterator = tickets.iterator(); iterator
-                    .hasNext();)
-            {
-                Ticket ticket = (Ticket) iterator.next();
-                if (ticket.getTicketNumber() == x)
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-//    public KernelThread findThread(Ticket x)
-//    {
-//        if (tickets.size() != 0)
-//        {
-//            for (Iterator<Ticket> iterator = tickets.iterator(); iterator
-//                    .hasNext();)
-//            {
-//                Ticket ticket = (Ticket) iterator.next();
-//                if (ticket.getTicketNumber() == x.getTicketNumber())
-//                {
-//                    return this;
-//                }
-//            }
-//        }
-//        return null;
-//    }
     
     public int getTickCount()
     {
         return handler.getTickCount();
     }
-
+    
     public void resetTickCount()
     {
         handler.resetTickCount();
-    }
-
-    public int getTicketCount()
-    {
-        return tickets.size();
-    }
-
-    public void releaseAllTickets()
-    {
-        for (Iterator iterator = tickets.iterator(); iterator.hasNext();)
-        {
-            Ticket ticket = (Ticket) iterator.next();
-            ticket.setInUse(false);
-        }
     }
 
     @Override

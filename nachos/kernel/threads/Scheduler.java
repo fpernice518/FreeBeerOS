@@ -78,7 +78,7 @@ public class Scheduler
         // readyList = new FIFOQueue<NachosThread>();
 
         if (Nachos.options.LOTTERY == true)
-            readyList = new LotteryQueue<KernelThread>();
+            readyList = new LotteryQueue();
         else
             readyList = new OriginalQueue();
 
@@ -379,15 +379,15 @@ public class Scheduler
 
         if (Nachos.options.LOTTERY == true)
         {
-            ((LotteryQueue) readyList).decrementTicketCount(currentThread
-                    .getTickCount());
-            currentThread.releaseAllTickets();
-            ArrayList<Ticket> ticketsToGiveBack = currentThread.getTickets();
-            for (Ticket ticket : ticketsToGiveBack)
-            {
-                ((LotteryQueue) readyList).setTicket(
-                        ticket.getTicketNumber() - 1, ticket);
-            }
+//            ((LotteryQueue) readyList).decrementTicketCount(currentThread
+//                    .getTickCount());
+//            currentThread.releaseAllTickets();
+//            ArrayList<Ticket> ticketsToGiveBack = currentThread.getTickets();
+//            for (Ticket ticket : ticketsToGiveBack)
+//            {
+//                ((LotteryQueue) readyList).setTicket(
+//                        ticket.getTicketNumber() - 1, ticket);
+//            }
         }
 
         // Delete the carcass of any thread that died previously.
