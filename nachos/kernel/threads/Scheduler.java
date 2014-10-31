@@ -14,6 +14,8 @@
 
 package nachos.kernel.threads;
 
+import java.util.ArrayList;
+
 import nachos.Debug;
 import nachos.kernel.Nachos;
 import nachos.kernel.userprog.UserThread;
@@ -377,6 +379,11 @@ public class Scheduler
         {
             ((LotteryQueue)readyList).decrementTicketCount(currentThread.getTickCount());
             currentThread.releaseAllTickets();
+            ArrayList<Ticket> ticketsToGiveBack=  currentThread.getTickets();
+            for (Ticket ticket : ticketsToGiveBack)
+            {
+                ((LotteryQueue)readyList).setTicket(ticket.getTicketNumber(), ticket);
+            }
         }
 
         // Delete the carcass of any thread that died previously.

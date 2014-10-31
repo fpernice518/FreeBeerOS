@@ -22,7 +22,9 @@ public class LotteryQueue<T> extends java.util.LinkedList<T> implements
         ticketsInUse = new ArrayList<Ticket>();
         currentTicketsInUse = 0;
     }
-
+    public void setTicket(int location ,Ticket x){
+        ticketsInUse.set(location, x);
+    }
     private Ticket getNextTicket()
     {
         Ticket foundATicket = null;

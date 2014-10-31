@@ -24,7 +24,9 @@ public class KernelThread extends NachosThread
         handler = new UserThreadInterruptHandler();
         TimerService.getInstance().subscribe(handler);
     }
-
+    public ArrayList<Ticket> getTickets(){
+        return tickets;
+    }
     public void addTicket(Ticket x)
     {
         /*
