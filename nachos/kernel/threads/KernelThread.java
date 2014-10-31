@@ -72,6 +72,15 @@ public class KernelThread extends NachosThread
         return tickets.size();
     }
     
+    public void releaseAllTickets()
+    {
+        for (Iterator iterator = tickets.iterator(); iterator.hasNext();)
+        {
+            Ticket ticket = (Ticket) iterator.next();
+            ticket.setInUse(false);
+        }
+    }
+    
     @Override
     public void destroy()
     {

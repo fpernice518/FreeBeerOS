@@ -374,7 +374,10 @@ public class Scheduler
         currentThread.setStatus(NachosThread.FINISHED);
         
         if(Nachos.options.LOTTERY == true)
+        {
             ((LotteryQueue)readyList).decrementTicketCount(currentThread.getTickCount());
+            currentThread.releaseAllTickets();
+        }
 
         // Delete the carcass of any thread that died previously.
         // This ensures that there is at most one dead thread ever waiting
