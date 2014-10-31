@@ -82,13 +82,14 @@ public class LotteryQueue<T> extends java.util.LinkedList<T> implements
                 usrt.addTicket(ticket);
 
             }
+            return this.add(thread);
         } else if (true)
         {
             // we check to see if this thread yeilded by itself
         }
-
+            return true;
         // System.out.println(ticket.getTicketNumber());
-        return this.add(thread);
+        
     }
 
     @Override
@@ -100,43 +101,44 @@ public class LotteryQueue<T> extends java.util.LinkedList<T> implements
     @Override
     public T poll()
     {
-        Random rand = new Random();
-//        int ticket = (rand.nextInt() % currentTicketsInUse) + 1;
-//        boolean found = false;
 
-        ArrayList<Ticket> usedTicketsByTreads = new ArrayList<>();
-
-        for (int i = 0; i < ticketsInUse.size(); i++)
+        if (this.size() != 0)
         {
-            System.out.println(ticketsInUse.size()+" size");
-            if (ticketsInUse.get(i).isInUse())
+            Random rand = new Random();
+            // int ticket = (rand.nextInt() % currentTicketsInUse) + 1;
+            // boolean found = false;
+
+            ArrayList<Ticket> usedTicketsByTreads = new ArrayList<>();
+
+            for (int i = 0; i < ticketsInUse.size(); i++)
             {
-                usedTicketsByTreads.add(ticketsInUse.get(i));
+//                System.out.println(ticketsInUse.size() + " size");
+                if (ticketsInUse.get(i).isInUse())
+                {
+                    usedTicketsByTreads.add(ticketsInUse.get(i));
+                }
+
             }
+            int ticket = (rand.nextInt(usedTicketsByTreads.size()));
+  
+            Ticket ticketObjectChosen = usedTicketsByTreads.get(ticket);
 
+            int index = getThreadWithTicket(ticketObjectChosen);
+            if (index == -1)
+            {
+//                 System.out.println("-1**");
+                return null;
+            } else
+            {
+//                System.out.println(index+" Index");
+                return this.get(index);
+            }
+        } else
+        {
+            return null;
         }
-        int ticket = (rand.nextInt(usedTicketsByTreads.size()) );
-        System.out.println(ticket+"************");
-        Ticket ticketObjectChosen = usedTicketsByTreads.get(ticket);
-//        getThreadWithTicket(ticketObjectChosen);
-      return this.remove(getThreadWithTicket(ticketObjectChosen));
-        //
-        // for (int i = 0; i < this.size(); ++i)
-        // {
-        // T thread = this.get(i);
-        //
-        // if (((KernelThread) thread).findTicket(ticket) == true)
-        // {
-        // // System.out.println("Hello");
-        // found = true;
-        // return this.remove(i);
-        //
-        // }
-        // }
-
-        // System.out.println("Its been nulled");
-        // return null;
-//        return this.pollFirst();
+        
+        // return this.pollFirst();
     }
 
     @Override
