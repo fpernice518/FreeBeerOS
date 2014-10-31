@@ -97,10 +97,9 @@ public class LotteryQueue<T> extends java.util.LinkedList<T> implements
     public T poll()
     {
         Random rand = new Random();
-        // int ticket = (rand.nextInt() % currentTicketsInUse) + 1;
+        int ticket = (rand.nextInt() % currentTicketsInUse) + 1;
         boolean found = false;
 
-//        int ticket = (rand.nextInt() % currentTicketsInUse) + 1;
 //
 //        for (int i = 0; i < this.size(); ++i)
 //        {
@@ -124,6 +123,11 @@ public class LotteryQueue<T> extends java.util.LinkedList<T> implements
     public T peek()
     {
         return null;
+    }
+    
+    public void decrementTicketCount(int count)
+    {
+        currentTicketsInUse -= count;
     }
 
 }

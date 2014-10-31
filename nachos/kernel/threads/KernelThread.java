@@ -66,11 +66,17 @@ public class KernelThread extends NachosThread
     {
         handler.resetTickCount();
     }
-
-    protected void finalize() throws Throwable
+    
+    public int getTicketCount()
+    {
+        return tickets.size();
+    }
+    
+    @Override
+    public void destroy()
     {
         TimerService.getInstance().unsubscribe(handler);
-        super.finalize();
+        super.destroy();
     }
 }
 

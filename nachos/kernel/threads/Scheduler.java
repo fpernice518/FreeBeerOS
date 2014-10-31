@@ -197,11 +197,11 @@ public class Scheduler
      *
      * @return the thread to be scheduled onto a CPU.
      */
-    private NachosThread findNextToRun()
+    private KernelThread findNextToRun()
     {
         Debug.ASSERT(CPU.getLevel() == CPU.IntOff);
         mutex.acquire();
-        NachosThread result = readyList.poll();
+        KernelThread result = readyList.poll();
         mutex.release();
         return result;
     }
@@ -364,7 +364,7 @@ public class Scheduler
     public void finishThread()
     {
         CPU.setLevel(CPU.IntOff);
-        NachosThread currentThread = NachosThread.currentThread();
+        KernelThread currentThread = (KernelThread) KernelThread.currentThread();
 
         Debug.println('t', "Finishing thread: " + currentThread.name);
 
@@ -372,6 +372,9 @@ public class Scheduler
         // before making it the thread to be destroyed, because we don't want
         // someone to try to destroy a thread that is not FINISHED.
         currentThread.setStatus(NachosThread.FINISHED);
+        
+        if(Nachos.options.LOTTERY == true)
+            ((LotteryQueue)readyList).decrementTicketCount(currentThread.getTickCount());
 
         // Delete the carcass of any thread that died previously.
         // This ensures that there is at most one dead thread ever waiting
