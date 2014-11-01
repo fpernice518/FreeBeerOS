@@ -19,11 +19,6 @@ public class LotteryQueue implements Queue<KernelThread>
         runningThreads = new HashSet<>();
     }
 
-    public void setTicket(int location, Ticket x)
-    {
-        
-    }
-
     @Override      
     public boolean offer(KernelThread thread)
     {

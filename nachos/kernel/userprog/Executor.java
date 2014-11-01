@@ -46,6 +46,13 @@ public class Executor implements Runnable
         space = new AddrSpace(num);
         spaceId = space.getSpaceId();
         UserThread t = new UserThread(name, this, space);
+        
+        int nTickets = CPU.readRegister(6);
+        //Ensure non-negative, non-zero numbe rof tickets
+        if(nTickets <= 0)
+            nTickets = 1;
+                
+        t.setnumTickets(nTickets);
         Nachos.scheduler.readyToRun(t);
 
     }

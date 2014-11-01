@@ -282,6 +282,7 @@ public class Syscall
      */
     public static void yield()
     {
+       // ((KernelThread) NachosThread.currentThread())
         Nachos.scheduler.yieldThread();
     }
     
