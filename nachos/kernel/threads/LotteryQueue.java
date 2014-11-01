@@ -85,6 +85,7 @@ public class LotteryQueue implements Queue<KernelThread>
         }
         System.out.println("Bonus ticket of Selected: "+selectedThread.getBonusTickets());
         selectedThread.clearBonusTickets();
+        System.out.println("Bonus ticket of Selected Cleared: "+selectedThread.getBonusTickets());
         return selectedThread;
     }
 

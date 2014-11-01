@@ -68,7 +68,8 @@ public class KernelThread extends NachosThread
     }
     public void incBonusTickets()
     {
-        this.bonusTickets++;
+//        System.out.println("****");
+        this.bonusTickets = bonusTickets+1;
     }
     public void clearBonusTickets()
     {
