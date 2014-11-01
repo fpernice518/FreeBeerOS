@@ -27,6 +27,8 @@ CC = $(GCCDIR)gcc
 AS = $(GCCDIR)as
 LD = $(GCCDIR)ld
 CPP = $(GCCDIR)cpp
+SRC := $(wildcard *.c)
+EXEC := $(SRC:.c=)
 
 COFF2NOFF = $(JAVA) nachos.noff.Coff2Noff
 
@@ -74,4 +76,6 @@ halt: halt.o start.o
 	$(COFF2NOFF) $*.coff $@
 	rm $*.coff
 
+clean: 
+	@ rm -rf $(EXEC)
 	 
