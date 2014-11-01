@@ -13,6 +13,7 @@ import nachos.machine.Machine;
 import nachos.machine.MachineException;
 import nachos.machine.NachosThread;
 import nachos.kernel.Nachos;
+import nachos.kernel.threads.KernelThread;
 import nachos.kernel.userprog.Syscall;
 
 /**
@@ -71,8 +72,8 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
                 addrSpace.exit(CPU.readRegister(4));
                 // Nachos.scheduler.finishThread();
                 // Syscall.exit(CPU.readRegister(4));
-                MemAlloc.getInstance().checkWaitStatus(
-                        addrSpace.getSpaceId(), CPU.readRegister(4));
+                MemAlloc.getInstance().checkWaitStatus(addrSpace.getSpaceId(),
+                        CPU.readRegister(4));
                 Syscall.exit(CPU.readRegister(4));
                 break;
 
@@ -82,7 +83,8 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
                 int parentId = addrSpace.getSpaceId();
                 byte namechar[] = addrSpace.getCString(CPU.readRegister(4));
                 String name = new String(namechar);
-                ArrayList<byte[]> args = addrSpace.getArgsList(CPU.readRegister(5), 4);
+                ArrayList<byte[]> args = addrSpace.getArgsList(
+                        CPU.readRegister(5), 4);
 
                 int childID = Syscall.exec(name, args);
                 CPU.writeRegister(2, childID);
@@ -103,18 +105,21 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
                 System.arraycopy(Machine.mainMemory, ptr, buf, 0, len);
                 Syscall.read(buf, len, CPU.readRegister(6));
                 break;
-            
+
             case Syscall.SC_Yield:
+                ((KernelThread) NachosThread.currentThread()).incBonusTickets();
+
                 Syscall.yield();
                 break;
-            
+
             case Syscall.SC_Join:
                 addrSpace = ((UserThread) NachosThread.currentThread()).space;
                 int parentid = addrSpace.getSpaceId();
                 int childid = CPU.readRegister(4);
-                int exit = MemAlloc.getInstance().setRelation(parentid, childid);
+                int exit = MemAlloc.getInstance()
+                        .setRelation(parentid, childid);
                 CPU.writeRegister(2, exit);
-            
+
             case Syscall.SC_Sleep:
                 int ticks = CPU.readRegister(4);
                 Syscall.sleep(ticks);

@@ -83,6 +83,8 @@ public class LotteryQueue implements Queue<KernelThread>
                 break;
             }        
         }
+        System.out.println("Bonus ticket of Selected: "+selectedThread.getBonusTickets());
+        selectedThread.clearBonusTickets();
         return selectedThread;
     }
 
