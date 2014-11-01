@@ -8,5 +8,6 @@ int main(void)
 		Write("THREE\n\r", 7, ConsoleOutput);
 	}
 
+  Write("DONE THREE\n\r", 12, ConsoleOutput);
   Exit(0);
 }

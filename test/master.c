@@ -3,7 +3,7 @@
 int main(void)
 {
   
-  char *args[] = {"-arrrgh\n\r", "-I'm a pirate\n\r",(char *)0};
+  char *args[] = {(char *)0};
 
   Exec("test/one", args, 5);
   Exec("test/two", args, 15);
