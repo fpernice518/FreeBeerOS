@@ -30,7 +30,7 @@ public class Executor implements Runnable
 {
     private String execName;
     private int child;
-    private AddrSpace space;
+    private AddrSpace space;    
     private int spaceId;
     private ArrayList<byte[]> argsList;
 
