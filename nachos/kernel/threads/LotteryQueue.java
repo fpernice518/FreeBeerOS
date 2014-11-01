@@ -52,7 +52,7 @@ public class LotteryQueue implements Queue<KernelThread>
         int oldCount;
         int selectedTicket;
         KernelThread selectedThread = null;
-        Random rand = new Random();
+        Random rand = new Random(System.currentTimeMillis());
         
         if(runningThreads.size() <= 0)
             return selectedThread;
