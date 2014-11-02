@@ -113,6 +113,23 @@ public class ConsoleDriver
         inputLock.release();
         return ch;
     }
+    
+    /**
+     * This looks like the old putchar() because we want to echo
+     * instantaneously and not wait for the user to input 10
+     * characters.
+     * @param ch character to be echoed
+     */
+    private void echo(char ch)
+    {
+        outputLock.acquire();
+        ensureOutputHandler();
+        outputDone.P();
+        Debug.ASSERT(!console.isOutputBusy());
+        console.putChar(ch);
+        outputLock.release();
+        
+    }
 
     /**
      * Print a single character on the console. If the console is already busy
@@ -137,11 +154,7 @@ public class ConsoleDriver
             for(int i = 0; i < buffer.size(); ++i)
             {
                 outputDone.P();
-                Debug.ASSERT(!console.isOutputBusy());
-                
-                if(buffer.get(i).charValue() == 'D')
-                    System.out.println("hi");
-                
+                Debug.ASSERT(!console.isOutputBusy());                
                 console.putChar(buffer.get(i).charValue());
             }
 
