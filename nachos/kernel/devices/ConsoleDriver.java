@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import nachos.Debug;
 import nachos.machine.Console;
 import nachos.machine.InterruptHandler;
+import nachos.machine.Machine;
 import nachos.kernel.threads.Lock;
 import nachos.kernel.threads.Semaphore;
 
@@ -124,25 +125,30 @@ public class ConsoleDriver
      */
     public void putChar(char ch)
     {
+        outputLock.acquire();
         if(buffer.size() < 10)
         {
             buffer.add(ch);
         }
         else
         {       
-            outputLock.acquire();
             ensureOutputHandler();
-            outputDone.P();
-            Debug.ASSERT(!console.isOutputBusy());
             
             for(int i = 0; i < buffer.size(); ++i)
             {
+                outputDone.P();
+                Debug.ASSERT(!console.isOutputBusy());
+                
+                if(buffer.get(i).charValue() == 'D')
+                    System.out.println("hi");
+                
                 console.putChar(buffer.get(i).charValue());
             }
-                  
-            outputLock.release();
+
             buffer.clear();
+            buffer.add(ch);
         }
+        outputLock.release();
     }
 
     /**
