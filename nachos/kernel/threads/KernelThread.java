@@ -15,6 +15,7 @@ public class KernelThread extends NachosThread
 {
     private UserThreadInterruptHandler handler;
     private int numTickets = 1;
+    private int bonusTickets= 0;
 
     public KernelThread(String name, Runnable runObj)
     {
@@ -36,7 +37,7 @@ public class KernelThread extends NachosThread
 
     public int getNumTickets()
     {
-        return numTickets;
+        return numTickets+bonusTickets;
     }
     
     public int getTickCount()
@@ -54,6 +55,25 @@ public class KernelThread extends NachosThread
     {
         TimerService.getInstance().unsubscribe(handler);
         super.destroy();
+    }
+
+    public int getBonusTickets()
+    {
+        return bonusTickets;
+    }
+
+    public void setBonusTickets(int bonusTickets)
+    {
+        this.bonusTickets = bonusTickets;
+    }
+    public void incBonusTickets()
+    {
+//        System.out.println("****");
+        this.bonusTickets = bonusTickets+1;
+    }
+    public void clearBonusTickets()
+    {
+        this.bonusTickets = 0;
     }
 }
 
