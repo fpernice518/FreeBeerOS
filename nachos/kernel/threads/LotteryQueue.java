@@ -1,19 +1,16 @@
 package nachos.kernel.threads;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
 
-import nachos.kernel.userprog.UserThread;
 import nachos.util.Queue;
 
 public class LotteryQueue implements Queue<KernelThread>
 {
-    int currentTicketsInUse;
     Set<KernelThread> runningThreads;  //set automatically ensures no duplicates
     Random rand;
+    KernelThread t = null;
     
     LotteryQueue()
     {
@@ -30,13 +27,13 @@ public class LotteryQueue implements Queue<KernelThread>
     @Override
     public KernelThread peek()
     {
-        return getNextThread();
+        return t;
     }
 
     @Override
     public KernelThread poll()
     {
-        KernelThread t = getNextThread();
+        t = getNextThread();
         runningThreads.remove(t);
         return t;
     }

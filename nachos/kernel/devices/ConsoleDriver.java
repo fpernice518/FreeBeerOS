@@ -153,6 +153,9 @@ public class ConsoleDriver
             
             for(int i = 0; i < buffer.size(); ++i)
             {
+                if(buffer.get(i).charValue() == 'D')
+                    System.out.println("Hi");
+                
                 outputDone.P();
                 Debug.ASSERT(!console.isOutputBusy());                
                 console.putChar(buffer.get(i).charValue());

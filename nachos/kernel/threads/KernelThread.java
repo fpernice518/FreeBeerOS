@@ -39,41 +39,40 @@ public class KernelThread extends NachosThread
     {
         return numTickets+bonusTickets;
     }
-    
-    public int getTickCount()
-    {
-        return handler.getTickCount();
-    }
-    
-    public void resetTickCount()
-    {
-        handler.resetTickCount();
-    }
-
-    @Override
-    public void destroy()
-    {
-        TimerService.getInstance().unsubscribe(handler);
-        super.destroy();
-    }
 
     public int getBonusTickets()
     {
         return bonusTickets;
     }
 
-    public void setBonusTickets(int bonusTickets)
+    protected void setBonusTickets(int bonusTickets)
     {
         this.bonusTickets = bonusTickets;
     }
     public void incBonusTickets()
     {
-//        System.out.println("****");
         this.bonusTickets = bonusTickets+1;
     }
-    public void clearBonusTickets()
+    protected void clearBonusTickets()
     {
         this.bonusTickets = 0;
+    }
+    
+    protected int getTickCount()
+    {
+        return handler.getTickCount();
+    }
+    
+    protected void resetTickCount()
+    {
+        handler.resetTickCount();
+    }
+    
+    @Override
+    public void destroy()
+    {
+        TimerService.getInstance().unsubscribe(handler);
+        super.destroy();
     }
 }
 
@@ -94,12 +93,12 @@ class UserThreadInterruptHandler implements InterruptHandler
         }
     }
 
-    public void resetTickCount()
+    protected void resetTickCount()
     {
         tickCount = 0;
     }
 
-    public int getTickCount()
+    protected int getTickCount()
     {
         return tickCount;
     }
@@ -118,8 +117,7 @@ class UTRunnable implements Runnable
             ((UserThread) NachosThread.currentThread()).resetTickCount();
         } else
         {
-            Debug.println('i',
-                    "No current thread on interrupt return, skipping yield");
+            Debug.println('i', "No current thread on interrupt return, skipping yield");
         }
     }
 }

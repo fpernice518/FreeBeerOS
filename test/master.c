@@ -8,7 +8,7 @@ int main(void)
   Exec("test/franksfunzone",args, 3);
   Exec("test/one", args, 5);
   Exec("test/two", args, 15);
-  Exec("test/three", args, 382000);
+  Exec("test/three", args, 20);
   Exec("test/four", args, 1);
   Exec("test/five", args, 7);
 
