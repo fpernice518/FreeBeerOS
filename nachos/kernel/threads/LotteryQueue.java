@@ -13,10 +13,12 @@ public class LotteryQueue implements Queue<KernelThread>
 {
     int currentTicketsInUse;
     Set<KernelThread> runningThreads;  //set automatically ensures no duplicates
+    Random rand;
     
     LotteryQueue()
     {
         runningThreads = new HashSet<>();
+        rand = new Random(System.currentTimeMillis());
     }
 
     @Override      
@@ -52,7 +54,6 @@ public class LotteryQueue implements Queue<KernelThread>
         int oldCount;
         int selectedTicket;
         KernelThread selectedThread = null;
-        Random rand = new Random(System.currentTimeMillis());
         
         if(runningThreads.size() <= 0)
             return selectedThread;
