@@ -58,11 +58,6 @@ public class KernelThread extends NachosThread
         this.bonusTickets = 0;
     }
     
-    protected int getTickCount()
-    {
-        return handler.getTickCount();
-    }
-    
     protected void resetTickCount()
     {
         handler.resetTickCount();
@@ -74,35 +69,29 @@ public class KernelThread extends NachosThread
         TimerService.getInstance().unsubscribe(handler);
         super.destroy();
     }
-}
-
-class UserThreadInterruptHandler implements InterruptHandler
-{
-    private int tickCount = 0;
-    private static final int quantum = 1000;
-
-    @Override
-    public void handleInterrupt()
+    
+    private class UserThreadInterruptHandler implements InterruptHandler
     {
-        tickCount += TimerService.getInstance().getResolution();
+        private int tickCount = 0;
+        private static final int quantum = 1000;
 
-        if (tickCount >= quantum)
+        @Override
+        public void handleInterrupt()
         {
-            CPU.setOnInterruptReturn(new UTRunnable());
-            resetTickCount();
+            tickCount += TimerService.getInstance().getResolution();
+
+            if (tickCount >= quantum)
+            {
+                CPU.setOnInterruptReturn(new UTRunnable());
+                resetTickCount();
+            }
+        }
+
+        private void resetTickCount()
+        {
+            tickCount = 0;
         }
     }
-
-    protected void resetTickCount()
-    {
-        tickCount = 0;
-    }
-
-    protected int getTickCount()
-    {
-        return tickCount;
-    }
-
 }
 
 class UTRunnable implements Runnable
@@ -114,7 +103,6 @@ class UTRunnable implements Runnable
         {
             Debug.println('t', "Yielding current thread on interrupt return");
             Nachos.scheduler.yieldThread();
-            ((KernelThread) NachosThread.currentThread()).resetTickCount();
         } else
         {
             Debug.println('i', "No current thread on interrupt return, skipping yield");
