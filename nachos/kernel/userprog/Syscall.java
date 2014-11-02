@@ -223,17 +223,13 @@ public class Syscall
     public static int read(byte buffer[], int size, int id)
     {
         int returnBytes = 0;
-        // Debug.print('2', "OOPS");
 
         if (id == ConsoleInput)
         {
             for (int j = 0; j < size; j++)
             {
-
                 Byte temp = (byte) Nachos.consoleDriver.getChar();
-
                 buffer[j] = temp;
-
                 returnBytes++;
             }
 

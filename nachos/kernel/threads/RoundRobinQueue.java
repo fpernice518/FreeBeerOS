@@ -4,11 +4,11 @@ import nachos.machine.NachosThread;
 import nachos.util.FIFOQueue;
 import nachos.util.Queue;
 
-public class OriginalQueue implements Queue<KernelThread>
+public class RoundRobinQueue implements Queue<KernelThread>
 {
     private final Queue<KernelThread> readyList;
 
-    OriginalQueue()
+    RoundRobinQueue()
     {
         readyList = new FIFOQueue<KernelThread>();
     }

@@ -80,7 +80,7 @@ public class Scheduler
         if (Nachos.options.LOTTERY == true)
             readyList = new LotteryQueue();
         else
-            readyList = new OriginalQueue();
+            readyList = new RoundRobinQueue();
 
         cpuList = new FIFOQueue<CPU>();
 
@@ -377,18 +377,6 @@ public class Scheduler
         // someone to try to destroy a thread that is not FINISHED.
         currentThread.setStatus(NachosThread.FINISHED);
 
-        if (Nachos.options.LOTTERY == true)
-        {
-//            ((LotteryQueue) readyList).decrementTicketCount(currentThread
-//                    .getTickCount());
-//            currentThread.releaseAllTickets();
-//            ArrayList<Ticket> ticketsToGiveBack = currentThread.getTickets();
-//            for (Ticket ticket : ticketsToGiveBack)
-//            {
-//                ((LotteryQueue) readyList).setTicket(
-//                        ticket.getTicketNumber() - 1, ticket);
-//            }
-        }
 
         // Delete the carcass of any thread that died previously.
         // This ensures that there is at most one dead thread ever waiting
