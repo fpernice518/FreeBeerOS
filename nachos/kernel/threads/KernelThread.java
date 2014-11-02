@@ -114,7 +114,7 @@ class UTRunnable implements Runnable
         {
             Debug.println('t', "Yielding current thread on interrupt return");
             Nachos.scheduler.yieldThread();
-            ((UserThread) NachosThread.currentThread()).resetTickCount();
+            ((KernelThread) NachosThread.currentThread()).resetTickCount();
         } else
         {
             Debug.println('i', "No current thread on interrupt return, skipping yield");
