@@ -49,6 +49,8 @@ public class ConsoleDriver
      * character.
      */
     private Semaphore outputDone = new Semaphore("Console output done", 1);
+    
+    private Semaphore outputTest = new Semaphore("Console output done", 1);
 
     /** Interrupt handler used for console keyboard interrupts. */
     private InterruptHandler inputHandler;
@@ -141,27 +143,35 @@ public class ConsoleDriver
      *            The character to be printed.
      */
     public void putChar(char ch)
-    {
+    {        
         outputLock.acquire();
-        if(buffer.size() < 10)
-        {
-            buffer.add(ch);
-        }
-        else
-        {       
-            ensureOutputHandler();
-            
-            for(int i = 0; i < buffer.size(); ++i)
-            {               
-                outputDone.P();
-                Debug.ASSERT(!console.isOutputBusy());                
-                console.putChar(buffer.get(i).charValue());
-            }
+        ensureOutputHandler();
+        outputDone.P();
+        Debug.ASSERT(!console.isOutputBusy());                
+        console.putChar(ch);
+        outputLock.release(); 
 
-            buffer.clear();
-            buffer.add(ch);
-        }
-        outputLock.release();
+
+//        outputLock.acquire();
+//        if(buffer.size() < 10)
+//        {
+//            buffer.add(ch);
+//        }
+//        else
+//        {       
+//            ensureOutputHandler();
+//            
+//            for(int i = 0; i < buffer.size(); ++i)
+//            {               
+//                outputDone.P();
+//                Debug.ASSERT(!console.isOutputBusy());                
+//                console.putChar(buffer.get(i).charValue());
+//            }
+//
+//            buffer.clear();
+//            buffer.add(ch);
+//        }
+//        outputLock.release();
     }
 
     /**
@@ -201,6 +211,10 @@ public class ConsoleDriver
         @Override
         public void handleInterrupt()
         {
+            for(int i = 0; i < buffer.size(); ++i)
+                console.putChar(buffer.get(i));
+            
+            buffer.clear();
             outputDone.V();
         }
 

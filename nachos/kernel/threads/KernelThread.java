@@ -16,10 +16,13 @@ public class KernelThread extends NachosThread
     private UserThreadInterruptHandler handler;
     private int numTickets = 1;
     private int bonusTickets= 0;
+    //private String name = "";
+    private double avg = 0;
 
     public KernelThread(String name, Runnable runObj)
     {
         super(name, runObj);
+        //this.name = name;
         handler = new UserThreadInterruptHandler();
         TimerService.getInstance().subscribe(handler);
     }
@@ -73,18 +76,25 @@ public class KernelThread extends NachosThread
     private class UserThreadInterruptHandler implements InterruptHandler
     {
         private int tickCount = 0;
+        private long totalTickCount = 0;
         private static final int quantum = 1000;
+        private static final double p = 0.5;
 
         @Override
         public void handleInterrupt()
         {
             tickCount += TimerService.getInstance().getResolution();
-
+            totalTickCount += tickCount;
+         
             if (tickCount >= quantum)
             {
                 CPU.setOnInterruptReturn(new UTRunnable());
                 resetTickCount();
             }
+            
+            avg = p*totalTickCount + (1-p)*avg;
+            System.out.println("Name = " + name +" Avg = " + avg + "   Tick Count = " + totalTickCount);
+            
         }
 
         private void resetTickCount()
