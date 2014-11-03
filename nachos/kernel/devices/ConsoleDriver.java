@@ -7,8 +7,12 @@
 package nachos.kernel.devices;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 
 import nachos.Debug;
+import nachos.machine.CPU;
 import nachos.machine.Console;
 import nachos.machine.InterruptHandler;
 import nachos.machine.Machine;
@@ -50,16 +54,21 @@ public class ConsoleDriver
      */
     private Semaphore outputDone = new Semaphore("Console output done", 1);
     
-    private Semaphore outputTest = new Semaphore("Console output done", 1);
-
+    /** Output variables and constants **/
+    private Semaphore            outputBufferSpaceAvail = new Semaphore("Output Buffer Semaphore", 10);
+    private Lock                 outputBufferLock = new Lock("Output Buffer Lock");
+    private boolean              outputBusy = false;
+    private boolean              outputStalled = false;
+    private int                  waitingOutThreads = 0;
+    private final int            OUTBUFFMAX = 10;
+    private static final int     OUTBUFFMIN = 2;
+    private Queue<Character> outputBuffer = new LinkedList<>();
+    
     /** Interrupt handler used for console keyboard interrupts. */
     private InterruptHandler inputHandler;
 
     /** Interrupt handler used for console output interrupts. */
     private InterruptHandler outputHandler;
-    
-    /** variables for the putchar() function **/
-    private ArrayList<Character> buffer = new ArrayList();
 
     /**
      * Initialize the driver and the underlying physical device.
@@ -143,13 +152,51 @@ public class ConsoleDriver
      *            The character to be printed.
      */
     public void putChar(char ch)
-    {        
-        outputLock.acquire();
+    {   
+        outputBufferLock.acquire();
         ensureOutputHandler();
-        outputDone.P();
-        Debug.ASSERT(!console.isOutputBusy());                
-        console.putChar(ch);
-        outputLock.release(); 
+        int oldLevel = CPU.setLevel(CPU.IntOff);
+        while(outputBuffer.size() >= OUTBUFFMAX)
+        {
+            ++waitingOutThreads;
+            outputBufferLock.release();
+            outputBufferSpaceAvail.P();
+            outputBufferLock.acquire();
+        }
+        
+        outputBuffer.add(ch);
+        startOutput();
+        CPU.setLevel(oldLevel);
+        outputBufferLock.release();
+        
+        
+        
+//        if(outputRunning == false)
+//        {
+//            outputLock.acquire();                 
+//            ensureOutputHandler();                
+//            outputDone.P();                       
+//            Debug.ASSERT(!console.isOutputBusy());
+//            //buffer.add(ch);
+//            console.putChar(ch);
+//            outputRunning = true;
+//            outputLock.release();                 
+//        }
+//        else
+//        {
+//            outputBufferSpaceAvail.P();
+//            outputBufferLock.acquire();
+//            ++testint;
+//            buffer.add(ch);
+//            outputBufferLock.release();    
+//        }
+        
+//        outputLock.acquire();
+//        ensureOutputHandler();
+//        outputDone.P();
+//        Debug.ASSERT(!console.isOutputBusy());                
+//        console.putChar(ch);
+//        outputLock.release(); 
 
 
 //        outputLock.acquire();
@@ -172,6 +219,42 @@ public class ConsoleDriver
 //            buffer.add(ch);
 //        }
 //        outputLock.release();
+    }
+
+    /* 
+        private void startOutput () {
+    // If output stalled or already busy or nothing to do
+        if(stalled || busy || outQ.length() == 0)
+        return;                    // then just return.
+        busy = true;                   // Mark device busy
+    char c = outQ.remove();        // Dequeue first character
+        XMIT(c);                       // and transmit it.
+        if(outQ.length() <= OUTQLOWAT) 
+        {
+        while(waitingThreads > 0) {  // If output queue getting short
+        waitingThreads--;
+        spaceAvail.V();        // wakeup any blocked threads.
+        }
+    }
+    }
+     */
+    private void startOutput()
+    {
+        if(outputStalled || outputBusy || outputBuffer.size() == 0)
+            return;
+        
+        outputBusy = true;
+        char ch = outputBuffer.remove();
+        console.putChar(ch);
+        if(outputBuffer.size() <= OUTBUFFMIN)
+        {
+            while(waitingOutThreads > 0)
+            {
+                --waitingOutThreads;
+                outputBufferSpaceAvail.V();
+            }
+                
+        }
     }
 
     /**
@@ -211,11 +294,9 @@ public class ConsoleDriver
         @Override
         public void handleInterrupt()
         {
-            for(int i = 0; i < buffer.size(); ++i)
-                console.putChar(buffer.get(i));
-            
-            buffer.clear();
-            outputDone.V();
+            outputBusy = false;
+            startOutput();
+            //outputDone.V();
         }
 
     }
