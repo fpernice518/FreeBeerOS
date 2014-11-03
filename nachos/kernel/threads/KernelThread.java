@@ -13,7 +13,7 @@ import nachos.util.TimerService;
 
 public class KernelThread extends NachosThread
 {
-    private UserThreadInterruptHandler handler;
+    private KernelThreadInterruptHandler handler;
     private int numTickets = 1;
     private int bonusTickets= 0;
     //private String name = "";
@@ -23,7 +23,7 @@ public class KernelThread extends NachosThread
     {
         super(name, runObj);
         //this.name = name;
-        handler = new UserThreadInterruptHandler();
+        handler = new KernelThreadInterruptHandler();
         TimerService.getInstance().subscribe(handler);
     }
     
@@ -73,7 +73,7 @@ public class KernelThread extends NachosThread
         super.destroy();
     }
     
-    private class UserThreadInterruptHandler implements InterruptHandler
+    private class KernelThreadInterruptHandler implements InterruptHandler
     {
         private int tickCount = 0;
         private long totalTickCount = 0;

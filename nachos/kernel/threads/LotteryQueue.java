@@ -64,6 +64,7 @@ public class LotteryQueue implements Queue<KernelThread>
         
         //select a ticket
         System.out.println("Ticket Count: " + count);
+        System.out.println("Queue Size: " + runningThreads.size());
         selectedTicket = rand.nextInt(count);
         System.out.println("Ticket Selected: " + selectedTicket);
         
