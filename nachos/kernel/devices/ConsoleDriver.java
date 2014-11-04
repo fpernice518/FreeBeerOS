@@ -62,7 +62,7 @@ public class ConsoleDriver
     private static final int     ECHOBUFFMAX = 10000;
     private static final int     ECHOBUFFMIN = 1;
     private static int           echoBuffIndex = 0;
-    private Semaphore            echoBufferSpaceAvail = new Semaphore("Echo Buffer Semaphore", ECHOBUFFMAX);
+    private Semaphore            echoBufferSemaphore = new Semaphore("Echo Buffer Semaphore", ECHOBUFFMAX);
     private Queue<Character>     echoBuffer = new LinkedList<>();
     private Stack<Character>     ctrlRBuffer = new Stack<>();
 
@@ -169,7 +169,7 @@ public class ConsoleDriver
         
         outputBuffer.add(ch);
         startOutput();
-        echoBufferSpaceAvail.V();
+        echoBufferSemaphore.V();
         CPU.setLevel(oldLevel);
     }
     
@@ -273,7 +273,7 @@ public class ConsoleDriver
             {
                 while(buffIterator.hasNext())
                 {
-                    echoBufferSpaceAvail.P();
+                    echoBufferSemaphore.P();
                     echo(buffIterator.next());
                 }
             }
@@ -281,37 +281,37 @@ public class ConsoleDriver
             {
                 int lineSize = echoBuffer.size();
                 
-                echoBufferSpaceAvail.P();
+                echoBufferSemaphore.P();
                 echo('\r');
                 for(int j = 0; j < lineSize; ++j)
                 {
-                    echoBufferSpaceAvail.P();
+                    echoBufferSemaphore.P();
                     echo(' ');
                 }
-                echoBufferSpaceAvail.P();
+                echoBufferSemaphore.P();
                 echo('\r');
                 ctrlRBuffer.clear();
             }
             else if(ctrlR)
             {
-                echoBufferSpaceAvail.P();
+                echoBufferSemaphore.P();
                 echo('\r');
                 buffIterator = ctrlRBuffer.iterator();
                 int lineSize =echoBuffer.size();
                 
                 for(int j = 0; j < lineSize; ++j);
                 {
-                    echoBufferSpaceAvail.P();
+                    echoBufferSemaphore.P();
                     echo(' ');
                 }
                 
-                echoBufferSpaceAvail.P();
+                echoBufferSemaphore.P();
                 echo('\r');
                 
                 while(buffIterator.hasNext())
                 {
                     char c = buffIterator.next();
-                    echoBufferSpaceAvail.P();
+                    echoBufferSemaphore.P();
                     echo(c);
                 }
             }
