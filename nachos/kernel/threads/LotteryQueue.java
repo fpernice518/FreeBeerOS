@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
+import nachos.Debug;
 import nachos.util.Queue;
 
 public class LotteryQueue implements Queue<KernelThread>
@@ -63,10 +64,10 @@ public class LotteryQueue implements Queue<KernelThread>
         }
         
         //select a ticket
-        System.out.println("Ticket Count: " + count);
-        System.out.println("Queue Size: " + runningThreads.size());
+        Debug.println('3', "Ticket Count: " + count);
+        Debug.println('3', "Lottery Queue Size: " + runningThreads.size());
         selectedTicket = rand.nextInt(count);
-        System.out.println("Ticket Selected: " + selectedTicket);
+        Debug.println('3', "Ticket Selected: " + selectedTicket);
         
         //find the corresponding thread
         count = 0;
@@ -82,9 +83,9 @@ public class LotteryQueue implements Queue<KernelThread>
                 break;
             }        
         }
-        System.out.println("Bonus ticket of Selected: "+selectedThread.getBonusTickets());
+        Debug.println('3', "Bonus ticket of Selected: "+selectedThread.getBonusTickets());
         selectedThread.clearBonusTickets();
-        System.out.println("Bonus ticket of Selected Cleared: "+selectedThread.getBonusTickets());
+        Debug.println('3', "Bonus ticket of Selected Cleared: "+selectedThread.getBonusTickets());
         return selectedThread;
     }
 

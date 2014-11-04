@@ -6,8 +6,10 @@
 
 package nachos.kernel.devices;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Stack;
 
 import nachos.Debug;
 import nachos.machine.CPU;
@@ -59,12 +61,10 @@ public class ConsoleDriver
     /** Echo variables and constants **/
     private static final int     ECHOBUFFMAX = 10000;
     private static final int     ECHOBUFFMIN = 1;
-    private Semaphore            echoBufferSpaceAvail = new Semaphore("Output Buffer Semaphore", ECHOBUFFMAX);
-    private Lock                 echoBufferLock = new Lock("Output Buffer Lock");
-    private boolean              echoBusy = false;
-    private boolean              echoStalled = false;
-    private int                  waitingEchoThreads = 0;
+    private static int           echoBuffIndex = 0;
+    private Semaphore            echoBufferSpaceAvail = new Semaphore("Echo Buffer Semaphore", ECHOBUFFMAX);
     private Queue<Character>     echoBuffer = new LinkedList<>();
+    private Stack<Character>     ctrlRBuffer = new Stack<>();
 
     /** Interrupt handler used for console keyboard interrupts. */
     private InterruptHandler inputHandler;
@@ -121,8 +121,8 @@ public class ConsoleDriver
         inputLock.acquire();
         ensureInputHandler();
         charAvail.P();
-        Debug.ASSERT(console.isInputAvail());
-        char ch = console.getChar();
+//        Debug.ASSERT(console.isInputAvail());
+        char ch = console.getChar();//TODO, swap with the buffer
         inputLock.release();
         return ch;
     }
@@ -157,26 +157,25 @@ public class ConsoleDriver
     
     public void echo(char ch)
     {   
-        echoBufferLock.acquire();
         ensureOutputHandler();
         int oldLevel = CPU.setLevel(CPU.IntOff);
-        while(echoBuffer.size() >= ECHOBUFFMAX)
-        {
-            ++waitingEchoThreads;
-            echoBufferLock.release();
-            echoBufferSpaceAvail.P();
-            echoBufferLock.acquire();
-        }
+//        while(outputBuffer.size() >= OUTBUFFMAX)
+//        {
+//            ++waitingOutThreads;
+//            outputBufferLock.release();
+//            outputBufferSpaceAvail.P();
+//            outputBufferLock.acquire();
+//        }
         
-        echoBuffer.add(ch);
-        startEcho();
+        outputBuffer.add(ch);
+        startOutput();
+        echoBufferSpaceAvail.V();
         CPU.setLevel(oldLevel);
-        echoBufferLock.release();
     }
-
+    
     private void startOutput()
     {
-        if(outputStalled || outputBusy || (outputBuffer.size() == 0 && echoBuffer.size() == 0))
+        if(outputStalled || outputBusy || (outputBuffer.size() == 0))
             return;
         
         outputBusy = true;
@@ -188,30 +187,6 @@ public class ConsoleDriver
             {
                 --waitingOutThreads;
                 outputBufferSpaceAvail.V();
-            }
-                
-        }
-        
-        while(echoBuffer.size() > 0)
-        {
-            console.putChar(echoBuffer.remove());
-        }
-    }
-    
-    private void startEcho()
-    {
-        if(echoStalled || echoBusy || echoBuffer.size() == 0)
-            return;
-        
-        echoBusy = true;
-        char ch = echoBuffer.remove();
-        console.putChar(ch);
-        if(echoBuffer.size() <= OUTBUFFMIN)
-        {
-            while(waitingEchoThreads > 0)
-            {
-                --waitingEchoThreads;
-                echoBufferSpaceAvail.V();
             }
                 
         }
@@ -240,25 +215,114 @@ public class ConsoleDriver
         @Override
         public void handleInterrupt()
         {
+            int inc = 0;
+            boolean clearBuff = false;
+            boolean ctrlU = false;
+            boolean ctrlR = false;
             char ch = console.getChar();
             switch(ch)
             {
                 case '\n':
                     echoBuffer.add('\r');
                     echoBuffer.add(ch);
+                    clearBuff = true;
+                    inc = 2;
+                    break;
                 case '\r':
                     echoBuffer.add(ch);
                     echoBuffer.add('\n');
+                    clearBuff = true;
+                    inc = 2;
+                    break;
                 case '\b':
                     echoBuffer.add('\b');
                     echoBuffer.add(' ');
-//                    echoBuffer.add('\b');
+                    echoBuffer.add('\b');
+                    ctrlRBuffer.pop();
+                    inc = 3;
+                    break;
+                case (char)21:
+                    ctrlU = true;
+                    break;
+                case (char)18:
+                    ctrlR = true;
+                    break;
                     
                 default:
-                    echoBuffer.add(ch);
+                {
+                    if((ch >= 32 && ch <= 126))
+                    {
+                        ctrlRBuffer.add(ch);
+                        echoBuffer.add(ch);
+                        inc = 1;
+                    }
+                }
             }
-            startOutput();
-            //charAvail.V();
+            
+            Iterator<Character> buffIterator = echoBuffer.iterator();
+            
+            int i = 0;
+            while(i < echoBuffIndex)
+            {
+                buffIterator.next();
+                ++i;
+            }
+            
+            if(!ctrlU && !ctrlR)
+            {
+                while(buffIterator.hasNext())
+                {
+                    echoBufferSpaceAvail.P();
+                    echo(buffIterator.next());
+                }
+            }
+            else if(ctrlU)
+            {
+                int lineSize = echoBuffer.size();
+                
+                echoBufferSpaceAvail.P();
+                echo('\r');
+                for(int j = 0; j < lineSize; ++j)
+                {
+                    echoBufferSpaceAvail.P();
+                    echo(' ');
+                }
+                echoBufferSpaceAvail.P();
+                echo('\r');
+            }
+            else if(ctrlR)
+            {
+                echoBufferSpaceAvail.P();
+                echo('\r');
+                buffIterator = ctrlRBuffer.iterator();
+                int lineSize =echoBuffer.size();
+                
+                for(int j = 0; j < lineSize; ++j);
+                {
+                    echoBufferSpaceAvail.P();
+                    echo(' ');
+                }
+                
+                echoBufferSpaceAvail.P();
+                echo('\r');
+                
+                while(buffIterator.hasNext())
+                {
+                    char c = buffIterator.next();
+                    echoBufferSpaceAvail.P();
+                    echo(c);
+                }
+            }
+            
+            echoBuffIndex += inc;
+            
+            if(clearBuff)
+            {
+                echoBuffer.clear();
+                ctrlRBuffer.clear();
+                echoBuffIndex = 0;
+//                charAvail.V();    
+            }
         }
 
     }
@@ -273,8 +337,6 @@ public class ConsoleDriver
         {
             outputBusy = false;
             startOutput();
-//            echoBusy = false;
-//            startEcho();
         }
 
     }

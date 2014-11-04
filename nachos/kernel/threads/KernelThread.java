@@ -93,7 +93,7 @@ public class KernelThread extends NachosThread
             }
             
             avg = p*totalTickCount + (1-p)*avg;
-            System.out.println("Name = " + name +" Avg = " + avg + "   Tick Count = " + totalTickCount);
+            Debug.println('3', "Name = " + name +" Avg = " + avg + "   Tick Count = " + totalTickCount);
             
         }
 
