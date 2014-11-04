@@ -65,6 +65,8 @@ public class ConsoleDriver
     private Semaphore            echoBufferSemaphore = new Semaphore("Echo Buffer Semaphore", ECHOBUFFMAX);
     private Queue<Character>     echoBuffer = new LinkedList<>();
     private Stack<Character>     ctrlRBuffer = new Stack<>();
+    private Stack<Character>     lastCtrlRBuffer = new Stack<>();
+    
 
     /** Interrupt handler used for console keyboard interrupts. */
     private InterruptHandler inputHandler;
@@ -118,11 +120,24 @@ public class ConsoleDriver
      */
     public char getChar()
     {
+        char ch;
         inputLock.acquire();
         ensureInputHandler();
-        charAvail.P();
-//        Debug.ASSERT(console.isInputAvail());
-        char ch = console.getChar();//TODO, swap with the buffer
+        
+        if(lastCtrlRBuffer.size() > 0)
+        {
+            ch = lastCtrlRBuffer.pop();
+        }
+        
+        else
+        {
+            do
+            {
+                charAvail.P();
+            }while(lastCtrlRBuffer.size() <= 0);
+            
+            ch = lastCtrlRBuffer.pop();
+        }
         inputLock.release();
         return ch;
     }
@@ -158,15 +173,7 @@ public class ConsoleDriver
     public void echo(char ch)
     {   
         ensureOutputHandler();
-        int oldLevel = CPU.setLevel(CPU.IntOff);
-//        while(outputBuffer.size() >= OUTBUFFMAX)
-//        {
-//            ++waitingOutThreads;
-//            outputBufferLock.release();
-//            outputBufferSpaceAvail.P();
-//            outputBufferLock.acquire();
-//        }
-        
+        int oldLevel = CPU.setLevel(CPU.IntOff);        
         outputBuffer.add(ch);
         startOutput();
         echoBufferSemaphore.V();
@@ -320,10 +327,11 @@ public class ConsoleDriver
             
             if(clearBuff)
             {
+                lastCtrlRBuffer = (Stack<Character>) ctrlRBuffer.clone();
                 echoBuffer.clear();
                 ctrlRBuffer.clear();
                 echoBuffIndex = 0;
-//                charAvail.V();    
+                charAvail.V();    
             }
         }
 
