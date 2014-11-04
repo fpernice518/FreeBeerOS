@@ -126,7 +126,7 @@ public class ConsoleDriver
         
         if(lastCtrlRBuffer.size() > 0)
         {
-            ch = lastCtrlRBuffer.pop();
+            ch = lastCtrlRBuffer.remove(0);
         }
         
         else
@@ -136,7 +136,7 @@ public class ConsoleDriver
                 charAvail.P();
             }while(lastCtrlRBuffer.size() <= 0);
             
-            ch = lastCtrlRBuffer.pop();
+            ch = lastCtrlRBuffer.remove(0);
         }
         inputLock.release();
         return ch;
@@ -266,6 +266,9 @@ public class ConsoleDriver
                     }
                 }
             }
+            
+            if(ch == '\n')
+                ctrlRBuffer.push(ch);
             
             Iterator<Character> buffIterator = echoBuffer.iterator();
             
