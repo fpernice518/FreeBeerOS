@@ -238,7 +238,8 @@ public class ConsoleDriver
                     echoBuffer.add('\b');
                     echoBuffer.add(' ');
                     echoBuffer.add('\b');
-                    ctrlRBuffer.pop();
+                    if(!ctrlRBuffer.isEmpty())
+                        ctrlRBuffer.pop();
                     inc = 3;
                     break;
                 case (char)21:
@@ -289,6 +290,7 @@ public class ConsoleDriver
                 }
                 echoBufferSpaceAvail.P();
                 echo('\r');
+                ctrlRBuffer.clear();
             }
             else if(ctrlR)
             {
