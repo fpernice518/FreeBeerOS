@@ -39,7 +39,7 @@ public class ConsoleTest implements Runnable {
 	while (true) {
 	    char ch = console.getChar();
 	    
-	    console.putChar(ch);	// echo it!
+	    //console.putChar(ch);	// echo it!
 	    
 	    if(ch == '\n')
 		console.putChar('\r');

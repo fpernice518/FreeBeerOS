@@ -6,16 +6,13 @@
 
 package nachos.kernel.devices;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 
 import nachos.Debug;
 import nachos.machine.CPU;
 import nachos.machine.Console;
 import nachos.machine.InterruptHandler;
-import nachos.machine.Machine;
 import nachos.kernel.threads.Lock;
 import nachos.kernel.threads.Semaphore;
 
@@ -48,22 +45,27 @@ public class ConsoleDriver
     /** Semaphore used to indicate that an input character is available. */
     private Semaphore charAvail = new Semaphore("Console char avail", 0);
 
-    /**
-     * Semaphore used to indicate that output is ready to accept a new
-     * character.
-     */
-    private Semaphore outputDone = new Semaphore("Console output done", 1);
     
     /** Output variables and constants **/
-    private Semaphore            outputBufferSpaceAvail = new Semaphore("Output Buffer Semaphore", 10);
+    private static final int     OUTBUFFMAX = 10;
+    private static final int     OUTBUFFMIN = 2;
+    private Semaphore            outputBufferSpaceAvail = new Semaphore("Output Buffer Semaphore", OUTBUFFMAX);
     private Lock                 outputBufferLock = new Lock("Output Buffer Lock");
     private boolean              outputBusy = false;
     private boolean              outputStalled = false;
     private int                  waitingOutThreads = 0;
-    private final int            OUTBUFFMAX = 10;
-    private static final int     OUTBUFFMIN = 2;
-    private Queue<Character> outputBuffer = new LinkedList<>();
+    private Queue<Character>     outputBuffer = new LinkedList<>();
     
+    /** Echo variables and constants **/
+    private static final int     ECHOBUFFMAX = 10000;
+    private static final int     ECHOBUFFMIN = 1;
+    private Semaphore            echoBufferSpaceAvail = new Semaphore("Output Buffer Semaphore", ECHOBUFFMAX);
+    private Lock                 echoBufferLock = new Lock("Output Buffer Lock");
+    private boolean              echoBusy = false;
+    private boolean              echoStalled = false;
+    private int                  waitingEchoThreads = 0;
+    private Queue<Character>     echoBuffer = new LinkedList<>();
+
     /** Interrupt handler used for console keyboard interrupts. */
     private InterruptHandler inputHandler;
 
@@ -124,23 +126,6 @@ public class ConsoleDriver
         inputLock.release();
         return ch;
     }
-    
-    /**
-     * This looks like the old putchar() because we want to echo
-     * instantaneously and not wait for the user to input 10
-     * characters.
-     * @param ch character to be echoed
-     */
-    private void echo(char ch)
-    {
-        outputLock.acquire();
-        ensureOutputHandler();
-        outputDone.P();
-        Debug.ASSERT(!console.isOutputBusy());
-        console.putChar(ch);
-        outputLock.release();
-        
-    }
 
     /**
      * Print a single character on the console. If the console is already busy
@@ -168,79 +153,30 @@ public class ConsoleDriver
         startOutput();
         CPU.setLevel(oldLevel);
         outputBufferLock.release();
-        
-        
-        
-//        if(outputRunning == false)
-//        {
-//            outputLock.acquire();                 
-//            ensureOutputHandler();                
-//            outputDone.P();                       
-//            Debug.ASSERT(!console.isOutputBusy());
-//            //buffer.add(ch);
-//            console.putChar(ch);
-//            outputRunning = true;
-//            outputLock.release();                 
-//        }
-//        else
-//        {
-//            outputBufferSpaceAvail.P();
-//            outputBufferLock.acquire();
-//            ++testint;
-//            buffer.add(ch);
-//            outputBufferLock.release();    
-//        }
-        
-//        outputLock.acquire();
-//        ensureOutputHandler();
-//        outputDone.P();
-//        Debug.ASSERT(!console.isOutputBusy());                
-//        console.putChar(ch);
-//        outputLock.release(); 
-
-
-//        outputLock.acquire();
-//        if(buffer.size() < 10)
-//        {
-//            buffer.add(ch);
-//        }
-//        else
-//        {       
-//            ensureOutputHandler();
-//            
-//            for(int i = 0; i < buffer.size(); ++i)
-//            {               
-//                outputDone.P();
-//                Debug.ASSERT(!console.isOutputBusy());                
-//                console.putChar(buffer.get(i).charValue());
-//            }
-//
-//            buffer.clear();
-//            buffer.add(ch);
-//        }
-//        outputLock.release();
     }
-
-    /* 
-        private void startOutput () {
-    // If output stalled or already busy or nothing to do
-        if(stalled || busy || outQ.length() == 0)
-        return;                    // then just return.
-        busy = true;                   // Mark device busy
-    char c = outQ.remove();        // Dequeue first character
-        XMIT(c);                       // and transmit it.
-        if(outQ.length() <= OUTQLOWAT) 
+    
+    public void echo(char ch)
+    {   
+        echoBufferLock.acquire();
+        ensureOutputHandler();
+        int oldLevel = CPU.setLevel(CPU.IntOff);
+        while(echoBuffer.size() >= ECHOBUFFMAX)
         {
-        while(waitingThreads > 0) {  // If output queue getting short
-        waitingThreads--;
-        spaceAvail.V();        // wakeup any blocked threads.
+            ++waitingEchoThreads;
+            echoBufferLock.release();
+            echoBufferSpaceAvail.P();
+            echoBufferLock.acquire();
         }
+        
+        echoBuffer.add(ch);
+        startEcho();
+        CPU.setLevel(oldLevel);
+        echoBufferLock.release();
     }
-    }
-     */
+
     private void startOutput()
     {
-        if(outputStalled || outputBusy || outputBuffer.size() == 0)
+        if(outputStalled || outputBusy || (outputBuffer.size() == 0 && echoBuffer.size() == 0))
             return;
         
         outputBusy = true;
@@ -252,6 +188,30 @@ public class ConsoleDriver
             {
                 --waitingOutThreads;
                 outputBufferSpaceAvail.V();
+            }
+                
+        }
+        
+        while(echoBuffer.size() > 0)
+        {
+            console.putChar(echoBuffer.remove());
+        }
+    }
+    
+    private void startEcho()
+    {
+        if(echoStalled || echoBusy || echoBuffer.size() == 0)
+            return;
+        
+        echoBusy = true;
+        char ch = echoBuffer.remove();
+        console.putChar(ch);
+        if(echoBuffer.size() <= OUTBUFFMIN)
+        {
+            while(waitingEchoThreads > 0)
+            {
+                --waitingEchoThreads;
+                echoBufferSpaceAvail.V();
             }
                 
         }
@@ -280,7 +240,25 @@ public class ConsoleDriver
         @Override
         public void handleInterrupt()
         {
-            charAvail.V();
+            char ch = console.getChar();
+            switch(ch)
+            {
+                case '\n':
+                    echoBuffer.add('\r');
+                    echoBuffer.add(ch);
+                case '\r':
+                    echoBuffer.add(ch);
+                    echoBuffer.add('\n');
+                case '\b':
+                    echoBuffer.add('\b');
+                    echoBuffer.add(' ');
+//                    echoBuffer.add('\b');
+                    
+                default:
+                    echoBuffer.add(ch);
+            }
+            startOutput();
+            //charAvail.V();
         }
 
     }
@@ -290,13 +268,13 @@ public class ConsoleDriver
      */
     private class OutputHandler implements InterruptHandler
     {
-
         @Override
         public void handleInterrupt()
         {
             outputBusy = false;
             startOutput();
-            //outputDone.V();
+//            echoBusy = false;
+//            startEcho();
         }
 
     }
