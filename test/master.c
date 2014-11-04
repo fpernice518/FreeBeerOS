@@ -5,7 +5,6 @@ int main(void)
   
   char *args[] = {(char *)0};
 
-  Exec("test/franksfunzone",args, 3);
   Exec("test/one", args, 5);
   Exec("test/two", args, 15);
   Exec("test/three", args, 20);
