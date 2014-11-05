@@ -1,0 +1,154 @@
+Frank Pernice
+Christian Barry
+
+HW3 README
+
+-----------------------------------------
+
+In this homework, we have (hopefully) implemented all of the requested features.
+
+In addition, we believe we have fixed our major problem from HW2: Exec() argument
+parsing. NACHOS should now be able to parse Exec() system call arguments and pass
+them into the child address space. They are all parsed correctly and can be used
+without issue in the child process.
+
+In regards to the current assignment, we provided a script file, "hw3Make.sh"
+which should make our test cases easy to compile. simply run the following commands
+in a bash shell:
+
+       chmod a+x hw3Make.sh
+       ./hw3Make.sh
+
+These commands will compile four subsets of programs; a master program and 5 child
+programs for each subset. The master programs perform an Exec() on each of the 
+child programs. It gives each child program a set number of tickets for the 
+lottery scheduling as a third parameter. The different test programs are 
+listed below:
+
+  // Each child process will simply print its name a number of times in a loop
+  master  
+    one
+    two
+    three
+    four
+    five
+
+  // Each child process will simply hang out in a large loop and only write to 
+  // the console when it has terminated.
+  masterNoWrite
+    oneNoWrite
+    twoNoWrite
+    threeNoWrite
+    fourNoWrite
+    fiveNoWrite
+
+  // Each child process will print its name a number of times in a loop and 
+  // some of the processes will Sleep() for various amounts of time after
+  // each printout
+  masterSleep
+    oneSleep
+    twoSleep
+    threeSleep
+    fourSleep
+    fiveSleep
+
+  // Each child process will print its name a number of times in a loop and 
+  // some of the processes will Yield() after each printout
+  masterYield
+    oneYield
+    twoYield
+    threeYield
+    fourYield
+    fiveYield
+
+   IMPORTANT: To run each of these tests in full, you must only execute the 
+              master test program desired and not the child programs. While
+              there will be no issues executing the child programs themselves
+              this will not yield any interesting behavior.
+
+              An example of what your run configuration arguments should look like
+              is provided below:
+
+                    -d st+  -x test/masterXXX  -ps -lot
+
+              *XXX = type of test (see list of tests above).
+
+
+
+1) In order to implement preemptive scheduling, we had to make a number of significant
+   modifications. First, we needed to create an intermediate thread class called 
+   KernelThread and we had to refactor the project to use KernelThreads rather than NachosThreads.
+   This allowed us to add functionality to the NachosThread class which was needed 
+   later on. We needed to do this because NachosThread is hidden from us in
+   the machine.jar file. So KernelThread extends NachosThread and then UserThread extends KernelThread
+   Most importantly, this intermediate class allowed us to "interrupt" threads.
+   The KernelThread class has an internal KernelThreadInterruptHandler which we subscribe to 
+   our TimerService class from HW1. Every 100 ticks (resolution) the TimerService calls each
+   running thread's ISR which then determines if the thread has exceeded its quantum; 
+   if so, the thread yields to other waiting processes.
+
+2) The Sleep system call took a very different approach. Rather than  muck around with 
+   interrupts and timers, we dicided to utilize the Exchanger class from HW1. The call simply
+   creates a timeout Exchanger and will try to exchange an arbitrary object (in our case
+   we simply used an Integer object). However, the exchange never occurs and so the Exchanger
+   always times out (and thus the thread resumes).
+
+3) The lottery scheduler was implemented as suggested in class. That is, we do not actually
+   create Ticket objects, but rather we only keep track of the number of tickets each thread
+   posesses. Every quantum we determine the number of tickets in play by tallying up the number
+   of tickets possessed by each thread in the LotteryQueue. Once we do this, we draw a random number
+   and delegate slices of the tally to each respective thread. Threads are given a default of 1 
+   ticket; but this number can be specified as a THIRD argument to Exec(). For simplicity, 
+   our LotteryQueue is not actually a "queue" per sey. Rather, we used a Set, which handles
+   duplicate threads automatically. This greatly simplifies our logic.
+
+   IMPORTANT: To enable lottery scheduling, you must use the `-lot` argument in the 
+              run configuration. Failure to do so will instead result in round-robin
+              scheduling.
+
+4) The console driver was inspired by the sample code posted on the class webpage. This discussion
+   will consist of two parts; a discussion on the output driver and another on the input driver.
+
+   Output Driver:
+     
+     Like the provided model, semaphores are used to limit the size of the output buffer (and thus force 
+     excess calls to wait until enough characters have been removed from the buffer). Most importantly,
+     it allows threads to place a character on the console without blocking for a singificant amount of
+     time. We noticed a drastic speed increase upon implementing this scheme. The startOutput()
+     function is is used called bu both the putchar() function and the output interrupt handler. This
+     allows the output buffer to empty its contents independently of calls to putchar(). 
+
+   Input Driver:
+
+     Our original plan for this segment of the driver was to create a large queue and then pipe data 
+     directly into the putchar() function used for the output. However, we soon realized that we couldn't do
+     this because the input interrupt handler is not a thread. So we instead made a modified version 
+     of putchar() that we called echo() which does not use threads. Once we did this, we were able to
+     echo characters onto the screen. From there, it was relatively simple to implement backspace, 
+     Ctrl+U, ctrl+R, and linefeed. This was simply a matter of using a switch statement. In order
+     to implement Ctrl+R, we used a Stack to keep track of all the printable characters entered.
+     This way, when the user hits backspace, we simply need to pop the top element from the stack.
+     Then when we press CTRL+R, we can simply clear the line and echo the contents of the stack
+     bo popping until the stack is empty. It should be noted that this all happens pretty quickly, 
+     at least on our machines. Professor Stark said that we would be able to notice the re-echoing
+     of the printable characters. However, because we pipe the characters into the output buffer,
+     it seems to occur with the same efficiency as the output driver. So in order to test this
+     functionality, it is best to enter characters while running one of the provided test programs
+     which write to the console. This way, when you input characters, they get garbled with output
+     from the running processes. Then when the program terminates, you can press CTRL+R and expect
+     to see your typed characters on a single line. It can also be seen in the NoWrite tests where
+     the large loops seem to slow down the program a bit. 
+
+     Upon pressing ENTER, the afformentioned stack is cloned and then used for the getChar() function.
+     In this way all calls to getChar() will feed off of the stack rather than requesting a character
+     directly from the console. A semaphore is used when the stack becomes empty so that threads can
+     line up and wait for more characters to eventually be placed in the stack.
+
+     It should alos be noted that we slightly modified the ConsoleTest class. The original
+     ConsoleTest class echoed the characters for us on the screen and this complicated matters
+     (and we also felt it didn't belong there). So we obviously moved echoing inside of the
+     ConsoleDriver and now the consoleTest simply calls upon getChar() only.
+
+Finally, we modified the makefile so that it contains a `clean` target; this makes life easier for us.
+
+

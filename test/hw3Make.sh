@@ -22,4 +22,11 @@ make threeSleep
 make fourSleep
 make fiveSleep
 
+#no write test code
+make masterNoWrite
+make oneNoWrite
+make twoNoWrite
+make threeNoWrite
+make fourNoWrite
+make fiveNoWrite
 
