@@ -72,9 +72,12 @@ listed below:
                     -d st+  -x test/masterXXX  -ps -lot
 
               *XXX = type of test (see list of tests above).
-
-
-
+==================================================================================================================
+    VERY IMPORTANT: Unless you want to muck around with the makefile, we suggest you
+                    place your cross compiler in a folder named "mips-gcc" at the
+                    workspace level (NOT within the project itself, but at its parent
+                    directory)
+==================================================================================================================
 1) In order to implement preemptive scheduling, we had to make a number of significant
    modifications. First, we needed to create an intermediate thread class called 
    KernelThread and we had to refactor the project to use KernelThreads rather than NachosThreads.
