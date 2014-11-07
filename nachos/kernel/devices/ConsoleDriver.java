@@ -176,7 +176,7 @@ public class ConsoleDriver
         int oldLevel = CPU.setLevel(CPU.IntOff);        
         outputBuffer.add(ch);
         startOutput();
-        echoBufferSemaphore.V();
+        echoBufferSemaphore.V();    
         CPU.setLevel(oldLevel);
     }
     
