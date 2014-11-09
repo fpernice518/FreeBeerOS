@@ -205,6 +205,7 @@ class FileSystemReal extends FileSystem {
    * @param index Offset in the buffer at which to place the data.
    */
   void readSector(int sectorNumber, byte[] data, int index) {
+      //
       diskDriver.readSector(sectorNumber, data, index);
   }
   
@@ -216,6 +217,7 @@ class FileSystemReal extends FileSystem {
    * @param index Offset in the buffer from which to get the data.
    */
   void writeSector(int sectorNumber, byte[] data, int index) {
+//      System.out.println("Hello");
       diskDriver.writeSector(sectorNumber, data, index);
   }
 
@@ -295,6 +297,7 @@ class FileSystemReal extends FileSystem {
    * @param name The text name of the file to be opened.
    */
   public OpenFile open(String name) { 
+//      System.out.println("Hello bob");
     Directory directory = new Directory(NumDirEntries, this);
     OpenFile openFile = null;
     int sector;

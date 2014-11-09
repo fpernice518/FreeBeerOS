@@ -125,6 +125,16 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
                 Syscall.sleep(ticks);
                 System.out.println("****   " + ticks);
                 break;
+                
+            case Syscall.SC_Open:
+                System.out.println("Hello Open world");
+                
+                break;
+                
+            case Syscall.SC_Close:
+                break;
+                
+            
 
             }
 

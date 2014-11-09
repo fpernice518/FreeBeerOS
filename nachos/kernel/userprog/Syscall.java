@@ -71,6 +71,7 @@ public class Syscall
     /** Integer code identifying the "Sleep" system call. */
     public static final byte SC_Sleep = 12;
 
+    public static ArrayList<String> openProcesses;
     /**
      * Stop Nachos, and print out performance stats.
      */
@@ -181,6 +182,21 @@ public class Syscall
      */
     public static int open(String name)
     {
+        //if not created make a new one
+        if(openProcesses == null){
+            openProcesses = new ArrayList<String>();
+        }
+        boolean found = false;
+        for (String string : openProcesses)
+        {
+            if(name.equals(string)){
+//                found = true;
+                return -1;
+//                break;
+            }
+        }
+        
+        
         return 0;
     }
 

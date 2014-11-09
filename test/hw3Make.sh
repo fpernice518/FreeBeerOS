@@ -1,3 +1,7 @@
+make open1
+make create-test
+
+
 #normal test code
 make master
 make one
