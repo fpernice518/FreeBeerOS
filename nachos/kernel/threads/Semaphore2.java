@@ -48,6 +48,8 @@ public class Semaphore2
      * multiprocessor setting.
      */
     private final SpinLock spinLock;
+    
+//    private int 
 
     /**
      * Initialize a semaphore, so that it can be used for synchronization.

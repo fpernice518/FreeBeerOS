@@ -60,15 +60,15 @@ public class DiskDriver
     /** Only one read/write request can be sent to the disk at a time. */
     private Lock lock;
 
-//    private ArrayList<ReadWriteRequest> queue;
+    private ArrayList<ReadWriteRequest> queue;
 
     // private ArrayList<Condition> listOfThreadsInWait;
 
     private int waitingThreads = 0;
 
-    private ArrayList<Condition> condLock;
-    private ArrayList<KernelThread> ktlist;
-    private Lock lockForCondLock;
+//    private ArrayList<Condition> condLock;
+//    private ArrayList<KernelThread> ktlist;
+//    private Lock lockForCondLock;
 
     /**
      * Initialize the synchronous interface to the physical disk, in turn
@@ -83,8 +83,8 @@ public class DiskDriver
         lock = new Lock("synch disk lock");
         disk = Machine.getDisk(unit);
         disk.setHandler(new DiskIntHandler());
-//        queue = new ArrayList<ReadWriteRequest>();
-        ktlist = new ArrayList<KernelThread>();
+        queue = new ArrayList<ReadWriteRequest>();
+//        ktlist = new ArrayList<KernelThread>();
 
         // listOfThreadsInWait = new ArrayList<Condition>();
         // condLock = new ArrayList<Condition>();
@@ -132,17 +132,18 @@ public class DiskDriver
         Debug.ASSERT(0 <= sectorNumber && sectorNumber < getNumSectors());
         lock.acquire(); // only one disk I/O at a time
         // get and release front of the stack
-        System.out.println("hello bobs");
-
+//        System.out.println("hello bobs");
+        Semaphore sem = new Semaphore("Lock",0);
         ReadWriteRequest myRequest = new ReadWriteRequest(sectorNumber, data,
-                index, 'r');
-
+                index, 'r', sem);
+       
         waitingThreads++;
 
-        System.out.println("This thing is now :" + sectorNumber % 32);
-
-
-        semaphore.P(); // wait for interrupt
+//        System.out.println("This thing is now :" + sectorNumber % 32);
+        queue.add(myRequest);
+        myRequest.p();
+        System.out.println("Hello");
+//        semaphore.P(); // wait for interrupt
  
 
         disk.readRequest(sectorNumber, data, index);
@@ -166,13 +167,16 @@ public class DiskDriver
         Debug.ASSERT(0 <= sectorNumber && sectorNumber < getNumSectors());
         lock.acquire(); // only one disk I/O at a time
         // semaphore.P();
+        Semaphore sem = new Semaphore("Lock",0);
         ReadWriteRequest myRequest = new ReadWriteRequest(sectorNumber, data,
-                index, 'w');
+                index, 'w', sem);
+        
         System.out.println("This thing is now :" + sectorNumber % 32);
 //        queue.add(myRequest);
         waitingThreads++;
-
-        semaphore.P(); // wait for interrupt
+        queue.add(myRequest);
+        myRequest.p();
+//        semaphore.P(); // wait for interrupt
 
         disk.writeRequest(sectorNumber, data, index);
         lock.release();
@@ -193,23 +197,15 @@ public class DiskDriver
         public void handleInterrupt()
         {
 
+            System.out.println("Hello");
+            if (!queue.isEmpty())
+            {
+//                System.out.println("Hello");
+                queue.get(0).v();
+                queue.remove(0);
 
-//            if (!queue.isEmpty())
-//            {
-//                if (queue.size() == 1)
-//                {
-//     
-//                    semaphore.V();
-//
-//                } else
-//                {
-//                    
-//                    waitingThreads--;
-//                    semaphore.V();
-//
-//                }
-//            }
-            semaphore.V();
+            }
+//            semaphore.V();
              
 
         }
