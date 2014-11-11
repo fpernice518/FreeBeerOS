@@ -141,12 +141,13 @@ public class DiskDriver
 
 //        System.out.println("This thing is now :" + sectorNumber % 32);
         queue.add(myRequest);
-        myRequest.p();
+//        myRequest.p();
         System.out.println("Hello");
 //        semaphore.P(); // wait for interrupt
  
 
         disk.readRequest(sectorNumber, data, index);
+        myRequest.p();
         // semaphore.P(); // wait for interrupt
         lock.release();
     }
@@ -175,10 +176,11 @@ public class DiskDriver
 //        queue.add(myRequest);
         waitingThreads++;
         queue.add(myRequest);
-        myRequest.p();
+        
 //        semaphore.P(); // wait for interrupt
 
         disk.writeRequest(sectorNumber, data, index);
+        myRequest.p();
         lock.release();
     }
 
