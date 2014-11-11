@@ -55,7 +55,7 @@ public class DiskDriver
     private Disk disk;
 
     /** To synchronize requesting thread with the interrupt handler. */
-    private Semaphore2 semaphore;
+    private Semaphore semaphore;
 
     /** Only one read/write request can be sent to the disk at a time. */
     private Lock lock;
@@ -79,7 +79,7 @@ public class DiskDriver
      */
     public DiskDriver(int unit)
     {
-        semaphore = new Semaphore2("synch disk", 1);
+//        semaphore = new Semaphore2("synch di?sk", 1);
         lock = new Lock("synch disk lock");
         disk = Machine.getDisk(unit);
         disk.setHandler(new DiskIntHandler());
