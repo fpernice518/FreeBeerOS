@@ -24,10 +24,14 @@ import nachos.Debug;
 import nachos.machine.Machine;
 import nachos.machine.Disk;
 import nachos.machine.InterruptHandler;
+import nachos.machine.NachosThread;
+import nachos.kernel.Nachos;
 import nachos.kernel.filesys.ReadWriteRequest;
 import nachos.kernel.threads.Condition;
+import nachos.kernel.threads.KernelThread;
 import nachos.kernel.threads.Semaphore;
 import nachos.kernel.threads.Lock;
+import nachos.kernel.threads.Semaphore2;
 
 /**
  * This class defines a "synchronous" disk abstraction. As with other I/O
@@ -51,19 +55,19 @@ public class DiskDriver
     private Disk disk;
 
     /** To synchronize requesting thread with the interrupt handler. */
-    private Semaphore semaphore;
+    private Semaphore2 semaphore;
 
     /** Only one read/write request can be sent to the disk at a time. */
     private Lock lock;
 
-    private ArrayList<ReadWriteRequest> queue;
+//    private ArrayList<ReadWriteRequest> queue;
 
-//    private ArrayList<Condition> listOfThreadsInWait;
+    // private ArrayList<Condition> listOfThreadsInWait;
 
     private int waitingThreads = 0;
 
     private ArrayList<Condition> condLock;
-
+    private ArrayList<KernelThread> ktlist;
     private Lock lockForCondLock;
 
     /**
@@ -75,17 +79,18 @@ public class DiskDriver
      */
     public DiskDriver(int unit)
     {
-        semaphore = new Semaphore("synch disk", 1);
+        semaphore = new Semaphore2("synch disk", 1);
         lock = new Lock("synch disk lock");
         disk = Machine.getDisk(unit);
         disk.setHandler(new DiskIntHandler());
-        queue = new ArrayList<ReadWriteRequest>();
+//        queue = new ArrayList<ReadWriteRequest>();
+        ktlist = new ArrayList<KernelThread>();
 
-//        listOfThreadsInWait = new ArrayList<Condition>();
-        condLock = new ArrayList<Condition>();
-//        lockForCondLock = new Lock("just a lock");
-//        Condition firstLock = new Condition("condLock", lockForCondLock);
-//        listOfThreadsInWait.add(firstLock);
+        // listOfThreadsInWait = new ArrayList<Condition>();
+        // condLock = new ArrayList<Condition>();
+        // lockForCondLock = new Lock("just a lock");
+        // Condition firstLock = new Condition("condLock", lockForCondLock);
+        // listOfThreadsInWait.add(firstLock);
 
         waitingThreads = 0;
 
@@ -127,20 +132,18 @@ public class DiskDriver
         Debug.ASSERT(0 <= sectorNumber && sectorNumber < getNumSectors());
         lock.acquire(); // only one disk I/O at a time
         // get and release front of the stack
-         System.out.println("hello bobs");
+        System.out.println("hello bobs");
 
         ReadWriteRequest myRequest = new ReadWriteRequest(sectorNumber, data,
                 index, 'r');
-        queue.add(myRequest);
-        // Condition x = new Condition(lockNumber+"");
+
         waitingThreads++;
-        Condition cond = new Condition("", new Lock("lock"));
-        condLock.add(cond);
-        condLock.get(condLock.size()-1).await();
-        // semaphore.P(); // wait for interrupt
-        
-        int indexOf = condLock.indexOf(cond);
-        condLock.remove(indexOf);
+
+        System.out.println("This thing is now :" + sectorNumber % 32);
+
+
+        semaphore.P(); // wait for interrupt
+ 
 
         disk.readRequest(sectorNumber, data, index);
         // semaphore.P(); // wait for interrupt
@@ -165,16 +168,11 @@ public class DiskDriver
         // semaphore.P();
         ReadWriteRequest myRequest = new ReadWriteRequest(sectorNumber, data,
                 index, 'w');
-        queue.add(myRequest);
+        System.out.println("This thing is now :" + sectorNumber % 32);
+//        queue.add(myRequest);
         waitingThreads++;
-        
-        Condition cond = new Condition("", new Lock("lock"));
-        condLock.add(cond);
-        condLock.get(condLock.size() - 1).await();
 
-        int indexOf = condLock.indexOf(cond);
-        condLock.remove(indexOf);
-        // semaphore.P(); // wait for interrupt
+        semaphore.P(); // wait for interrupt
 
         disk.writeRequest(sectorNumber, data, index);
         lock.release();
@@ -190,92 +188,32 @@ public class DiskDriver
          * request that just finished.
          */
         private int lastSector = 0;
+        private boolean goingUP = true;
 
         public void handleInterrupt()
         {
 
-            // we need to choose the next one
-            System.out.println("hello bobssssss");
-            // System.out.println("");
-            if (!queue.isEmpty())
-            {
-                if (queue.size() == 1)
-                {
-                    ReadWriteRequest myRequest = queue.remove(0);
 
-                    lastSector = myRequest.getSectorNumber();
-
-                    // condLock.add(new Condition("", new Lock("lock")));
-                    condLock.get(0).signal();
-
-                } else
-                {
-                    int indexForNext = getNextClosestIndex(lastSector);
-
-                    ReadWriteRequest myRequest = queue.remove(indexForNext);
-                    lastSector = myRequest.getSectorNumber();
-                    queue.remove(indexForNext);
-                    // char requestType = myRequest.getRequestType();
-                    // byte[] data = myRequest.getData();
-                    // int sectorNumber = myRequest.getSectorNumber();
-
-                    // int index = myRequest.getIndex();
-                    // if (requestType == 'r')
-                    // {
-                    // // disk.readRequest(sectorNumber, data, index);
-                    // } else if (requestType == 'w')
-                    // {
-                    // // disk.writeRequest(sectorNumber, data, index);
-                    // }
-
-                    /*
-                     * Choose the next index
-                     */
-                    waitingThreads--;
-                    condLock.get(indexForNext).signal();
-                    // int closestIndex = getNextClosestIndex(int myNumber, int
-                    // ignoreThisIndex);
-                    // condLock[].signal();
-                }
-            }
-
-//            semaphore.V();
+//            if (!queue.isEmpty())
+//            {
+//                if (queue.size() == 1)
+//                {
+//     
+//                    semaphore.V();
+//
+//                } else
+//                {
+//                    
+//                    waitingThreads--;
+//                    semaphore.V();
+//
+//                }
+//            }
+            semaphore.V();
+             
 
         }
 
-        public int getNextClosestIndex(int myNumber)
-        {
-            int distance;
-            int c;
-            int idx;
-            // if (ignoreThisIndex != 0)
-            // {
-            distance = Math.abs(queue.get(0).getSectorNumber() - myNumber);
-            c = 1;
-            idx = 0;
-            // }
-            // else
-            // {
-            // c = 1;
-            // distance = Math.abs(queue.get(c).getSectorNumber() - myNumber);
-            // c = 2;
-            // idx = 1;
-            // }
-            for (; c < queue.size(); c++)
-            {
-                // if (c != ignoreThisIndex)
-                // {
-                int cdistance = Math.abs(queue.get(c).getSectorNumber()
-                        - myNumber);
-                if (cdistance < distance)
-                {
-                    idx = c;
-                    distance = cdistance;
-                }
-                // }
-            }
-            return idx;
-        }
     }
 
 }
