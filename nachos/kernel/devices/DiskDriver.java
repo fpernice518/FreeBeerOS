@@ -29,7 +29,7 @@ import nachos.machine.InterruptHandler;
 import nachos.machine.NachosThread;
 import nachos.kernel.Nachos;
 import nachos.kernel.filesys.ReadWriteRequest;
-import nachos.kernel.filesys.ReadWriteRequestCompare;
+import nachos.kernel.filesys.ReadWriteRequestComparator;
 import nachos.kernel.threads.Condition;
 import nachos.kernel.threads.KernelThread;
 import nachos.kernel.threads.Semaphore;
@@ -209,7 +209,7 @@ public class DiskDriver
                 // System.out.print(item.getCylinderNumber() + ",");
                 // System.out.println();
 
-                Collections.sort(queue, new ReadWriteRequestCompare());
+                Collections.sort(queue, new ReadWriteRequestComparator());
 
                 // System.out.print("After = ");
                 // for(ReadWriteRequest item : queue)

@@ -2,7 +2,7 @@ package nachos.kernel.filesys;
 
 import java.util.Comparator;
 
-public class ReadWriteRequestCompare implements Comparator<ReadWriteRequest> {
+public class ReadWriteRequestComparator implements Comparator<ReadWriteRequest> {
 
     @Override
     public int compare(ReadWriteRequest o1, ReadWriteRequest o2) {
