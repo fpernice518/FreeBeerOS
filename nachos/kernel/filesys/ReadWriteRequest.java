@@ -1,8 +1,10 @@
 package nachos.kernel.filesys;
 
+import java.util.Comparator;
+
 import nachos.kernel.threads.Semaphore;
 
-public class ReadWriteRequest
+public class ReadWriteRequest implements Comparable<ReadWriteRequest>
 {
     private int sectorNumber,  index;
     private byte[]  data;
@@ -44,5 +46,14 @@ public class ReadWriteRequest
         sem.V();
     }
     
-    
+    public int getCylinderNumber()
+    {
+        return sectorNumber % 32;
+    }
+
+    @Override
+    public int compareTo(ReadWriteRequest o)
+    {
+        return this.getCylinderNumber() - o.getCylinderNumber();
+    }
 }

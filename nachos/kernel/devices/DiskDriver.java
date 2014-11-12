@@ -19,6 +19,8 @@
 package nachos.kernel.devices;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 import nachos.Debug;
 import nachos.machine.Machine;
@@ -27,6 +29,7 @@ import nachos.machine.InterruptHandler;
 import nachos.machine.NachosThread;
 import nachos.kernel.Nachos;
 import nachos.kernel.filesys.ReadWriteRequest;
+import nachos.kernel.filesys.ReadWriteRequestCompare;
 import nachos.kernel.threads.Condition;
 import nachos.kernel.threads.KernelThread;
 import nachos.kernel.threads.Semaphore;
@@ -202,7 +205,18 @@ public class DiskDriver
             System.out.println("Hello");
             if (!queue.isEmpty())
             {
-//                System.out.println("Hello");
+                System.out.print("Before = ");
+                for(ReadWriteRequest item : queue)
+                    System.out.print(item.getCylinderNumber() + ",");
+                System.out.println();
+                
+                Collections.sort(queue, new ReadWriteRequestCompare());
+                
+                System.out.print("After = ");
+                for(ReadWriteRequest item : queue)
+                    System.out.print(item.getCylinderNumber() + ",");
+                System.out.println();
+                
                 queue.get(0).v();
                 queue.remove(0);
 
