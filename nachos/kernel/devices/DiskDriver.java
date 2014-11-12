@@ -69,9 +69,9 @@ public class DiskDriver
 
     private int waitingThreads = 0;
 
-//    private ArrayList<Condition> condLock;
-//    private ArrayList<KernelThread> ktlist;
-//    private Lock lockForCondLock;
+    // private ArrayList<Condition> condLock;
+    // private ArrayList<KernelThread> ktlist;
+    // private Lock lockForCondLock;
 
     /**
      * Initialize the synchronous interface to the physical disk, in turn
@@ -82,12 +82,12 @@ public class DiskDriver
      */
     public DiskDriver(int unit)
     {
-//        semaphore = new Semaphore2("synch di?sk", 1);
+        // semaphore = new Semaphore2("synch di?sk", 1);
         lock = new Lock("synch disk lock");
         disk = Machine.getDisk(unit);
         disk.setHandler(new DiskIntHandler());
         queue = new ArrayList<ReadWriteRequest>();
-//        ktlist = new ArrayList<KernelThread>();
+        // ktlist = new ArrayList<KernelThread>();
 
         // listOfThreadsInWait = new ArrayList<Condition>();
         // condLock = new ArrayList<Condition>();
@@ -135,19 +135,18 @@ public class DiskDriver
         Debug.ASSERT(0 <= sectorNumber && sectorNumber < getNumSectors());
         lock.acquire(); // only one disk I/O at a time
         // get and release front of the stack
-//        System.out.println("hello bobs");
-        Semaphore sem = new Semaphore("Lock",0);
+        // System.out.println("hello bobs");
+        Semaphore sem = new Semaphore("Lock", 0);
         ReadWriteRequest myRequest = new ReadWriteRequest(sectorNumber, data,
                 index, 'r', sem);
-       
+
         waitingThreads++;
 
-//        System.out.println("This thing is now :" + sectorNumber % 32);
+        // System.out.println("This thing is now :" + sectorNumber % 32);
         queue.add(myRequest);
-//        myRequest.p();
+        // myRequest.p();
         System.out.println("Hello");
-//        semaphore.P(); // wait for interrupt
- 
+        // semaphore.P(); // wait for interrupt
 
         disk.readRequest(sectorNumber, data, index);
         myRequest.p();
@@ -171,16 +170,16 @@ public class DiskDriver
         Debug.ASSERT(0 <= sectorNumber && sectorNumber < getNumSectors());
         lock.acquire(); // only one disk I/O at a time
         // semaphore.P();
-        Semaphore sem = new Semaphore("Lock",0);
+        Semaphore sem = new Semaphore("Lock", 0);
         ReadWriteRequest myRequest = new ReadWriteRequest(sectorNumber, data,
                 index, 'w', sem);
-        
+
         System.out.println("This thing is now :" + sectorNumber % 32);
-//        queue.add(myRequest);
+        // queue.add(myRequest);
         waitingThreads++;
         queue.add(myRequest);
-        
-//        semaphore.P(); // wait for interrupt
+
+        // semaphore.P(); // wait for interrupt
 
         disk.writeRequest(sectorNumber, data, index);
         myRequest.p();
@@ -202,28 +201,57 @@ public class DiskDriver
         public void handleInterrupt()
         {
 
-            System.out.println("Hello");
+            // System.out.println("Hello");
             if (!queue.isEmpty())
             {
-                System.out.print("Before = ");
-                for(ReadWriteRequest item : queue)
-                    System.out.print(item.getCylinderNumber() + ",");
-                System.out.println();
-                
+                // System.out.print("Before = ");
+                // for(ReadWriteRequest item : queue)
+                // System.out.print(item.getCylinderNumber() + ",");
+                // System.out.println();
+
                 Collections.sort(queue, new ReadWriteRequestCompare());
-                
-                System.out.print("After = ");
-                for(ReadWriteRequest item : queue)
-                    System.out.print(item.getCylinderNumber() + ",");
-                System.out.println();
-                
-                queue.get(0).v();
-                queue.remove(0);
+
+                // System.out.print("After = ");
+                // for(ReadWriteRequest item : queue)
+                // System.out.print(item.getCylinderNumber() + ",");
+                // System.out.println();
+                int x = getNextFromQueue();
+                queue.get(x).v();
+                queue.remove(x);
 
             }
-//            semaphore.V();
-             
 
+        }
+
+        private int getNextFromQueue()
+        {
+
+            while (true)
+            {
+                for (int i = 0; i < queue.size(); i++)
+                {
+                    if (queue.get(i).getCylinderNumber() == lastSector)
+                    {
+                        return i;
+                    }
+                }
+                if (lastSector == 31)
+                {
+                    goingUP = false;
+                } else if (lastSector == 0)
+                {
+                    goingUP = true;
+                }
+                if (goingUP)
+                {
+                    lastSector++;
+                } else
+                {
+                    lastSector--;
+                }
+               
+            }
+            // return 1;
         }
 
     }
