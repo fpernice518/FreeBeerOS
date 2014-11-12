@@ -5,3 +5,6 @@ make twoFileSys
 make threeFileSys
 make fourFileSys
 make fiveFileSys
+
+make first
+make extd

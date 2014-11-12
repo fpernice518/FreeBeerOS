@@ -127,11 +127,22 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
                 break;
                 
             case Syscall.SC_Open:
-                System.out.println("Hello Open world");
-                
+//                System.out.println("Hello Open world");
+//               int names = CPU.readRegister(4);
+                addrSpace = ((UserThread) NachosThread.currentThread()).space;
+                byte namechars[] = addrSpace.getCString(CPU.readRegister(4));
+                String thisname = new String(namechars);
+//                System.out.println(thisname);
+                int idOfOpenFile = Syscall.open(thisname);
+                CPU.writeRegister(2, idOfOpenFile);
+//                System.out.println("ell");
                 break;
                 
             case Syscall.SC_Close:
+                int closeThisThing = CPU.readRegister(4);
+                Syscall.close(closeThisThing);
+                
+                
                 break;
                 
             

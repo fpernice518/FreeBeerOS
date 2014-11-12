@@ -10,6 +10,8 @@ import java.util.ArrayList;
 
 import nachos.Debug;
 import nachos.kernel.Nachos;
+import nachos.kernel.filesys.FileSystem;
+import nachos.kernel.filesys.OpenFile;
 import nachos.kernel.threads.Exchanger;
 import nachos.kernel.threads.Exchanger.TimeoutException;
 import nachos.machine.CPU;
@@ -71,7 +73,7 @@ public class Syscall
     /** Integer code identifying the "Sleep" system call. */
     public static final byte SC_Sleep = 12;
 
-    public static ArrayList<String> openProcesses;
+    public static ArrayList<OpenFile> openProcesses;
     /**
      * Stop Nachos, and print out performance stats.
      */
@@ -184,20 +186,12 @@ public class Syscall
     {
         //if not created make a new one
         if(openProcesses == null){
-            openProcesses = new ArrayList<String>();
-        }
-        boolean found = false;
-        for (String string : openProcesses)
-        {
-            if(name.equals(string)){
-//                found = true;
-                return -1;
-//                break;
-            }
+            openProcesses = new ArrayList<OpenFile>();
         }
         
-        
-        return 0;
+        OpenFile x = Nachos.fileSystem.open(name);
+        openProcesses.add(x);
+        return openProcesses.indexOf(x);
     }
 
     /**
@@ -263,12 +257,7 @@ public class Syscall
     public static void close(int id)
     {
 
-        // exec can do the join but thats all else reject the living shit out of
-        // it
-        // check if parent is still alive.
-        // if parent isnt alive then system must deal with it
-        // children with parents alive then it should wait
-        // clear out memory then give it back
+        openProcesses.remove(id);
     }
 
     /*
