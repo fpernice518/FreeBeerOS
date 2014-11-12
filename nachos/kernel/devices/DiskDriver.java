@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.Comparator;
 
 import nachos.Debug;
+import nachos.machine.CPU;
 import nachos.machine.Machine;
 import nachos.machine.Disk;
 import nachos.machine.InterruptHandler;
@@ -68,6 +69,8 @@ public class DiskDriver
     // private ArrayList<Condition> listOfThreadsInWait;
 
     private int waitingThreads = 0;
+
+    private boolean outputBusy = false;
 
     // private ArrayList<Condition> condLock;
     // private ArrayList<KernelThread> ktlist;
@@ -132,26 +135,28 @@ public class DiskDriver
      */
     public void readSector(int sectorNumber, byte[] data, int index)
     {
-        Debug.ASSERT(0 <= sectorNumber && sectorNumber < getNumSectors());
         lock.acquire(); // only one disk I/O at a time
+        int oldLevel = CPU.setLevel(CPU.IntOff);
+        Debug.ASSERT(0 <= sectorNumber && sectorNumber < getNumSectors());
         // get and release front of the stack
-        // System.out.println("hello bobs");
         Semaphore sem = new Semaphore("Lock", 0);
         ReadWriteRequest myRequest = new ReadWriteRequest(sectorNumber, data,
                 index, 'r', sem);
 
-        waitingThreads++;
-
-        // System.out.println("This thing is now :" + sectorNumber % 32);
         queue.add(myRequest);
-        // myRequest.p();
-        System.out.println("Hello");
-        // semaphore.P(); // wait for interrupt
-
-        disk.readRequest(sectorNumber, data, index);
-        myRequest.p();
-        // semaphore.P(); // wait for interrupt
+        startOutput(myRequest);
+        CPU.setLevel(oldLevel);
         lock.release();
+    }
+
+    private void startOutput(ReadWriteRequest myRequest)
+    {
+        if(outputBusy == true || queue.size() == 0)
+            return;
+        
+        outputBusy = true;
+        queue.remove(myRequest);
+        disk.readRequest(myRequest.getSectorNumber(), myRequest.getData(), myRequest.getIndex());
     }
 
     /**
@@ -200,27 +205,24 @@ public class DiskDriver
 
         public void handleInterrupt()
         {
-
-            // System.out.println("Hello");
+            outputBusy = false;
             if (!queue.isEmpty())
             {
-                // System.out.print("Before = ");
-                // for(ReadWriteRequest item : queue)
-                // System.out.print(item.getCylinderNumber() + ",");
-                // System.out.println();
+                 System.out.print("Before = ");
+                 for(ReadWriteRequest item : queue)
+                 System.out.print(item.getCylinderNumber() + ",");
+                 System.out.println();
 
-                Collections.sort(queue, new ReadWriteRequestComparator());
+                 Collections.sort(queue, new ReadWriteRequestComparator());
 
-                // System.out.print("After = ");
-                // for(ReadWriteRequest item : queue)
-                // System.out.print(item.getCylinderNumber() + ",");
-                // System.out.println();
-                int x = getNextFromQueue();
-                queue.get(x).v();
-                queue.remove(x);
-
+                 System.out.print("After = ");
+                 for(ReadWriteRequest item : queue)
+                 System.out.print(item.getCylinderNumber() + ",");
+                 System.out.println();
+                 
+                 int x = getNextFromQueue();
+                 startOutput(queue.get(x));
             }
-
         }
 
         private int getNextFromQueue()
