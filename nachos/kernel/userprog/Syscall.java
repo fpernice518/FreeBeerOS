@@ -151,6 +151,8 @@ public class Syscall
 
     /** OpenFileId used for output to the display. */
     public static final int ConsoleOutput = 1;
+    
+    public static int freeId = 2;
 
     /**
      * Create a Nachos file with a specified name.
@@ -190,9 +192,19 @@ public class Syscall
         }
         
         OpenFile x = Nachos.fileSystem.open(name);
+        x.setId(freeId);
+        freeId++;
         openProcesses.add(x);
-        return openProcesses.indexOf(x);
+        return x.getId();
     }
+    
+//    public static OpenFile getFIle(int x){
+//        if(openProcesses != null){
+////            openProcesses = new ArrayList<OpenFile>();
+//            return openProcesses.get(x-2);
+//        }
+//        return null;
+//    }
 
     /**
      * Write "size" bytes from "buffer" to the open file.
@@ -212,6 +224,9 @@ public class Syscall
             {
                 Nachos.consoleDriver.putChar((char) buffer[i]);
             }           
+        }
+        else{
+//            OpenFile value = openProcesses.get(id-2);
         }
     }
 
@@ -244,6 +259,9 @@ public class Syscall
             }
 
         }
+        else{
+//            OpenFile value =  openProcesses.get(id-2);
+        }
         return returnBytes;
 
     }
@@ -256,8 +274,16 @@ public class Syscall
      */
     public static void close(int id)
     {
-
-        openProcesses.remove(id);
+        int location = 0 ;
+        for (OpenFile openFile : openProcesses)
+        {
+            if(openFile.getId() == id){
+                
+                break;
+            }
+            location++;
+        }
+        openProcesses.remove(location);
     }
 
     /*

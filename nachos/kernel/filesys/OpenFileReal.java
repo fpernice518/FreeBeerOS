@@ -49,6 +49,8 @@ class OpenFileReal implements OpenFile {
 
     /** Current position within the file. */
     private int seekPosition;
+    
+    private int id;
 
     /**
      * Open a Nachos file for reading and writing.  Bring the file header
@@ -246,6 +248,16 @@ class OpenFileReal implements OpenFile {
 	// it must be written back to the disk at this point.
 	hdr = null;  // Ensure further access fails.
 	return(1);
+    }
+
+    public int getId()
+    {
+        return id;
+    }
+
+    public void setId(int id)
+    {
+        this.id = id;
     }
 
 }

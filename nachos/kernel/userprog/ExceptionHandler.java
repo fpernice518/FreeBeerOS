@@ -119,7 +119,7 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
                 int exit = MemAlloc.getInstance()
                         .setRelation(parentid, childid);
                 CPU.writeRegister(2, exit);
-
+                break;
             case Syscall.SC_Sleep:
                 int ticks = CPU.readRegister(4);
                 Syscall.sleep(ticks);

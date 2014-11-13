@@ -156,4 +156,18 @@ class OpenFileStub implements OpenFile {
       }
       return(1);
   }
+
+@Override
+public int getId()
+{
+    // TODO Auto-generated method stub
+    return 0;
+}
+
+@Override
+public void setId(int x)
+{
+    // TODO Auto-generated method stub
+    
+}
 }

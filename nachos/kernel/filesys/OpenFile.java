@@ -97,4 +97,8 @@ public interface OpenFile {
      * nonzero.
      */
     public int close();
+    
+    public int getId();
+    
+    public void setId(int x);
 }
