@@ -27,7 +27,7 @@ int main()
   	Write("count\n\r",7,ConsoleOutput);	
   }
   Close(fd);
-
+  i =0;
   for (; p < 25; ++p)
   	{
    		buf[p] = (char)0;	
