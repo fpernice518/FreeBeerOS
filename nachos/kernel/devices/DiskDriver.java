@@ -18,23 +18,22 @@
 
 package nachos.kernel.devices;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 
 import nachos.Debug;
+import nachos.machine.CPU;
 import nachos.machine.Machine;
 import nachos.machine.Disk;
 import nachos.machine.InterruptHandler;
-import nachos.machine.NachosThread;
-import nachos.kernel.Nachos;
 import nachos.kernel.filesys.ReadWriteRequest;
 import nachos.kernel.filesys.ReadWriteRequestComparator;
-import nachos.kernel.threads.Condition;
-import nachos.kernel.threads.KernelThread;
 import nachos.kernel.threads.Semaphore;
 import nachos.kernel.threads.Lock;
-import nachos.kernel.threads.Semaphore2;
 
 /**
  * This class defines a "synchronous" disk abstraction. As with other I/O
@@ -57,8 +56,7 @@ public class DiskDriver
     /** Raw disk device. */
     private Disk disk;
 
-    /** To synchronize requesting thread with the interrupt handler. */
-    private Semaphore semaphore;
+    ReadWriteRequest currentRequest;
 
     /** Only one read/write request can be sent to the disk at a time. */
     private Lock lock;
@@ -67,7 +65,7 @@ public class DiskDriver
 
     // private ArrayList<Condition> listOfThreadsInWait;
 
-    private int waitingThreads = 0;
+    private boolean outputBusy = false;
 
     // private ArrayList<Condition> condLock;
     // private ArrayList<KernelThread> ktlist;
@@ -94,9 +92,6 @@ public class DiskDriver
         // lockForCondLock = new Lock("just a lock");
         // Condition firstLock = new Condition("condLock", lockForCondLock);
         // listOfThreadsInWait.add(firstLock);
-
-        waitingThreads = 0;
-
     }
 
     /**
@@ -134,24 +129,34 @@ public class DiskDriver
     {
         Debug.ASSERT(0 <= sectorNumber && sectorNumber < getNumSectors());
         lock.acquire(); // only one disk I/O at a time
+        int oldLevel = CPU.setLevel(CPU.IntOff);
         // get and release front of the stack
-        // System.out.println("hello bobs");
         Semaphore sem = new Semaphore("Lock", 0);
         ReadWriteRequest myRequest = new ReadWriteRequest(sectorNumber, data,
                 index, 'r', sem);
 
-        waitingThreads++;
-
-        // System.out.println("This thing is now :" + sectorNumber % 32);
         queue.add(myRequest);
-        // myRequest.p();
-        System.out.println("Hello");
-        // semaphore.P(); // wait for interrupt
-
-        disk.readRequest(sectorNumber, data, index);
-        myRequest.p();
-        // semaphore.P(); // wait for interrupt
+        System.out.println(queue.size());
+        startOutput(myRequest, true);
+        CPU.setLevel(oldLevel);
         lock.release();
+    }
+
+    private void startOutput(ReadWriteRequest myRequest, boolean read)
+    {
+        if(outputBusy == true || queue.size() == 0)
+            return;
+        
+        outputBusy = true;
+        currentRequest = myRequest;
+        System.out.println(queue.size());
+        queue.remove(myRequest);
+        if(read)
+            disk.readRequest(myRequest.getSectorNumber(), myRequest.getData(), myRequest.getIndex());
+        else
+            disk.writeRequest(myRequest.getSectorNumber(), myRequest.getData(), myRequest.getIndex());
+
+        myRequest.p();
     }
 
     /**
@@ -173,17 +178,27 @@ public class DiskDriver
         Semaphore sem = new Semaphore("Lock", 0);
         ReadWriteRequest myRequest = new ReadWriteRequest(sectorNumber, data,
                 index, 'w', sem);
+        System.out.println("bob");
+        logBytes(data);
 
-        System.out.println("This thing is now :" + sectorNumber % 32);
-        // queue.add(myRequest);
-        waitingThreads++;
         queue.add(myRequest);
+        startOutput(myRequest, false);
 
-        // semaphore.P(); // wait for interrupt
-
-        disk.writeRequest(sectorNumber, data, index);
-        myRequest.p();
         lock.release();
+    }
+    
+    private void logBytes(byte[] bytes)
+    {
+//        System.out.println("bub");
+        try(PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("log", true)))) {
+            for(byte b : bytes)
+            {
+                out.print(Integer.toHexString(b));
+                out.print(',');
+            }
+            out.println();
+        }catch (IOException e) {
+        }
     }
 
     /**
@@ -200,27 +215,30 @@ public class DiskDriver
 
         public void handleInterrupt()
         {
-
-            // System.out.println("Hello");
+            currentRequest.v();
+            outputBusy = false;
             if (!queue.isEmpty())
             {
-                // System.out.print("Before = ");
-                // for(ReadWriteRequest item : queue)
-                // System.out.print(item.getCylinderNumber() + ",");
-                // System.out.println();
+                 System.out.print("Before = ");
+                 for(ReadWriteRequest item : queue)
+                 System.out.print(item.getCylinderNumber() + ",");
+                 System.out.println(queue.size());
+                 System.out.println();
 
-                Collections.sort(queue, new ReadWriteRequestComparator());
+                 Collections.sort(queue, new ReadWriteRequestComparator());
 
-                // System.out.print("After = ");
-                // for(ReadWriteRequest item : queue)
-                // System.out.print(item.getCylinderNumber() + ",");
-                // System.out.println();
-                int x = getNextFromQueue();
-                queue.get(x).v();
-                queue.remove(x);
-
+                 System.out.print("After = ");
+                 for(ReadWriteRequest item : queue)
+                 System.out.print(item.getCylinderNumber() + ",");
+                 System.out.println();
+                 
+                 ReadWriteRequest request = queue.get(getNextFromQueue());
+                 
+                 if(request.getRequestType() == 'r')
+                     startOutput(request, true);
+                 else if(request.getRequestType() == 'w')
+                     startOutput(request, false);
             }
-
         }
 
         private int getNextFromQueue()
@@ -251,7 +269,6 @@ public class DiskDriver
                 }
                
             }
-            // return 1;
         }
 
     }

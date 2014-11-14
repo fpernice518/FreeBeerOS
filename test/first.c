@@ -7,6 +7,10 @@ int main()
   Write("create2\n\r", 8, ConsoleOutput);
   Write("create3\n\r", 8, ConsoleOutput);
   fd = Open("extd");
+  char buf[25];
+
+  Read(buf, 25, fd);
+  Write(buf, 25, fd);
   // Write(fd, 1, ConsoleOutput);
   int i = 0;
   for (; i < fd; ++i)

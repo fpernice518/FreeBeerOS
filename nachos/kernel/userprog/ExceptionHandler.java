@@ -99,11 +99,13 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
                 break;
 
             case Syscall.SC_Read:
+                addrSpace = ((UserThread) NachosThread.currentThread()).space;
                 ptr = CPU.readRegister(4);
                 len = CPU.readRegister(5);
                 buf = new byte[len];
-                System.arraycopy(Machine.mainMemory, ptr, buf, 0, len);
+                buf = addrSpace.copyIntoKernel(ptr, len);
                 Syscall.read(buf, len, CPU.readRegister(6));
+                addrSpace.pushToMemory(ptr, buf);
                 break;
 
             case Syscall.SC_Yield:

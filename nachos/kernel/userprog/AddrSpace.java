@@ -209,7 +209,7 @@ public class AddrSpace
         byte[] copy = new byte[length];
 
         int start = getPhysicalAddress(ptr);
-        //TODO: fix for non-contiguous pages
+        // TODO: fix for non-contiguous pages
         System.arraycopy(Machine.mainMemory, start, copy, 0, length);
         return copy;
     }
@@ -326,18 +326,32 @@ public class AddrSpace
         int physAddr = getPhysicalAddress(virtAddr);
         Machine.mainMemory[physAddr] = b;
     }
-    
+
+    public void pushToMemory(int virtAddr, byte b[])
+    {
+        // int physAddr = getPhysicalAddress(virtAddr);
+        for (int i = 0; i < b.length; i++)
+        {
+            pushToMemory(virtAddr+i, b[i]);
+        }
+
+    }
+
     /**
      * Pushes a 1 word quantity to memory. Assumes that programer has allocated
      * proper space above the provided virtual address
-     * @param virtAddr -address to begin pushing data
-     * @param i word to push.
+     * 
+     * @param virtAddr
+     *            -address to begin pushing data
+     * @param i
+     *            word to push.
      */
     public void pushToMemory(int virtAddr, int i)
     {
-        byte[] bytes = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(i).array();
-        
-        for(byte b : bytes)
+        byte[] bytes = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN)
+                .putInt(i).array();
+
+        for (byte b : bytes)
         {
             pushToMemory(virtAddr, b);
             ++virtAddr;

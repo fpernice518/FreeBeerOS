@@ -7,6 +7,7 @@
 package nachos.kernel.userprog;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import nachos.Debug;
 import nachos.kernel.Nachos;
@@ -69,11 +70,12 @@ public class Syscall
 
     /** Integer code identifying the "Remove" system call. */
     public static final byte SC_Remove = 11;
-    
+
     /** Integer code identifying the "Sleep" system call. */
     public static final byte SC_Sleep = 12;
 
     public static ArrayList<OpenFile> openProcesses;
+
     /**
      * Stop Nachos, and print out performance stats.
      */
@@ -151,7 +153,7 @@ public class Syscall
 
     /** OpenFileId used for output to the display. */
     public static final int ConsoleOutput = 1;
-    
+
     public static int freeId = 2;
 
     /**
@@ -186,25 +188,26 @@ public class Syscall
      */
     public static int open(String name)
     {
-        //if not created make a new one
-        if(openProcesses == null){
+        // if not created make a new one
+        if (openProcesses == null)
+        {
             openProcesses = new ArrayList<OpenFile>();
         }
-        
+
         OpenFile x = Nachos.fileSystem.open(name);
         x.setId(freeId);
         freeId++;
         openProcesses.add(x);
         return x.getId();
     }
-    
-//    public static OpenFile getFIle(int x){
-//        if(openProcesses != null){
-////            openProcesses = new ArrayList<OpenFile>();
-//            return openProcesses.get(x-2);
-//        }
-//        return null;
-//    }
+
+    // public static OpenFile getFIle(int x){
+    // if(openProcesses != null){
+    // // openProcesses = new ArrayList<OpenFile>();
+    // return openProcesses.get(x-2);
+    // }
+    // return null;
+    // }
 
     /**
      * Write "size" bytes from "buffer" to the open file.
@@ -223,10 +226,26 @@ public class Syscall
             for (int i = 0; i < size; i++)
             {
                 Nachos.consoleDriver.putChar((char) buffer[i]);
-            }           
-        }
-        else{
-//            OpenFile value = openProcesses.get(id-2);
+            }
+        } else
+        {
+
+            OpenFile openFile = null;
+            for (Iterator iterator = openProcesses.iterator(); iterator
+                    .hasNext();)
+            {
+                openFile = (OpenFile) iterator.next();
+                if (openFile.getId() == id)
+                {
+                    break;
+                }
+
+            }
+
+            if (openFile != null)
+                openFile.write(buffer, 0, size);
+            // System.out.println("s");
+            // OpenFile value = openProcesses.get(id-2);
         }
     }
 
@@ -258,9 +277,26 @@ public class Syscall
                 returnBytes++;
             }
 
-        }
-        else{
-//            OpenFile value =  openProcesses.get(id-2);
+        } else
+        {
+            OpenFile openFile = null;
+
+            for (Iterator iterator = openProcesses.iterator(); iterator
+                    .hasNext();)
+            {
+                openFile = (OpenFile) iterator.next();
+                if (openFile.getId() == id)
+                {
+                    break;
+                }
+
+            }
+
+            if (openFile != null)
+                return openFile.read(buffer, 0, size);
+            // System.out.println("");
+
+            // OpenFile value = openProcesses.;
         }
         return returnBytes;
 
@@ -274,16 +310,17 @@ public class Syscall
      */
     public static void close(int id)
     {
-        int location = 0 ;
+        int location = 0;
         for (OpenFile openFile : openProcesses)
         {
-            if(openFile.getId() == id){
-                
+            if (openFile.getId() == id)
+            {
+
                 break;
             }
             location++;
         }
-        openProcesses.remove(location);
+        openProcesses.remove(location).close();
     }
 
     /*
@@ -309,10 +346,10 @@ public class Syscall
      */
     public static void yield()
     {
-       // ((KernelThread) NachosThread.currentThread())
+        // ((KernelThread) NachosThread.currentThread())
         Nachos.scheduler.yieldThread();
     }
-    
+
     public static void sleep(int timeout)
     {
         Exchanger e = new Exchanger<>();
