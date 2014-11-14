@@ -298,8 +298,8 @@ public class Syscall
             }
 
             if (openFile != null)
-                return openFile.read(buffer, 0, size);
-            // System.out.println("");
+               openFile.read(buffer, 0, size);
+             System.out.println("");
 
             // OpenFile value = openProcesses.;
         }

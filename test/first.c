@@ -9,13 +9,13 @@ int main()
   fd = Open("extd");
   char buf[25];
   int p = 0;
-for (; p < 25; ++p)
-  {
-   buf[p] = (char)0;	
-  }  
- buf[0] = 'a';
- buf[1] = 'b';
- buf[2] = 'c';
+	for (; p < 25; ++p)
+  		{
+   		buf[p] = (char)0;	
+  		}  
+ 	buf[0] = 'a';
+ 	buf[1] = 'b';
+ 	buf[2] = 'c';
 
 
   // Read(buf, 25`, fd);
@@ -27,5 +27,16 @@ for (; p < 25; ++p)
   	Write("count\n\r",7,ConsoleOutput);	
   }
   Close(fd);
+
+  for (; p < 25; ++p)
+  	{
+   		buf[p] = (char)0;	
+  	}  
+  	fd = Open("extd");
+  	Read(buf, 25, fd);
+  	Write(buf,4,ConsoleOutput);
+  	Close(fd);
+
+
   //-d + -d f -d t -cp test/open1 open1 -cp test/create-test create -x open1
 }
