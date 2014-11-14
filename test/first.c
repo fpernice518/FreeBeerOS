@@ -8,8 +8,17 @@ int main()
   Write("create3\n\r", 8, ConsoleOutput);
   fd = Open("extd");
   char buf[25];
+  int p = 0;
+for (; p < 25; ++p)
+  {
+   buf[p] = (char)0;	
+  }  
+ buf[0] = 'a';
+ buf[1] = 'b';
+ buf[2] = 'c';
 
-  Read(buf, 25, fd);
+
+  // Read(buf, 25`, fd);
   Write(buf, 25, fd);
   // Write(fd, 1, ConsoleOutput);
   int i = 0;

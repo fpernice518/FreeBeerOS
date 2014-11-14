@@ -219,7 +219,7 @@ public class Syscall
      * @param id
      *            The OpenFileId of the file to which to write the data.
      */
-    public static void write(byte buffer[], int size, int id)
+    public static int write(byte buffer[], int size, int id)
     {
         if (id == ConsoleOutput)
         {
@@ -227,6 +227,7 @@ public class Syscall
             {
                 Nachos.consoleDriver.putChar((char) buffer[i]);
             }
+            return 0;
         } else
         {
 
@@ -242,8 +243,12 @@ public class Syscall
 
             }
 
-            if (openFile != null)
-                openFile.write(buffer, 0, size);
+            if (openFile != null){
+                return openFile.write(buffer, 0, size);
+                
+                
+            }
+            return 0;
             // System.out.println("s");
             // OpenFile value = openProcesses.get(id-2);
         }
