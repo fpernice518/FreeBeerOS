@@ -1,14 +1,14 @@
 // DiskDriver.java
-//	Class for synchronous access of the disk.  The physical disk 
-//	is an asynchronous device (disk requests return immediately, and
-//	an interrupt happens later on).  This is a layer on top of
-//	the disk providing a synchronous interface (requests wait until
-//	the request completes).
+//  Class for synchronous access of the disk.  The physical disk 
+//  is an asynchronous device (disk requests return immediately, and
+//  an interrupt happens later on).  This is a layer on top of
+//  the disk providing a synchronous interface (requests wait until
+//  the request completes).
 //
-//	Uses a semaphore to synchronize the interrupt handlers with the
-//	pending requests.  And, because the physical disk can only
-//	handle one operation at a time, uses a lock to enforce mutual
-//	exclusion.
+//  Uses a semaphore to synchronize the interrupt handlers with the
+//  pending requests.  And, because the physical disk can only
+//  handle one operation at a time, uses a lock to enforce mutual
+//  exclusion.
 //
 // Copyright (c) 1992-1993 The Regents of the University of California.
 // Copyright (c) 1998 Rice University.
@@ -59,13 +59,17 @@ public class DiskDriver
     ReadWriteRequest currentRequest;
 
     /** Only one read/write request can be sent to the disk at a time. */
-    private Lock lock;
-
+    private Lock queueLock;
+    private Lock diskLock;
+    private Semaphore diskSemaphore;
     private ArrayList<ReadWriteRequest> queue;
 
     // private ArrayList<Condition> listOfThreadsInWait;
 
     private boolean outputBusy = false;
+    
+    private int lastSector = 0;
+    private boolean goingUP = true;
 
     // private ArrayList<Condition> condLock;
     // private ArrayList<KernelThread> ktlist;
@@ -81,7 +85,9 @@ public class DiskDriver
     public DiskDriver(int unit)
     {
         // semaphore = new Semaphore2("synch di?sk", 1);
-        lock = new Lock("synch disk lock");
+        queueLock = new Lock("disk request queue lock");
+        diskLock = new Lock("disk lock");
+        diskSemaphore = new Semaphore("disk semaphore", 0);
         disk = Machine.getDisk(unit);
         disk.setHandler(new DiskIntHandler());
         queue = new ArrayList<ReadWriteRequest>();
@@ -128,35 +134,26 @@ public class DiskDriver
     public void readSector(int sectorNumber, byte[] data, int index)
     {
         Debug.ASSERT(0 <= sectorNumber && sectorNumber < getNumSectors());
-        lock.acquire(); // only one disk I/O at a time
-        int oldLevel = CPU.setLevel(CPU.IntOff);
         // get and release front of the stack
-        Semaphore sem = new Semaphore("Lock", 0);
+        
+        int semSize = 1;
+        if(queue.size() > 0)
+            semSize = 0;
+            
+        Semaphore sem = new Semaphore("Lock", semSize);
+ 
+        
+        
         ReadWriteRequest myRequest = new ReadWriteRequest(sectorNumber, data,
                 index, 'r', sem);
 
+        queueLock.acquire();
         queue.add(myRequest);
-        System.out.println(queue.size());
-        startOutput(myRequest, true);
-        CPU.setLevel(oldLevel);
-        lock.release();
-    }
-
-    private void startOutput(ReadWriteRequest myRequest, boolean read)
-    {
-        if(outputBusy == true || queue.size() == 0)
-            return;
+        queueLock.release();
         
-        outputBusy = true;
-        currentRequest = myRequest;
-        System.out.println(queue.size());
-        queue.remove(myRequest);
-        if(read)
-            disk.readRequest(myRequest.getSectorNumber(), myRequest.getData(), myRequest.getIndex());
-        else
-            disk.writeRequest(myRequest.getSectorNumber(), myRequest.getData(), myRequest.getIndex());
-
         myRequest.p();
+        startOutput(true);
+        System.out.println("Request Queue Size = " + queue.size());
     }
 
     /**
@@ -173,23 +170,77 @@ public class DiskDriver
     public void writeSector(int sectorNumber, byte[] data, int index)
     {
         Debug.ASSERT(0 <= sectorNumber && sectorNumber < getNumSectors());
-        lock.acquire(); // only one disk I/O at a time
-        // semaphore.P();
-        Semaphore sem = new Semaphore("Lock", 0);
+
+        int semSize = 1;
+        if(queue.size() > 0)
+            semSize = 0;
+            
+        Semaphore sem = new Semaphore("Lock", semSize);
+        
         ReadWriteRequest myRequest = new ReadWriteRequest(sectorNumber, data,
                 index, 'w', sem);
-        System.out.println("bob");
-        logBytes(data);
 
+        queueLock.acquire();
         queue.add(myRequest);
-        startOutput(myRequest, false);
-
-        lock.release();
+        queueLock.release();
+        
+        myRequest.p();
+        startOutput(false);
     }
     
+    private void startOutput(boolean read)
+    {                       
+        diskLock.acquire();
+        ReadWriteRequest request = queue.remove(getNextFromQueue());
+        
+        if(read)
+            disk.readRequest(request.getSectorNumber(), request.getData(), request.getIndex());
+        else
+            disk.writeRequest(request.getSectorNumber(), request.getData(), request.getIndex());
+        
+        diskSemaphore.P();
+        diskLock.release();
+        if(!queue.isEmpty())
+            queue.get(getNextFromQueue()).v();        
+    }
+    
+    private int getNextFromQueue()
+    {
+
+        while (true)
+        {
+            for (int i = 0; i < queue.size(); i++)
+            {
+                if (queue.get(i).getCylinderNumber() == lastSector)
+                {
+                    System.out.println("Next From Queue = " + i + " Cylinder = " + queue.get(i).getCylinderNumber());
+                    return i;
+                }
+            }
+            if (lastSector == 31)
+            {
+                goingUP = false;
+            } else if (lastSector == 0)
+            {
+                goingUP = true;
+            }
+            if (goingUP)
+            {
+                lastSector++;
+            } else
+            {
+                lastSector--;
+            }
+           
+        }
+    }
+    
+    /**
+     * Debugging function which will spit out the provided byte array to a file.
+     * @param bytes bytes to be printed
+     */
     private void logBytes(byte[] bytes)
     {
-//        System.out.println("bub");
         try(PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("log", true)))) {
             for(byte b : bytes)
             {
@@ -210,67 +261,11 @@ public class DiskDriver
          * When the disk interrupts, just wake up the thread that issued the
          * request that just finished.
          */
-        private int lastSector = 0;
-        private boolean goingUP = true;
-
         public void handleInterrupt()
         {
-            currentRequest.v();
-            outputBusy = false;
-            if (!queue.isEmpty())
-            {
-                 System.out.print("Before = ");
-                 for(ReadWriteRequest item : queue)
-                 System.out.print(item.getCylinderNumber() + ",");
-                 System.out.println(queue.size());
-                 System.out.println();
-
-                 Collections.sort(queue, new ReadWriteRequestComparator());
-
-                 System.out.print("After = ");
-                 for(ReadWriteRequest item : queue)
-                 System.out.print(item.getCylinderNumber() + ",");
-                 System.out.println();
-                 
-                 ReadWriteRequest request = queue.get(getNextFromQueue());
-                 
-                 if(request.getRequestType() == 'r')
-                     startOutput(request, true);
-                 else if(request.getRequestType() == 'w')
-                     startOutput(request, false);
-            }
+            diskSemaphore.V();
+            Collections.sort(queue, new ReadWriteRequestComparator());
         }
-
-        private int getNextFromQueue()
-        {
-
-            while (true)
-            {
-                for (int i = 0; i < queue.size(); i++)
-                {
-                    if (queue.get(i).getCylinderNumber() == lastSector)
-                    {
-                        return i;
-                    }
-                }
-                if (lastSector == 31)
-                {
-                    goingUP = false;
-                } else if (lastSector == 0)
-                {
-                    goingUP = true;
-                }
-                if (goingUP)
-                {
-                    lastSector++;
-                } else
-                {
-                    lastSector--;
-                }
-               
-            }
-        }
-
     }
 
 }

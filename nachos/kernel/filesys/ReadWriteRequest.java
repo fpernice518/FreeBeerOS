@@ -18,7 +18,11 @@ public class ReadWriteRequest implements Comparable<ReadWriteRequest>
         this.requestType = requestType;
         this.sem = sem;
     }
-    
+    public ReadWriteRequest(int sectorNumber,byte[] data, int index){
+        this.data = data;
+        this.index = index;
+        this.sectorNumber = sectorNumber;
+    }
     public int getSectorNumber()
     {
         return sectorNumber;
