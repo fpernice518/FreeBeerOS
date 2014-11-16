@@ -24,12 +24,15 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 
 import nachos.Debug;
 import nachos.machine.CPU;
 import nachos.machine.Machine;
 import nachos.machine.Disk;
 import nachos.machine.InterruptHandler;
+import nachos.kernel.filesys.CacheSector;
 import nachos.kernel.filesys.ReadWriteRequest;
 import nachos.kernel.filesys.ReadWriteRequestComparator;
 import nachos.kernel.threads.Semaphore;
@@ -61,19 +64,16 @@ public class DiskDriver
     /** Only one read/write request can be sent to the disk at a time. */
     private Lock queueLock;
     private Lock diskLock;
+    private Lock cacheLock;
     private Semaphore diskSemaphore;
     private ArrayList<ReadWriteRequest> queue;
+    private ArrayList<CacheSector> cache;
 
-    // private ArrayList<Condition> listOfThreadsInWait;
 
     private boolean outputBusy = false;
     
     private int lastSector = 0;
     private boolean goingUP = true;
-
-    // private ArrayList<Condition> condLock;
-    // private ArrayList<KernelThread> ktlist;
-    // private Lock lockForCondLock;
 
     /**
      * Initialize the synchronous interface to the physical disk, in turn
@@ -84,20 +84,14 @@ public class DiskDriver
      */
     public DiskDriver(int unit)
     {
-        // semaphore = new Semaphore2("synch di?sk", 1);
         queueLock = new Lock("disk request queue lock");
         diskLock = new Lock("disk lock");
+        cacheLock = new Lock("cache lock");
         diskSemaphore = new Semaphore("disk semaphore", 0);
         disk = Machine.getDisk(unit);
         disk.setHandler(new DiskIntHandler());
         queue = new ArrayList<ReadWriteRequest>();
-        // ktlist = new ArrayList<KernelThread>();
-
-        // listOfThreadsInWait = new ArrayList<Condition>();
-        // condLock = new ArrayList<Condition>();
-        // lockForCondLock = new Lock("just a lock");
-        // Condition firstLock = new Condition("condLock", lockForCondLock);
-        // listOfThreadsInWait.add(firstLock);
+        cache = new ArrayList<>();
     }
 
     /**
@@ -134,7 +128,23 @@ public class DiskDriver
     public void readSector(int sectorNumber, byte[] data, int index)
     {
         Debug.ASSERT(0 <= sectorNumber && sectorNumber < getNumSectors());
-        // get and release front of the stack
+        //check if we have it in the cache
+        CacheSector sector = null;
+        try
+        {
+            cacheLock.acquire();
+            sector = getCacheSector(sectorNumber);
+            if(sector != null)
+            {
+                System.arraycopy(sector.getData(), 0, data, index, sector.getData().length);
+            }
+        }finally
+        {
+            cacheLock.release();
+            if(sector != null) return;
+        }
+        
+        //otherwise we need to request it from the disk
         
         int semSize = 1;
         if(queue.size() > 0)
@@ -171,6 +181,10 @@ public class DiskDriver
     {
         Debug.ASSERT(0 <= sectorNumber && sectorNumber < getNumSectors());
 
+        //check if we have it in the cache
+        
+        
+        //otherwise we need to request it from the disk
         int semSize = 1;
         if(queue.size() > 0)
             semSize = 0;
@@ -194,14 +208,55 @@ public class DiskDriver
         ReadWriteRequest request = queue.remove(getNextFromQueue());
         
         if(read)
+        {
             disk.readRequest(request.getSectorNumber(), request.getData(), request.getIndex());
+        }
         else
+        {
             disk.writeRequest(request.getSectorNumber(), request.getData(), request.getIndex());
+            CacheSector sector = new CacheSector(request.getSectorNumber(), request.getData());
+            writeToCache(sector);
+        }
         
         diskSemaphore.P();
         diskLock.release();
         if(!queue.isEmpty())
             queue.get(getNextFromQueue()).v();        
+    }
+    
+    /**
+     * Gets the CacheSector object from cache whose sector number
+     * matches SsectorNumber.
+     * @param sectorNumber - the sector to return
+     * @return the requested CacheSector object or null if it doesn't esist
+     */
+    CacheSector getCacheSector(int sectorNumber)
+    {
+        for(CacheSector sector :  cache)
+        {
+            if(sector.getSectorNumber() == sectorNumber)
+                return sector;
+        }
+        return null;
+    }
+    
+    void writeToCache(CacheSector sector)
+    {
+        //objects are stored from oldest to newest
+        while(cache.size() > 9)
+            cache.remove(0);
+        cache.add(sector);
+    }
+    
+    
+    void cacheRead(ReadWriteRequest request)
+    {
+        disk.readRequest(request.getSectorNumber(), request.getData(), request.getIndex());
+    }
+    
+    void cacheWrite(ReadWriteRequest request)
+    {
+        disk.writeRequest(request.getSectorNumber(), request.getData(), request.getIndex());
     }
     
     private int getNextFromQueue()

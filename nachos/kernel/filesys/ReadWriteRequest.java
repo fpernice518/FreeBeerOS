@@ -3,6 +3,7 @@ package nachos.kernel.filesys;
 import java.util.Comparator;
 
 import nachos.kernel.threads.Semaphore;
+import nachos.machine.Machine;
 
 public class ReadWriteRequest implements Comparable<ReadWriteRequest>
 {
