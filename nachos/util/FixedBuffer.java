@@ -43,6 +43,19 @@ public class FixedBuffer<E> implements Iterable<E>
         return element;
     }
     
+    public boolean remove(E element)
+    {
+        return buffer.remove(element);
+    }
+    
+    public boolean moveToFront(E element)
+    {
+        boolean success = buffer.remove(element);
+        if(!success) return false;
+        
+        buffer.add(element);
+        return true;
+    }
     
     public E moveToFront(int index)
     {
@@ -50,6 +63,8 @@ public class FixedBuffer<E> implements Iterable<E>
         add(element);
         return element;
     }
+    
+    
     
     
     public E get(int index)
