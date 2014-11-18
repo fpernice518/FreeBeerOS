@@ -9,7 +9,7 @@ public class CacheSector
     int sectorNumber;
     Condition condition;
     Lock conditionLock;
-    boolean inUse = false;
+    boolean inUse = true;
     
     
     public CacheSector(int sectorNumber, byte[] data)
@@ -42,6 +42,7 @@ public class CacheSector
     public void signal()
     {
         conditionLock.acquire();
+        inUse = false;
         condition.signal();
         conditionLock.release();
     }
@@ -49,6 +50,7 @@ public class CacheSector
     public void broadcast()
     {
         conditionLock.acquire();
+        inUse = false;
         condition.broadcast();
         conditionLock.release();
     }
