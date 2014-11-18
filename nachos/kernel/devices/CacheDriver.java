@@ -169,10 +169,12 @@ public class CacheDriver
     {
         Lock diskLock;
         boolean isBusy;
+        Semaphore diskSemaphore;
         
         DiskDriver()
         {
-          diskLock = new Lock("Disk Lock");   
+          diskLock = new Lock("Disk Lock"); 
+          diskSemaphore = new Semaphore("Disk Sempahore", 0);
           isBusy = false;
         }
         
@@ -181,6 +183,19 @@ public class CacheDriver
             diskLock.acquire();
             ReadWriteRequest diskRequest = new ReadWriteRequest(index, data, index);
             requestQueue.add(diskRequest);
+            
+            if(isBusy == false)
+            {
+                startDisk(sectorNumber, data, index, true);
+            }
+            diskSemaphore
+            diskLock.release();
+        }
+
+        private void startDisk(int sectorNumber, byte[] data, int index, boolean read)
+        {
+            // TODO Auto-generated method stub
+            
         }
         
         
