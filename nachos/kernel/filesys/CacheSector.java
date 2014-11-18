@@ -61,5 +61,29 @@ public class CacheSector
     public Lock getConditionLock() {return conditionLock;}
     
     public Condition getCondition() {return condition;}
+
+    public void reserve()
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public boolean isValid()
+    {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    public void setValid()
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public void release()
+    {
+        // TODO Auto-generated method stub
+        
+    }
     
 }

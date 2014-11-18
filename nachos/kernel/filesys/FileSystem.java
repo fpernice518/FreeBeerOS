@@ -12,7 +12,7 @@ package nachos.kernel.filesys;
 import nachos.Debug;
 import nachos.Options;
 import nachos.kernel.Nachos;
-import nachos.kernel.devices.DiskDriver;
+import nachos.kernel.devices.CacheDriver;
 
 /**
  * This abstract class defines the interface to a Nachos file system.
@@ -74,7 +74,7 @@ public abstract class FileSystem {
      * 
      * @param disk  Disk driver to use to access the filesystem.
      */
-    public static FileSystem init(DiskDriver disk) {
+    public static FileSystem init(CacheDriver disk) {
 	Options options = Nachos.options;
 	Debug.ASSERT(!(options.FILESYS_STUB && options.FILESYS_REAL),
 		     "The stub filesystem and Nachos filesystem cannot both be used.");

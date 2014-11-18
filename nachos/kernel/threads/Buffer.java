@@ -1,21 +1,39 @@
 package nachos.kernel.threads;
 
+import nachos.machine.Disk;
+import nachos.machine.Machine;
+
 public class Buffer
 {
     Lock bufferLock;
     Condition bufferCondition;
+    Disk disk;
     byte[] data;
     int sector;
     boolean reserved;
     boolean valid;
     boolean dirty;
 
+    public Buffer(byte[] data, int sector, int diskNumber)
+    {
+        disk = Machine.getDisk(diskNumber);
+        bufferLock = new Lock("Sector " + sector + " Lock");
+        bufferCondition = new Condition("Sector " + sector + " Condition", bufferLock);
+        this.data = data;
+        this.sector = sector;
+        
+        //TODO Check these
+        reserved = false;
+        valid = false;
+        dirty = false;
+    }
+    
     public byte[] getData()
     {
         // TODO assumes buffer is reserved by caller
         if (valid == false)
         {
-            // TODO figure out how to get access to the disk here
+            disk.readRequest(sector, data, 0);
             // TODO we need to wait here, need a lock or semaphore
             valid = true;
         }

@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import nachos.Debug;
-import nachos.kernel.devices.DiskDriver;
+import nachos.kernel.devices.CacheDriver;
 
 /**
  * This class manages the overall operation of the file system. It implements
@@ -87,7 +87,7 @@ class FileSystemReal extends FileSystem
     private static final int NumDirEntries = 10;
 
     /** Access to the disk on which the filesystem resides. */
-    private final DiskDriver diskDriver;
+    private final CacheDriver diskDriver;
 
     /** Number of sectors on the disk. */
     public final int numDiskSectors;
@@ -127,7 +127,7 @@ class FileSystemReal extends FileSystem
      * @param format
      *            Should we initialize the disk?
      */
-    protected FileSystemReal(DiskDriver diskDriver, boolean format)
+    protected FileSystemReal(CacheDriver diskDriver, boolean format)
     {
         Debug.print('f', "Initializing the file system.\n");
         this.diskDriver = diskDriver;

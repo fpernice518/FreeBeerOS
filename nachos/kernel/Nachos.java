@@ -26,7 +26,7 @@ import nachos.machine.CPU;
 import nachos.machine.Machine;
 import nachos.machine.NachosThread;
 import nachos.kernel.devices.ConsoleDriver;
-import nachos.kernel.devices.DiskDriver;
+import nachos.kernel.devices.CacheDriver;
 import nachos.kernel.devices.NetworkDriver;
 import nachos.kernel.devices.SerialDriver;
 import nachos.kernel.devices.test.ConsoleTest;
@@ -62,7 +62,7 @@ public class Nachos implements Runnable {
     public static ConsoleDriver consoleDriver;
 
     /** Access to the disk. */
-    public static DiskDriver diskDriver;
+    public static CacheDriver diskDriver;
 
     /** Access to the network. */
     public static NetworkDriver networkDriver;
@@ -88,7 +88,7 @@ public class Nachos implements Runnable {
 	    consoleDriver = new ConsoleDriver(Machine.getConsole(0));
 
 	if(Machine.NUM_DISKS > 0)
-	    diskDriver = new DiskDriver(0);
+	    diskDriver = new CacheDriver(0);
 
 	if(Machine.NUM_PORTS > 0)
 	    serialDriver = new SerialDriver();

@@ -9,11 +9,13 @@ public class BufferCache extends LinkedHashMap<Integer, Buffer>
     private static final long serialVersionUID = 1L;
     Lock cacheLock;
     public static final int MAX_SIZE = 10;
+    Semaphore diskSemaphore;
 
-    public BufferCache()
+    public BufferCache(Semaphore diskSemaphore)
     {
         super(MAX_SIZE, 0.75f, true);
         cacheLock = new Lock("Cache Lock");
+        this.diskSemaphore = diskSemaphore;
     }
 
     Buffer getBuffer(int sectorNumber)
@@ -51,7 +53,7 @@ public class BufferCache extends LinkedHashMap<Integer, Buffer>
             lru.writeBack();
             lru.invalidate();
             cacheLock.acquire();
-            this.remove(lru.getSector()); // TODO not sure about this yet
+            this.remove(lru);
         }
 
         return lru;
@@ -66,6 +68,8 @@ public class BufferCache extends LinkedHashMap<Integer, Buffer>
     @Override
     protected boolean removeEldestEntry(Map.Entry<Integer, Buffer> eldest)
     {
+        Buffer buff = eldest.getValue();
+        buff.reserve();
         return size() > MAX_SIZE;
     }
 }

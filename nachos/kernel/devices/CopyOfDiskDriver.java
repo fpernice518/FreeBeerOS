@@ -50,7 +50,7 @@ import nachos.kernel.threads.Lock;
  * @author Peter Druschel (Rice University), Java translation
  * @author Eugene W. Stark (Stony Brook University)
  */
-public class DiskDriver
+public class CopyOfDiskDriver
 {
 
     /** Raw disk device. */
@@ -78,7 +78,7 @@ public class DiskDriver
      * @param unit
      *            The disk unit to be handled by this driver.
      */
-    public DiskDriver(int unit)
+    public CopyOfDiskDriver(int unit)
     {
         queueLock = new Lock("disk request queue lock");
         diskLock = new Lock("disk lock");
