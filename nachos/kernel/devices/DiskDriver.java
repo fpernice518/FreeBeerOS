@@ -126,14 +126,28 @@ public class DiskDriver
         Debug.ASSERT(0 <= sectorNumber && sectorNumber < getNumSectors());
         //check if we have it in the cache
         CacheSector sector = null;
-        
+//        
         try
         {
             cacheLock.acquire();
             sector = getCacheSector(sectorNumber);
             if(sector != null)
             {
-                System.arraycopy(sector.getData(), 0, data, index, sector.getData().length);
+//                hit
+                
+                cache.moveToFront(sector);
+                sector.waitTillFree();
+                
+                cache.moveToFront(sector);
+                return;
+//                System.arraycopy(sector.getData(), 0, data, index, sector.getData().length);
+            }
+            else{
+                // miss
+                sector = new CacheSector(sectorNumber,data);
+                cache.moveToFront(sector);
+                sector.setUseage(false);
+               
             }
         }finally
         {
@@ -141,9 +155,9 @@ public class DiskDriver
             cacheLock.release();
             if(sector != null) return;
         }
-        
-        //otherwise we need to request it from the disk
-        
+//        
+//        //otherwise we need to request it from the disk
+//        
         int semSize = 1;
         if(queue.size() > 0)
             semSize = 0;
@@ -158,6 +172,9 @@ public class DiskDriver
         myRequest.p();
         serviceDisk(true, myRequest.getSectorNumber());
         System.out.println("Request Queue Size = " + queue.size());
+        
+        
+        
     }
 
     /**
@@ -245,7 +262,7 @@ public class DiskDriver
         }
         return null;
     }
-    
+   
     private int getNextFromQueue()
     {
 
