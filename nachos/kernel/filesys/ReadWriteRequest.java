@@ -12,13 +12,20 @@ public class ReadWriteRequest implements Comparable<ReadWriteRequest>
     private byte[] data;
     char requestType;
     Semaphore sem;
+    boolean read;
 
-    public ReadWriteRequest(int sectorNumber, byte[] data, int index)
+    public ReadWriteRequest(int sectorNumber, byte[] data, int index, boolean read)
     {
         this.data = data;
         this.index = index;
         this.sectorNumber = sectorNumber;
         sem = new Semaphore("Sector " + sectorNumber + " Semaphore", 0);
+        this.read = read;
+    }
+    
+    public boolean isRead()
+    {
+        return read;
     }
 
     public int getSectorNumber()
