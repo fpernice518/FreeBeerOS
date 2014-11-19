@@ -214,61 +214,9 @@ class FileSystemReal extends FileSystem
      */
     void readSector(int sectorNumber, byte[] data, int index)
     {
-        //
-        boolean found = false;
-        ReadWriteRequest readWriteRequest = null;
-        for (Iterator iterator = rwr.iterator(); iterator.hasNext();)
-        {
-            readWriteRequest = (ReadWriteRequest) iterator.next();
-            if (readWriteRequest.getSectorNumber() == sectorNumber)
-            {
-                found = true;
-                break;
-            }
-        }
-        if (found)
-        {
-           
-            
-            int inCache = readWriteRequest.getData().length;
-            int requestLength = data.length;
-            System.out.println("inCache size: " + inCache);
-            System.out.println("requestLength size " + requestLength);
-   
-            if (requestLength == inCache)
-            {
-                for (int i = 0; i < requestLength; i++)
-                {
-                    data[i] = readWriteRequest.getData()[i];
-
-                }
-                System.out.println("hit");
-            } else
-            {
-                rwr.remove(readWriteRequest);
-                diskDriver.readSector(sectorNumber, data, index);
-                rwr.add(0, new ReadWriteRequest(sectorNumber, data, index));
-                if (rwr.size() > 10)
-                {
-                    for (int i = 10; i < rwr.size(); i++)
-                    {
-                        rwr.remove(i);
-                    }
-                }
-            }
-
-        } else
-        {
+        
             diskDriver.readSector(sectorNumber, data, index);
-            rwr.add(0, new ReadWriteRequest(sectorNumber, data, index));
-            if (rwr.size() > 10)
-            {
-                for (int i = 10; i < rwr.size(); i++)
-                {
-                    rwr.remove(i);
-                }
-            }
-        }
+            
 
     }
 

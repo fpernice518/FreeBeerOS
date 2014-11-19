@@ -1,0 +1,76 @@
+Frank Pernice
+Christian Barry
+
+HW4 README
+
+-----------------------------------------
+
+In this current implementation of HW4, we believe we have successfully implemented
+the SCAN algorithm and the requested system calls. However, due to a lack of time
+we were unable to implement the Buffer Cache in its entirety. We will continue
+to work and will upload the final solution if we can before the deadline elapses.
+
+In addition, we believe we have fixed our major problem from HW3 involving the
+Read() system call. We now properly take in data from the provided file descriptor
+(stdio and other files).
+
+In regards to the current assignment, we provided a script file, "hw4Make.sh"
+which should make our test cases easy to compile. simply run the following commands
+in a bash shell:
+
+       chmod a+x hw4Make.sh
+       ./hw4Make.sh
+
+These commands will compile eight programs; the first six being a master 
+program and 5 child programs. The master program performs an Exec() on each of the 
+child programs. The other two programs perform a more extensive test of the
+system calls and overall functionality. `First` opens `extd` as a file and 
+performs various read and write operations.
+
+  The list below illustrates the dependency lists of the tests.
+
+  masterFileSys
+  -oneFileSys
+  -twoFileSys
+  -threeFileSys
+  -fourFileSys
+  -fiveFileSys  
+
+  first
+  -extd
+
+   IMPORTANT: To run the first test in full, you must only execute the 
+              master test program and not the child programs. While
+              there will be no issues executing the child programs by 
+              themselves this will not yield any interesting behavior.
+
+              The following sequence of run configurations should be
+              followed for each of the tests:
+              
+              First Test
+              ----------------------------------------------------
+                -f
+
+                -cp test/masterFileSys master
+                -cp test/oneFileSys one
+                -cp test/twoFileSys two 
+                -cp test/threeFileSys three 
+                -cp test/fourFileSys four 
+                -cp test/fiveFileSys five
+               
+                -d + -x master -lot -ps -d t -d f
+              -----------------------------------------------------
+
+              Second Test
+              ----------------------------------------------------
+                -f
+
+                -cp test/first first
+                -cp test/extd extd
+               
+                -dt -x first -ps -lot
+              -----------------------------------------------------
+
+This implementation does not format the disk correctly, I will upload another
+one which does shortly.
+
