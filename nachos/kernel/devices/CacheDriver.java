@@ -19,6 +19,7 @@
 package nachos.kernel.devices;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import nachos.Debug;
@@ -129,12 +130,18 @@ public class CacheDriver
 
         Debug.ASSERT(0 <= sectorNumber && sectorNumber < getNumSectors());
         cacheLock.acquire(); // only one disk I/O at a time
+        byte[] cacheData = new byte[128];
 
         entry = cache.getBySector(sectorNumber);
         if (entry == null)
         {
-            entry = new CacheSector(sectorNumber, data);
+            entry = new CacheSector(sectorNumber, cacheData, index);
             cache.stuffIntoBuff(entry);
+        }
+        else
+        {
+            entry.setIndex(index);
+            cache.sendToTheFront(entry);
         }
 
         entry.reserve();
@@ -142,11 +149,11 @@ public class CacheDriver
 
         if (!entry.isValid())
         {
-            diskDriver.readRequest(entry, index);
+            diskDriver.readRequest(entry);
             entry.setValid();
         }
 
-        data = entry.getData();
+        System.arraycopy(entry.getData(), 0, data, entry.getIndex(), entry.getData().length);
         entry.release();
         // disk.readRequest(sectorNumber, data, index);
     }
@@ -170,41 +177,31 @@ public class CacheDriver
 
         cacheLock.acquire(); // only one disk I/O at a time
         entry = cache.getBySector(sectorNumber);
-        // byte[] newByte = new byte[disk.geometry.SectorSize];
-        // System.arraycopy(data, index, newByte, 0, disk.geometry.SectorSize);
+        byte[] newByte = new byte[disk.geometry.SectorSize];
+        System.arraycopy(data, index, newByte, 0, disk.geometry.SectorSize);
 
         if (entry != null)
         {
-
-            // we write through
-
             Debug.print('4', "Write Hit");
 
             entry.reserve();
-            entry.setData(data);
-            cache.sendToTheFront(entry);
-
-            // cache.stuffIntoBuff(entry);
+            entry.setData(newByte);
+            System.out.println(Arrays.toString(entry.getData()));
             cacheLock.release();
-            diskDriver.writeRequest(entry, index);
-
+            cache.sendToTheFront(entry);
         } else
         {
-            Debug.print('4', "Write Miss");
+            Debug.println('4', "Write Miss");
 
-            entry = new CacheSector(sectorNumber, data);
-            cache.stuffIntoBuff(entry);
+            entry = new CacheSector(sectorNumber, newByte, index);
+            System.out.println(Arrays.toString(entry.getData()));
             entry.reserve();
             cacheLock.release();
-            diskDriver.writeRequest(entry, index);
-
+            cache.stuffIntoBuff(entry);
         }
+        
+        diskDriver.writeRequest(entry);
         entry.release();
-        // entry.reserve();
-
-        // cacheLock.release();
-        // disk.writeRequest(sectorNumber, data, index);
-        // semaphore.P(); // wait for interrupt
     }
 
     private int getNextFromQueue()
@@ -212,6 +209,7 @@ public class CacheDriver
 
         while (true)
         {
+            if(requestQueue.size() <= 0) break;
             for (int i = 0; i < requestQueue.size(); i++)
             {
                 if (requestQueue.get(i).getCylinderNumber() == lastSector)
@@ -238,6 +236,7 @@ public class CacheDriver
             }
 
         }
+        return -1;
     }
 
     class DiskDriver
@@ -256,50 +255,59 @@ public class CacheDriver
             isDiskBusy = false;
         }
 
-        public void writeRequest(CacheSector entry, int index)
+        public void readRequest(CacheSector entry)
         {
             queueLock.acquire();
             ReadWriteRequest diskRequest = new ReadWriteRequest(
-                    entry.getSectorNumber(), entry.getData(), index, true);
+                    entry.getSectorNumber(), entry.getData(), 0, true);
+            
             requestQueue.add(diskRequest);
             if (isDiskBusy == false)
-                startDisk(diskRequest);
+                startDisk();
+            queueLock.release();
+            diskRequest.p();
+        }
+        
+        public void writeRequest(CacheSector entry)
+        {
+            queueLock.acquire();
+            ReadWriteRequest diskRequest = new ReadWriteRequest(
+                    entry.getSectorNumber(), entry.getData(), 0, false);
+            requestQueue.add(diskRequest);
+            if (isDiskBusy == false)
+                startDisk();
             queueLock.release();
             diskRequest.p();
         }
 
-        public void readRequest(CacheSector entry, int index)
+        private void startDisk()
         {
-            queueLock.acquire();
-            ReadWriteRequest diskRequest = new ReadWriteRequest(
-                    entry.getSectorNumber(), entry.getData(), index, true);
-            requestQueue.add(diskRequest);
-            if (isDiskBusy == false)
-                startDisk(diskRequest);
-            queueLock.release();
-            diskRequest.p();
-        }
-
-        private void startDisk(ReadWriteRequest diskRequest)
-        {
-            diskLock.acquire();
-            currentRequest = diskRequest;
+//            diskLock.acquire();
             isDiskBusy = true;
 
 //            queueLock.acquire();
-            currentRequest = requestQueue.get(getNextFromQueue());
+            int next = getNextFromQueue();
+            if(next < 0) 
+            {
+                isDiskBusy = false;
+                return;
+            }
+            currentRequest = requestQueue.remove(getNextFromQueue());
 //            queueLock.release();
-            System.out.println("Sector = " + diskRequest.getSectorNumber()
-                    + " Index " + diskRequest.getIndex());
+            System.out.println("Sector = " + currentRequest.getSectorNumber()
+                    + " Index " + currentRequest.getIndex());
 
-            if (diskRequest.isRead())
-                disk.readRequest(diskRequest.getSectorNumber(),
-                        diskRequest.getData(), diskRequest.getIndex());
+            if (currentRequest.isRead()){
+                disk.readRequest(currentRequest.getSectorNumber(),
+                        currentRequest.getData(), currentRequest.getIndex());
+//            System.out.println(Arrays.toString(currentRequest.getData()));
+            }
             else
-                disk.writeRequest(diskRequest.getSectorNumber(),
-                        diskRequest.getData(), diskRequest.getIndex());
+                disk.writeRequest(currentRequest.getSectorNumber(),
+                        currentRequest.getData(), currentRequest.getIndex());
 
-            diskLock.release();
+//            diskLock.release();
+            currentRequest.p();
         }
 
         /**
@@ -316,7 +324,7 @@ public class CacheDriver
                 isDiskBusy = false;
                 currentRequest.v();
                 currentRequest = null;
-                currentRequest = requestQueue.get(getNextFromQueue());
+                startDisk();
             }
         }
 

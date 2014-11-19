@@ -12,12 +12,16 @@ public class CacheSector
     boolean reserved;
     boolean valid;
     boolean dirty;
+    int index;
     
-    
-    public CacheSector(int sectorNumber, byte[] data)
+    public int getIndex(){
+        return index;
+    }
+    public CacheSector(int sectorNumber, byte[] data,int index)
     {
         this.sectorNumber = sectorNumber;
         this.data = data;
+        this.index = index;
         conditionLock = new Lock("Sector " + sectorNumber + " Condition Lock");
         condition = new Condition("Sector " + sectorNumber + " Condition", conditionLock);
         
@@ -75,6 +79,10 @@ public class CacheSector
         conditionLock.acquire();
         reserved = false;
         conditionLock.release();
+    }
+    public void setIndex(int index)
+    {
+        this.index = index;        
     }
     
 }
