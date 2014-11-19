@@ -10,7 +10,8 @@ public class BufferArrayList extends ArrayList<CacheSector>
     
     public void stuffIntoBuff(CacheSector sector)
     {
-//        cacheLock.acquire();
+        
+        
         if (this.size() < 10)
         {
             this.add(0, sector);
@@ -22,6 +23,10 @@ public class BufferArrayList extends ArrayList<CacheSector>
 
 //        cacheLock.release();
 
+    }
+    public void sendToTheFront(CacheSector sector ){
+        remove(sector);
+        stuffIntoBuff(sector);
     }
     public boolean containsSector(int i){
         for (int j = 0; j < this.size(); j++)

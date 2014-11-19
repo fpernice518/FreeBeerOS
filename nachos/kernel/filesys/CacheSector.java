@@ -32,6 +32,9 @@ public class CacheSector
         return data;
     }
     
+    public void setData(byte[] x){
+        this.data = x;
+    }
     public int getSectorNumber()
     {
         return sectorNumber;

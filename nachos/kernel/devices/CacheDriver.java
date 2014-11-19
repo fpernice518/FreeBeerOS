@@ -163,43 +163,44 @@ public class CacheDriver
     public void writeSector(int sectorNumber, byte[] data, int index)
     {
         CacheSector entry;
-        
+
         Debug.ASSERT(0 <= sectorNumber && sectorNumber < getNumSectors());
-       
-        
+
         cacheLock.acquire(); // only one disk I/O at a time
         entry = cache.get(sectorNumber);
-        if(entry != null){
-            //we write through
+        byte[] newByte = new byte[disk.geometry.SectorSize];
+        System.arraycopy(data, index, newByte, 0, disk.geometry.SectorSize);
+        
+        if (entry != null)
+        {
+            
+            // we write through
             Debug.print('4', "Write Hit");
+
+            entry.reserve();
+            entry.setData(newByte);
             
-//            byte[] newByte = new byte[disk.geometry.SectorSize];
-//            System.arraycopy(data, index, newByte, 0, disk.geometry.SectorSize);
-//            entry = new CacheSector(sectorNumber, newByte);
-//            cache.stuffIntoBuff(entry);
-//            entry.reserve();
-//            cacheLock.release();
-//            diskDriver.writeRequest(entry);
             
-        }
-        else{
+            // cache.stuffIntoBuff(entry);
+            // cacheLock.release();
+            // diskDriver.writeRequest(entry);
+
+        } else
+        {
             Debug.print('4', "Write Miss");
-            
-            byte[] newByte = new byte[disk.geometry.SectorSize];
-            System.arraycopy(data, index, newByte, 0, disk.geometry.SectorSize);
+
             entry = new CacheSector(sectorNumber, newByte);
             cache.stuffIntoBuff(entry);
             entry.reserve();
             cacheLock.release();
             diskDriver.writeRequest(entry);
-            
+
         }
-//        entry.reserve();
-        
-        
-//        cacheLock.release();
-//        disk.writeRequest(sectorNumber, data, index);
-//        semaphore.P(); // wait for interrupt
+        // entry.reserve();
+
+        // cacheLock.release();
+        // disk.writeRequest(sectorNumber, data, index);
+        // semaphore.P(); // wait for interrupt
     }
 
     class DiskDriver
@@ -215,16 +216,18 @@ public class CacheDriver
             disk.setHandler(new DiskIntHandler());
             isDiskBusy = false;
         }
-        public void writeRequest( CacheSector index)
+
+        public void writeRequest(CacheSector index)
         {
-        
+
         }
 
         public void readRequest(int sectorNumber, byte[] data, int index)
         {
             diskLock.acquire();
             int oldLevel = CPU.setLevel(MIPS.IntOff);
-            ReadWriteRequest diskRequest = new ReadWriteRequest(index, data, index);
+            ReadWriteRequest diskRequest = new ReadWriteRequest(index, data,
+                    index);
             requestQueue.add(diskRequest);
 
             if (isDiskBusy == false)
@@ -240,7 +243,7 @@ public class CacheDriver
 
         private void startDisk(ReadWriteRequest diskRequest, boolean read)
         {
-            
+
             currentRequest = diskRequest;
             isDiskBusy = true;
 
