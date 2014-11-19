@@ -27,6 +27,7 @@ import nachos.machine.MIPS;
 import nachos.machine.Machine;
 import nachos.machine.Disk;
 import nachos.machine.InterruptHandler;
+import nachos.util.BufferArrayList;
 import nachos.util.FixedBuffer;
 import nachos.kernel.filesys.CacheSector;
 import nachos.kernel.filesys.ReadWriteRequest;
@@ -64,11 +65,10 @@ public class CacheDriver
     /** Buffer used to store request objects **/
 
     private ArrayList<ReadWriteRequest> requestQueue;
-    private ArrayList<CacheSector> buff;
     private static final int MAX_SIZE = 10;
 
     /** Map used to store cache objects **/
-    private HashMap<Integer, CacheSector> cache;
+    private BufferArrayList cache;
 
     /** Flag used to indicate if the disk is busy **/
     boolean isDiskBusy;
@@ -86,41 +86,8 @@ public class CacheDriver
         cacheLock = new Lock("synch disk lock");
         disk = Machine.getDisk(unit);
         diskDriver = new DiskDriver();
-        cache = new HashMap<>();
-        buff = new ArrayList<>();
+        cache = new BufferArrayList();
         requestQueue = new ArrayList<>();
-    }
-
-    public void stuffIntoBuff(CacheSector sector)
-    {
-        cacheLock.acquire();
-        if (buff.size() < 10)
-        {
-            buff.add(0, sector);
-        } else
-        {
-            ensureRemove();
-            buff.add(0, sector);
-        }
-
-        cacheLock.release();
-
-    }
-
-    /**
-     * must use with cache lock
-     */
-    public void ensureRemove()
-    {
-        CacheSector cs = buff.get(buff.size() - 1);
-        if (cs.isValid())
-        {
-            buff.remove(cs);
-        } else
-        {
-            cs.reserve();
-            buff.remove(cs);
-        }
     }
 
     /**
@@ -161,18 +128,17 @@ public class CacheDriver
         Debug.ASSERT(0 <= sectorNumber && sectorNumber < getNumSectors());
         cacheLock.acquire(); // only one disk I/O at a time
 
-        entry = cache.get(sectorNumber);
-        if (!cache.containsKey(sectorNumber)) // guarantees sector is not in
-                                              // cache
+        entry = cache.getBySector(sectorNumber);
+        if (entry == null)
         {
             entry = new CacheSector(sectorNumber, data);
-            cache.put(sectorNumber, entry);
+            cache.stuffIntoBuff(entry);
         }
 
         entry.reserve();
         cacheLock.release();
 
-        if (entry.isValid())
+        if (!entry.isValid())
         {
             diskDriver.readRequest(index, data, index);
             entry.setValid();
@@ -198,11 +164,17 @@ public class CacheDriver
      */
     public void writeSector(int sectorNumber, byte[] data, int index)
     {
+        CacheSector entry;
+        
         Debug.ASSERT(0 <= sectorNumber && sectorNumber < getNumSectors());
         cacheLock.acquire(); // only one disk I/O at a time
-        disk.writeRequest(sectorNumber, data, index);
-        semaphore.P(); // wait for interrupt
+        
+        entry = cache.get(sectorNumber);
+        
+        
         cacheLock.release();
+//        disk.writeRequest(sectorNumber, data, index);
+//        semaphore.P(); // wait for interrupt
     }
 
     class DiskDriver

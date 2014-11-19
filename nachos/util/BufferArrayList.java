@@ -23,7 +23,7 @@ public class BufferArrayList extends ArrayList<CacheSector>
 //        cacheLock.release();
 
     }
-    public boolean doesItContainThisSector(int i){
+    public boolean containsSector(int i){
         for (int j = 0; j < this.size(); j++)
         {
             if(this.get(j).getSectorNumber() == i){
@@ -46,7 +46,7 @@ public class BufferArrayList extends ArrayList<CacheSector>
     /**
      * must use with cache lock
      */
-    public void ensureRemove()
+    private void ensureRemove()
     {
         CacheSector cs = this.get(this.size() - 1);
         if (cs.isValid())
