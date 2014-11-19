@@ -175,11 +175,13 @@ public class CacheDriver
         {
             
             // we write through
+            
+            
             Debug.print('4', "Write Hit");
 
             entry.reserve();
             entry.setData(newByte);
-            
+            cache.sendToTheFront(entry);
             
             // cache.stuffIntoBuff(entry);
             // cacheLock.release();
