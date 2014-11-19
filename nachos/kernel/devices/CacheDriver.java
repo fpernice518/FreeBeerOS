@@ -177,9 +177,10 @@ public class CacheDriver
             Debug.print('4', "Write Miss");
             entry = new CacheSector(sectorNumber, data);
             cache.stuffIntoBuff(entry);
-           
+            diskDriver.writeRequest(sectorNumber, data, index);
             
         }
+//        entry.reserve();
         
         
         cacheLock.release();
@@ -199,6 +200,10 @@ public class CacheDriver
             diskSemaphore = new Semaphore("Disk Sempahore", 0);
             disk.setHandler(new DiskIntHandler());
             isDiskBusy = false;
+        }
+        public void writeRequest(int sectorNumber, byte[] data, int index)
+        {
+        
         }
 
         public void readRequest(int sectorNumber, byte[] data, int index)
