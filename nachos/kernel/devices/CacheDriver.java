@@ -21,6 +21,8 @@ package nachos.kernel.devices;
 import java.util.HashMap;
 
 import nachos.Debug;
+import nachos.machine.CPU;
+import nachos.machine.MIPS;
 import nachos.machine.Machine;
 import nachos.machine.Disk;
 import nachos.machine.InterruptHandler;
@@ -57,13 +59,16 @@ public class CacheDriver
 
     /** Only one read/write request can be sent to the disk at a time. */
     private Lock cacheLock;
-    
+
     /** Buffer used to store request objects **/
-    private FixedBuffer requestQueue;
+    private FixedBuffer<ReadWriteRequest> requestQueue;
     private static final int MAX_SIZE = 10;
-    
+
     /** Map used to store cache objects **/
     private HashMap<Integer, CacheSector> cache;
+
+    /** Flag used to indicate if the disk is busy **/
+    boolean isDiskBusy;
 
     /**
      * Initialize the synchronous interface to the physical disk, in turn
@@ -77,7 +82,6 @@ public class CacheDriver
         semaphore = new Semaphore("synch disk", 0);
         cacheLock = new Lock("synch disk lock");
         disk = Machine.getDisk(unit);
-        disk.setHandler(new DiskIntHandler());
         diskDriver = new DiskDriver();
         cache = new HashMap<>();
         requestQueue = new FixedBuffer<>(MAX_SIZE);
@@ -117,31 +121,32 @@ public class CacheDriver
     public void readSector(int sectorNumber, byte[] data, int index)
     {
         CacheSector entry;
-        
+
         Debug.ASSERT(0 <= sectorNumber && sectorNumber < getNumSectors());
         cacheLock.acquire(); // only one disk I/O at a time
-        
+
         entry = cache.get(sectorNumber);
-        if(!cache.containsKey(sectorNumber)) //guarantees sector is not in cache
+        if (!cache.containsKey(sectorNumber)) // guarantees sector is not in
+                                              // cache
         {
             entry = new CacheSector(sectorNumber, data);
             cache.put(sectorNumber, entry);
         }
-        
+
         entry.reserve();
         cacheLock.release();
-        
-        if(entry.isValid())
+
+        if (entry.isValid())
         {
             diskDriver.readRequest(index, data, index);
             entry.setValid();
         }
-        
+
         data = entry.getData();
         entry.release();
-//        disk.readRequest(sectorNumber, data, index);
-//        semaphore.P(); // wait for interrupt
-//        cacheLock.release();
+        // disk.readRequest(sectorNumber, data, index);
+        // semaphore.P(); // wait for interrupt
+        // cacheLock.release();
     }
 
     /**
@@ -163,62 +168,62 @@ public class CacheDriver
         semaphore.P(); // wait for interrupt
         cacheLock.release();
     }
-    
-    
+
     class DiskDriver
     {
         Lock diskLock;
-        boolean isBusy;
         Semaphore diskSemaphore;
-        
+
         DiskDriver()
         {
-          diskLock = new Lock("Disk Lock"); 
-          diskSemaphore = new Semaphore("Disk Sempahore", 0);
-          isBusy = false;
+            diskLock = new Lock("Disk Lock");
+            diskSemaphore = new Semaphore("Disk Sempahore", 0);
+            disk.setHandler(new DiskIntHandler());
+            isDiskBusy = false;
         }
-        
+
         public void readRequest(int sectorNumber, byte[] data, int index)
         {
             diskLock.acquire();
-            ReadWriteRequest diskRequest = new ReadWriteRequest(index, data, index);
+            int oldLevel = CPU.setLevel(MIPS.IntOff);
+            ReadWriteRequest diskRequest = new ReadWriteRequest(index, data,
+                    index);
             requestQueue.add(diskRequest);
-            
-            if(isBusy == false)
+
+            if (isDiskBusy == false)
             {
                 startDisk(sectorNumber, data, index, true);
             }
-            diskSemaphore
-            diskLock.release();
+            CPU.setLevel(oldLevel);
+            // diskSemaphore
+            // diskLock.release();
         }
 
-        private void startDisk(int sectorNumber, byte[] data, int index, boolean read)
+        private void startDisk(int sectorNumber, byte[] data, int index,
+                boolean read)
         {
-            // TODO Auto-generated method stub
-            
-        }
-        
-        
-        
-        
-    }
-    
-    
-    
+            isDiskBusy = true;
 
-    /**
-     * DiskDriver interrupt handler class.
-     */
-    private class DiskIntHandler implements InterruptHandler
-    {
+        }
+
         /**
-         * When the disk interrupts, just wake up the thread that issued the
-         * request that just finished.
+         * DiskDriver interrupt handler class.
          */
-        public void handleInterrupt()
+        private class DiskIntHandler implements InterruptHandler
         {
-            semaphore.V();
+            /**
+             * When the disk interrupts, just wake up the thread that issued the
+             * request that just finished.
+             */
+            public void handleInterrupt()
+            {
+                isDiskBusy = false;
+                
+                
+                
+                semaphore.V();
+            }
         }
-    }
 
+    }
 }

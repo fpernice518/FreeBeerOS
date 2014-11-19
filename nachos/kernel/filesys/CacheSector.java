@@ -9,7 +9,9 @@ public class CacheSector
     int sectorNumber;
     Condition condition;
     Lock conditionLock;
-    boolean inUse = true;
+    boolean reserved;
+    boolean valid;
+    boolean dirty;
     
     
     public CacheSector(int sectorNumber, byte[] data)
@@ -18,6 +20,10 @@ public class CacheSector
         this.data = data;
         conditionLock = new Lock("Sector " + sectorNumber + " Condition Lock");
         condition = new Condition("Sector " + sectorNumber + " Condition", conditionLock);
+        
+        reserved = false;
+        valid = false;
+        dirty = false;
                 
     }
     
@@ -30,59 +36,39 @@ public class CacheSector
     {
         return sectorNumber;
     }
-    
-    public void waitTillFree()
-    {
-        conditionLock.acquire();
-        while(inUse == true)
-            condition.await();
-        conditionLock.release();
-    }
-    
-    public void signal()
-    {
-        conditionLock.acquire();
-        inUse = false;
-        condition.signal();
-        conditionLock.release();
-    }
-    
-    public void broadcast()
-    {
-        conditionLock.acquire();
-        inUse = false;
-        condition.broadcast();
-        conditionLock.release();
-    }
-    
-    public void setUseage(boolean inUse) {this.inUse = inUse;}
-    
-    
-    public Lock getConditionLock() {return conditionLock;}
-    
-    public Condition getCondition() {return condition;}
 
     public void reserve()
     {
-        // TODO Auto-generated method stub
+        conditionLock.acquire();
+        while(reserved)
+            condition.await();
+        reserved = true;
+        conditionLock.release();
         
     }
 
     public boolean isValid()
     {
-        // TODO Auto-generated method stub
-        return false;
+        return valid;
     }
 
     public void setValid()
     {
-        // TODO Auto-generated method stub
-        
+        valid = true;        
+    }
+    
+    public boolean isDirty()
+    {
+        return dirty;
+    }
+    
+    public void setDirty()
+    {
+        dirty = true;
     }
 
     public void release()
     {
-        // TODO Auto-generated method stub
         
     }
     
