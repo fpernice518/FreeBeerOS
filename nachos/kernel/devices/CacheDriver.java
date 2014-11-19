@@ -185,7 +185,7 @@ public class CacheDriver
             
             // cache.stuffIntoBuff(entry);
              cacheLock.release();
-             diskDriver.writeRequest(entry);
+             diskDriver.writeRequest(entry, index);
 
         } else
         {
@@ -195,7 +195,7 @@ public class CacheDriver
             cache.stuffIntoBuff(entry);
             entry.reserve();
             cacheLock.release();
-            diskDriver.writeRequest(entry);
+            diskDriver.writeRequest(entry, index);
 
         }
         // entry.reserve();
@@ -221,21 +221,15 @@ public class CacheDriver
             isDiskBusy = false;
         }
 
-        public void writeRequest(CacheSector index)
+        public void writeRequest(CacheSector entry, int index)
         {
 
-            diskLock.acquire();
-            int oldLevel = CPU.setLevel(MIPS.IntOff);
-//            ReadWriteRequest diskRequest = new ReadWriteRequest(index, data,
-//                    index);
-//            requestQueue.add(diskRequest);
-//            if (isDiskBusy == false)
-//            {
-//                startDisk(diskRequest, true);
-//                diskRequest.p();
-//            }
-            CPU.setLevel(oldLevel);
-            diskLock.release();
+
+            queueLock.acquire();
+            ReadWriteRequest diskRequest = new ReadWriteRequest(entry.getSectorNumber(), entry.getData(), index);
+            requestQueue.add(diskRequest);
+            currentRequest = diskRequest;
+            queueLock.release();
         }
 
         public void readRequest(CacheSector entry, int index)
