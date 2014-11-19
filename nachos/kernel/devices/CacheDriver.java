@@ -255,10 +255,13 @@ public class CacheDriver
             if(isDiskBusy == true)
                 diskRequest.p();
             
+            isDiskBusy = true;
             if(read)
                 disk.readRequest(diskRequest.getSectorNumber(), diskRequest.getData(), diskRequest.getIndex());
             else
                 disk.writeRequest(diskRequest.getSectorNumber(), diskRequest.getData(), diskRequest.getIndex());
+            
+            diskLock.release();
         }
 
         /**
