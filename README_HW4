@@ -71,6 +71,6 @@ performs various read and write operations.
                 -dt -x first -ps -lot
               -----------------------------------------------------
 
-This implementation does not format the disk correctly, I will upload another
-one which does shortly.
+You will be able to see that the SCAN algorithm does indeed work from the
+console output. We list the current cylinder as the head passes over it.
 
