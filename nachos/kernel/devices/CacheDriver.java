@@ -63,7 +63,7 @@ public class CacheDriver
 
     /** Buffer used to store request objects **/
 
-    private FixedBuffer<ReadWriteRequest> requestQueue;
+    private ArrayList<ReadWriteRequest> requestQueue;
     private ArrayList<CacheSector> buff;
     private static final int MAX_SIZE = 10;
 
@@ -88,7 +88,7 @@ public class CacheDriver
         diskDriver = new DiskDriver();
         cache = new HashMap<>();
         buff = new ArrayList<>();
-        requestQueue = new FixedBuffer<>(MAX_SIZE);
+        requestQueue = new ArrayList<>();
     }
     
     public void stuffIntoBuff(CacheSector sector){
