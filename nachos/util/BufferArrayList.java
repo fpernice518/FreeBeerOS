@@ -7,11 +7,10 @@ import nachos.kernel.filesys.CacheSector;
 public class BufferArrayList extends ArrayList<CacheSector>
 {
     private final int MAX_SIZE = 10;
-    
+
     public void stuffIntoBuff(CacheSector sector)
     {
-        
-        
+
         if (this.size() < 10)
         {
             this.add(0, sector);
@@ -21,27 +20,35 @@ public class BufferArrayList extends ArrayList<CacheSector>
             this.add(0, sector);
         }
 
-//        cacheLock.release();
+        // cacheLock.release();
 
     }
-    public void sendToTheFront(CacheSector sector ){
+
+    public void sendToTheFront(CacheSector sector)
+    {
         remove(sector);
         stuffIntoBuff(sector);
     }
-    public boolean containsSector(int i){
+
+    public boolean containsSector(int i)
+    {
         for (int j = 0; j < this.size(); j++)
         {
-            if(this.get(j).getSectorNumber() == i){
+            if (this.get(j).getSectorNumber() == i)
+            {
                 return true;
             }
-            
+
         }
         return false;
     }
-    public CacheSector getBySector(int x){
+
+    public CacheSector getBySector(int x)
+    {
         for (int j = 0; j < this.size(); j++)
         {
-            if(this.get(j).getSectorNumber() == x){
+            if (this.get(j).getSectorNumber() == x)
+            {
                 return this.get(j);
             }
         }
@@ -63,7 +70,5 @@ public class BufferArrayList extends ArrayList<CacheSector>
             this.remove(cs);
         }
     }
-
-    
 
 }
