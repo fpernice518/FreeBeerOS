@@ -224,20 +224,18 @@ public class CacheDriver
 
         public void readRequest(CacheSector entry)
         {
-            diskLock.acquire();
-            int oldLevel = CPU.setLevel(MIPS.IntOff);
             ReadWriteRequest diskRequest = new ReadWriteRequest(entry.getSectorNumber(), entry.getData());
             requestQueue.add(diskRequest);
-
+            currentRequest = diskRequest;
+            
+            startDisk(diskRequest, true);
+            
             if (isDiskBusy == false)
             {
-                startDisk(diskRequest, true);
+                
                 diskRequest.p();
             }
 
-            CPU.setLevel(oldLevel);
-            // diskSemaphore
-            // diskLock.release();
         }
 
         private void startDisk(ReadWriteRequest diskRequest, boolean read)
