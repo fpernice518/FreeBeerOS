@@ -23,6 +23,7 @@ public class ReadWriteRequest implements Comparable<ReadWriteRequest>
         this.data = data;
         this.index = index;
         this.sectorNumber = sectorNumber;
+        sem = new Semaphore("Sector " + sectorNumber + " Semaphore", 0);
     }
     public int getSectorNumber()
     {

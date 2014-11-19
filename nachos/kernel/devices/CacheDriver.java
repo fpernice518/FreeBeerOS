@@ -147,8 +147,6 @@ public class CacheDriver
         data = entry.getData();
         entry.release();
         // disk.readRequest(sectorNumber, data, index);
-        // semaphore.P(); // wait for interrupt
-        // cacheLock.release();
     }
 
     /**
@@ -195,8 +193,7 @@ public class CacheDriver
         {
             diskLock.acquire();
             int oldLevel = CPU.setLevel(MIPS.IntOff);
-            ReadWriteRequest diskRequest = new ReadWriteRequest(index, data,
-                    index);
+            ReadWriteRequest diskRequest = new ReadWriteRequest(index, data, index);
             requestQueue.add(diskRequest);
 
             if (isDiskBusy == false)
