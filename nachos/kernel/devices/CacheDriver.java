@@ -273,8 +273,7 @@ public class CacheDriver
             public void handleInterrupt()
             {
                 isDiskBusy = false;
-
-                semaphore.V();
+                currentRequest.v();
             }
         }
 
