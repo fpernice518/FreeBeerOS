@@ -167,7 +167,7 @@ public class CacheDriver
         Debug.ASSERT(0 <= sectorNumber && sectorNumber < getNumSectors());
 
         cacheLock.acquire(); // only one disk I/O at a time
-        entry = cache.get(sectorNumber);
+        entry = cache.getBySector(sectorNumber);
         byte[] newByte = new byte[disk.geometry.SectorSize];
         System.arraycopy(data, index, newByte, 0, disk.geometry.SectorSize);
         
@@ -198,6 +198,7 @@ public class CacheDriver
             diskDriver.writeRequest(entry, index);
 
         }
+        entry.release();
         // entry.reserve();
 
         // cacheLock.release();
@@ -223,29 +224,34 @@ public class CacheDriver
 
         public void writeRequest(CacheSector entry, int index)
         {
-
-
             queueLock.acquire();
+            int oldLevel = CPU.setLevel(CPU.IntOff);
             ReadWriteRequest diskRequest = new ReadWriteRequest(entry.getSectorNumber(), entry.getData(), index);
             requestQueue.add(diskRequest);
-            currentRequest = diskRequest;
+            
+            if(!isDiskBusy)
+                startDisk(diskRequest, false);
+            CPU.setLevel(oldLevel);
             queueLock.release();
         }
 
         public void readRequest(CacheSector entry, int index)
         {
             queueLock.acquire();
+            int oldLevel = CPU.setLevel(CPU.IntOff);
             ReadWriteRequest diskRequest = new ReadWriteRequest(entry.getSectorNumber(), entry.getData(), index);
             requestQueue.add(diskRequest);
-            currentRequest = diskRequest;
-            queueLock.release();
             
-            startDisk(diskRequest, true);
+            if(!isDiskBusy)
+                startDisk(diskRequest, true);
+            CPU.setLevel(oldLevel);
+            queueLock.release();
         }
 
         private void startDisk(ReadWriteRequest diskRequest, boolean read)
         {
             diskLock.acquire();
+            currentRequest = diskRequest;
             if(isDiskBusy == true)
                 diskRequest.p();
             
@@ -254,6 +260,8 @@ public class CacheDriver
                 disk.readRequest(diskRequest.getSectorNumber(), diskRequest.getData(), diskRequest.getIndex());
             else
                 disk.writeRequest(diskRequest.getSectorNumber(), diskRequest.getData(), diskRequest.getIndex());
+            
+            
             
             diskLock.release();
         }
