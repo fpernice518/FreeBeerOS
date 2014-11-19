@@ -179,7 +179,7 @@ public class CacheDriver
 
             entry.reserve();
             entry.setData(newByte);
-            
+            cache.sendToTheFront(entry);
             
             // cache.stuffIntoBuff(entry);
             // cacheLock.release();
