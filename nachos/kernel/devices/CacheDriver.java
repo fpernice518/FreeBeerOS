@@ -165,9 +165,21 @@ public class CacheDriver
         CacheSector entry;
         
         Debug.ASSERT(0 <= sectorNumber && sectorNumber < getNumSectors());
-        cacheLock.acquire(); // only one disk I/O at a time
+       
         
+        cacheLock.acquire(); // only one disk I/O at a time
         entry = cache.get(sectorNumber);
+        if(entry != null){
+            //we write through
+            Debug.print('4', "Write Hit");
+        }
+        else{
+            Debug.print('4', "Write Miss");
+            entry = new CacheSector(sectorNumber, data);
+            cache.stuffIntoBuff(entry);
+           
+            
+        }
         
         
         cacheLock.release();
