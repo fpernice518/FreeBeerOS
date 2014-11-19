@@ -172,18 +172,32 @@ public class CacheDriver
         if(entry != null){
             //we write through
             Debug.print('4', "Write Hit");
+            
+//            byte[] newByte = new byte[disk.geometry.SectorSize];
+//            System.arraycopy(data, index, newByte, 0, disk.geometry.SectorSize);
+//            entry = new CacheSector(sectorNumber, newByte);
+//            cache.stuffIntoBuff(entry);
+//            entry.reserve();
+//            cacheLock.release();
+//            diskDriver.writeRequest(entry);
+            
         }
         else{
             Debug.print('4', "Write Miss");
-            entry = new CacheSector(sectorNumber, data);
+            
+            byte[] newByte = new byte[disk.geometry.SectorSize];
+            System.arraycopy(data, index, newByte, 0, disk.geometry.SectorSize);
+            entry = new CacheSector(sectorNumber, newByte);
             cache.stuffIntoBuff(entry);
-            diskDriver.writeRequest(sectorNumber, data, index);
+            entry.reserve();
+            cacheLock.release();
+            diskDriver.writeRequest(entry);
             
         }
 //        entry.reserve();
         
         
-        cacheLock.release();
+//        cacheLock.release();
 //        disk.writeRequest(sectorNumber, data, index);
 //        semaphore.P(); // wait for interrupt
     }
@@ -201,7 +215,7 @@ public class CacheDriver
             disk.setHandler(new DiskIntHandler());
             isDiskBusy = false;
         }
-        public void writeRequest(int sectorNumber, byte[] data, int index)
+        public void writeRequest( CacheSector index)
         {
         
         }
