@@ -140,7 +140,7 @@ public class CacheDriver
 
         if (!entry.isValid())
         {
-            diskDriver.readRequest(entry);
+            diskDriver.readRequest(entry, index);
             entry.setValid();
         }
 
@@ -208,12 +208,14 @@ public class CacheDriver
     class DiskDriver
     {
         Lock diskLock;
+        Lock queueLock;
         Semaphore diskSemaphore;
         ReadWriteRequest currentRequest;
 
         DiskDriver()
         {
             diskLock = new Lock("Disk Lock");
+            queueLock = new Lock("Queue Lock");
             diskSemaphore = new Semaphore("Disk Sempahore", 0);
             disk.setHandler(new DiskIntHandler());
             isDiskBusy = false;
@@ -224,28 +226,27 @@ public class CacheDriver
 
         }
 
-        public void readRequest(CacheSector entry)
+        public void readRequest(CacheSector entry, int index)
         {
-            ReadWriteRequest diskRequest = new ReadWriteRequest(entry.getSectorNumber(), entry.getData());
+            queueLock.acquire();
+            ReadWriteRequest diskRequest = new ReadWriteRequest(entry.getSectorNumber(), entry.getData(), index);
             requestQueue.add(diskRequest);
             currentRequest = diskRequest;
+            queueLock.release();
             
             startDisk(diskRequest, true);
-            
-            if (isDiskBusy == false)
-            {
-                
-                diskRequest.p();
-            }
-
         }
 
         private void startDisk(ReadWriteRequest diskRequest, boolean read)
         {
-
-            currentRequest = diskRequest;
-            isDiskBusy = true;
-
+            diskLock.acquire();
+            if(isDiskBusy == true)
+                diskRequest.p();
+            
+            if(read)
+                disk.readRequest(diskRequest.getSectorNumber(), diskRequest.getData(), diskRequest.getIndex());
+            else
+                disk.writeRequest(diskRequest.getSectorNumber(), diskRequest.getData(), diskRequest.getIndex());
         }
 
         /**
