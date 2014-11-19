@@ -140,7 +140,7 @@ public class CacheDriver
 
         if (!entry.isValid())
         {
-            diskDriver.readRequest(index, data, index);
+            diskDriver.readRequest(entry);
             entry.setValid();
         }
 
@@ -222,12 +222,11 @@ public class CacheDriver
 
         }
 
-        public void readRequest(int sectorNumber, byte[] data, int index)
+        public void readRequest(CacheSector entry)
         {
             diskLock.acquire();
             int oldLevel = CPU.setLevel(MIPS.IntOff);
-            ReadWriteRequest diskRequest = new ReadWriteRequest(index, data,
-                    index);
+            ReadWriteRequest diskRequest = new ReadWriteRequest(entry.getSectorNumber(), entry.getData());
             requestQueue.add(diskRequest);
 
             if (isDiskBusy == false)

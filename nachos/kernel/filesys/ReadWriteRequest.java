@@ -7,32 +7,21 @@ import nachos.machine.Machine;
 
 public class ReadWriteRequest implements Comparable<ReadWriteRequest>
 {
-    private int sectorNumber,  index;
-    private byte[]  data;
+    private int sectorNumber;
+    private byte[] data;
     char requestType;
     Semaphore sem;
-   
-    public ReadWriteRequest(int sectorNumber,byte[] data, int index, char requestType, Semaphore sem){
+
+    public ReadWriteRequest(int sectorNumber, byte[] data)
+    {
         this.data = data;
-        this.index = index;
-        this.sectorNumber = sectorNumber;
-        this.requestType = requestType;
-        this.sem = sem;
-    }
-    public ReadWriteRequest(int sectorNumber,byte[] data, int index){
-        this.data = data;
-        this.index = index;
         this.sectorNumber = sectorNumber;
         sem = new Semaphore("Sector " + sectorNumber + " Semaphore", 0);
     }
+
     public int getSectorNumber()
     {
         return sectorNumber;
-    }
-
-    public int getIndex()
-    {
-        return index;
     }
 
     public byte[] getData()
@@ -44,14 +33,18 @@ public class ReadWriteRequest implements Comparable<ReadWriteRequest>
     {
         return requestType;
     }
-    public void p(){
+
+    public void p()
+    {
         sem.P();
-        
+
     }
-    public void v(){
+
+    public void v()
+    {
         sem.V();
     }
-    
+
     public int getCylinderNumber()
     {
         return sectorNumber % 32;
