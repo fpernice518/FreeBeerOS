@@ -90,34 +90,38 @@ public class CacheDriver
         buff = new ArrayList<>();
         requestQueue = new ArrayList<>();
     }
-    
-    public void stuffIntoBuff(CacheSector sector){
+
+    public void stuffIntoBuff(CacheSector sector)
+    {
         cacheLock.acquire();
-        if(buff.size()<10){
+        if (buff.size() < 10)
+        {
+            buff.add(0, sector);
+        } else
+        {
+            ensureRemove();
             buff.add(0, sector);
         }
-        else{
-           ensureRemove(); 
-           buff.add(0, sector);
-        }
-            
+
         cacheLock.release();
-        
+
     }
+
     /**
      * must use with cache lock
      */
-    public void ensureRemove(){
-       CacheSector cs = buff.get(buff.size()-1);
-        if(cs.isValid()){
+    public void ensureRemove()
+    {
+        CacheSector cs = buff.get(buff.size() - 1);
+        if (cs.isValid())
+        {
             buff.remove(cs);
-        }
-        else{
+        } else
+        {
             cs.reserve();
             buff.remove(cs);
         }
     }
-    
 
     /**
      * Get the total number of sectors on the disk.
@@ -205,6 +209,7 @@ public class CacheDriver
     {
         Lock diskLock;
         Semaphore diskSemaphore;
+        ReadWriteRequest currentRequest;
 
         DiskDriver()
         {
@@ -224,17 +229,19 @@ public class CacheDriver
 
             if (isDiskBusy == false)
             {
-                startDisk(sectorNumber, data, index, true);
+                startDisk(diskRequest, true);
+                diskRequest.p();
             }
-            
+
             CPU.setLevel(oldLevel);
             // diskSemaphore
             // diskLock.release();
         }
 
-        private void startDisk(int sectorNumber, byte[] data, int index,
-                boolean read)
+        private void startDisk(ReadWriteRequest diskRequest, boolean read)
         {
+            
+            currentRequest = diskRequest;
             isDiskBusy = true;
 
         }
@@ -251,9 +258,7 @@ public class CacheDriver
             public void handleInterrupt()
             {
                 isDiskBusy = false;
-                
-                
-                
+
                 semaphore.V();
             }
         }
