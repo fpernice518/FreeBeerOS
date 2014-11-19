@@ -69,7 +69,9 @@ public class CacheSector
 
     public void release()
     {
-        
+        conditionLock.acquire();
+        reserved = false;
+        conditionLock.release();
     }
     
 }

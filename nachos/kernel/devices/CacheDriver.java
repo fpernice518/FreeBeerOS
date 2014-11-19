@@ -18,6 +18,7 @@
 
 package nachos.kernel.devices;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import nachos.Debug;
@@ -61,7 +62,9 @@ public class CacheDriver
     private Lock cacheLock;
 
     /** Buffer used to store request objects **/
+
     private FixedBuffer<ReadWriteRequest> requestQueue;
+    private ArrayList<CacheSector> buff;
     private static final int MAX_SIZE = 10;
 
     /** Map used to store cache objects **/
@@ -84,8 +87,37 @@ public class CacheDriver
         disk = Machine.getDisk(unit);
         diskDriver = new DiskDriver();
         cache = new HashMap<>();
+        buff = new ArrayList<>();
         requestQueue = new FixedBuffer<>(MAX_SIZE);
     }
+    
+    public void stuffIntoBuff(CacheSector sector){
+        cacheLock.acquire();
+        if(buff.size()<10){
+            buff.add(0, sector);
+        }
+        else{
+           ensureRemove(); 
+           buff.add(0, sector);
+        }
+            
+        cacheLock.release();
+        
+    }
+    /**
+     * must use with cache lock
+     */
+    public void ensureRemove(){
+       CacheSector cs = buff.get(buff.size()-1);
+        if(cs.isValid()){
+            buff.remove(cs);
+        }
+        else{
+            cs.reserve();
+            buff.remove(cs);
+        }
+    }
+    
 
     /**
      * Get the total number of sectors on the disk.
@@ -194,6 +226,7 @@ public class CacheDriver
             {
                 startDisk(sectorNumber, data, index, true);
             }
+            
             CPU.setLevel(oldLevel);
             // diskSemaphore
             // diskLock.release();
