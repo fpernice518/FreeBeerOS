@@ -142,8 +142,9 @@ public class AddrSpace
                                           // page#
             pageTable[i].physicalPage = MemAlloc.getInstance().allocatePage();
 
-            // System.out.println(pageTable[i].physicalPage
-            // + "******************");
+          /**
+           * This valid bit needs to change  if i is inbetween code.size and initData.size keep valid else invalid
+           */
             pageTable[i].valid = true;
             pageTable[i].use = false;
             pageTable[i].dirty = false;
@@ -325,6 +326,7 @@ public class AddrSpace
     {
         int physAddr = getPhysicalAddress(virtAddr);
         Machine.mainMemory[physAddr] = b;
+//        System.out.println();
     }
 
     public void pushToMemory(int virtAddr, byte b[])
@@ -354,6 +356,7 @@ public class AddrSpace
         for (byte b : bytes)
         {
             pushToMemory(virtAddr, b);
+//            System.out.println();
             ++virtAddr;
         }
     }

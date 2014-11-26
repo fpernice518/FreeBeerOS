@@ -56,6 +56,7 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
         int type = CPU.readRegister(2);
         AddrSpace addrSpace;
 
+        
         if (which == MachineException.SyscallException)
         {
             int ptr, len;
@@ -147,10 +148,11 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
                 
                 
                 break;
-                
+            
             
 
             }
+      
 
             // Update the program counter to point to the next instruction
             // after the SYSCALL instruction.
@@ -159,6 +161,12 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
             CPU.writeRegister(MIPS.NextPCReg,
                     CPU.readRegister(MIPS.NextPCReg) + 4);
             return;
+        }
+        else if (which == MachineException.PageFaultException){
+            
+            System.out.println("hello");
+            
+            
         }
 
         System.out.println("Unexpected user mode exception " + which + ", "
