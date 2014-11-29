@@ -1,9 +1,28 @@
 #include "syscall.h"
 
+
+
 int main()
 {
   OpenFileId fd;
+  int end= 0;
+  recursive(end);
   Write("creat1\n\r", 8, ConsoleOutput);
+}
+
+void recursive(int x)
+{
+	if(x == 382000)
+		return;
+	else
+	{
+		++x;
+		recursive(x);
+	}
+}
+
+
+
  //  Write("create2\n\r", 8, ConsoleOutput);
  //  Write("create3\n\r", 8, ConsoleOutput);
  //  fd = Open("extd");
@@ -39,4 +58,4 @@ int main()
 
 
   //-d + -d f -d t -cp test/open1 open1 -cp test/create-test create -x open1
-}
+

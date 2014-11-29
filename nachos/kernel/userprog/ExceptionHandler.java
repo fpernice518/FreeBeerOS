@@ -165,8 +165,14 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
         else if (which == MachineException.PageFaultException){
             
             System.out.println("hello");
+            addrSpace = ((UserThread) NachosThread.currentThread()).space;
             
             
+            CPU.writeRegister(MIPS.PrevPCReg, CPU.readRegister(MIPS.PCReg));
+            CPU.writeRegister(MIPS.PCReg, CPU.readRegister(MIPS.NextPCReg));
+            CPU.writeRegister(MIPS.NextPCReg,
+                    CPU.readRegister(MIPS.NextPCReg) + 4);
+            return;
         }
 
         System.out.println("Unexpected user mode exception " + which + ", "

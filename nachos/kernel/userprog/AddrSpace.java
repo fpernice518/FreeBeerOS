@@ -125,6 +125,8 @@ public class AddrSpace
         // to leave room for the stack
         int numPages = (int) (size / Machine.PageSize);
 
+        nonStackSize = (int)(nonStackSize/Machine.PageSize);
+        
         Debug.ASSERT((numPages <= Machine.NumPhysPages),// check we're not
                                                         // trying
                 "AddrSpace constructor: Not enough memory!");
@@ -143,7 +145,7 @@ public class AddrSpace
             pageTable[i] = new TranslationEntry();
             pageTable[i].virtualPage = i; // for now, virtual page# = phys
                                           // page#
-            pageTable[i].physicalPage = MemAlloc.getInstance().allocatePage();
+//            pageTable[i].physicalPage = MemAlloc.getInstance().allocatePage();
 
             /**
              * This valid bit needs to change if i is inbetween code.size and
@@ -213,6 +215,10 @@ public class AddrSpace
         return (0);
     }
 
+    public void getNewPageException(){
+        
+    }
+    
     /**
      * Loads this AddrSpace into the kernel
      */
