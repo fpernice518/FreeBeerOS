@@ -111,6 +111,7 @@ public class AddrSpace
     {
         NoffHeader noffH;
         long size;
+        long nonStackSize;
 
         if ((noffH = NoffHeader.readHeader(executable)) == null)
             return (-1);
@@ -119,6 +120,8 @@ public class AddrSpace
         size = roundToPage(noffH.code.size)
                 + roundToPage(noffH.initData.size + noffH.uninitData.size)
                 + UserStackSize; // we need to increase the size
+        nonStackSize = roundToPage(noffH.code.size)
+                + roundToPage(noffH.initData.size + noffH.uninitData.size);
         // to leave room for the stack
         int numPages = (int) (size / Machine.PageSize);
 
@@ -142,10 +145,18 @@ public class AddrSpace
                                           // page#
             pageTable[i].physicalPage = MemAlloc.getInstance().allocatePage();
 
-          /**
-           * This valid bit needs to change  if i is inbetween code.size and initData.size keep valid else invalid
-           */
-            pageTable[i].valid = true;
+            /**
+             * This valid bit needs to change if i is inbetween code.size and
+             * initData.size keep valid else invalid
+             */
+            if (i < nonStackSize)
+            {
+                pageTable[i].physicalPage = MemAlloc.getInstance().allocatePage();
+                pageTable[i].valid = true;
+            } else
+            {
+                pageTable[i].valid = false;
+            }
             pageTable[i].use = false;
             pageTable[i].dirty = false;
             pageTable[i].readOnly = false; // if code and data segments live
@@ -326,7 +337,7 @@ public class AddrSpace
     {
         int physAddr = getPhysicalAddress(virtAddr);
         Machine.mainMemory[physAddr] = b;
-//        System.out.println();
+        // System.out.println();
     }
 
     public void pushToMemory(int virtAddr, byte b[])
@@ -334,7 +345,7 @@ public class AddrSpace
         // int physAddr = getPhysicalAddress(virtAddr);
         for (int i = 0; i < b.length; i++)
         {
-            pushToMemory(virtAddr+i, b[i]);
+            pushToMemory(virtAddr + i, b[i]);
         }
 
     }
@@ -356,7 +367,7 @@ public class AddrSpace
         for (byte b : bytes)
         {
             pushToMemory(virtAddr, b);
-//            System.out.println();
+            // System.out.println();
             ++virtAddr;
         }
     }
