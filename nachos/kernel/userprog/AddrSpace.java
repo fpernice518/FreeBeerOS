@@ -111,7 +111,7 @@ public class AddrSpace
     {
         NoffHeader noffH;
         long size;
-        long nonStackSize;
+        long nonStackPages;
 
         if ((noffH = NoffHeader.readHeader(executable)) == null)
             return (-1);
@@ -120,12 +120,12 @@ public class AddrSpace
         size = roundToPage(noffH.code.size)
                 + roundToPage(noffH.initData.size + noffH.uninitData.size)
                 + UserStackSize; // we need to increase the size
-        nonStackSize = roundToPage(noffH.code.size)
+        nonStackPages = roundToPage(noffH.code.size)
                 + roundToPage(noffH.initData.size + noffH.uninitData.size);
         // to leave room for the stack
         int numPages = (int) (size / Machine.PageSize);
 
-        nonStackSize = (int)(nonStackSize/Machine.PageSize);
+        nonStackPages = (int)(nonStackPages/Machine.PageSize);
         
         Debug.ASSERT((numPages <= Machine.NumPhysPages),// check we're not
                                                         // trying
@@ -151,17 +151,21 @@ public class AddrSpace
              * This valid bit needs to change if i is inbetween code.size and
              * initData.size keep valid else invalid
              */
-            if (i < nonStackSize)
+            pageTable[i].use = false;
+            pageTable[i].dirty = false;
+            pageTable[i].readOnly = false;
+            if (i < nonStackPages)
             {
                 pageTable[i].physicalPage = MemAlloc.getInstance().allocatePage();
                 pageTable[i].valid = true;
             } else
             {
                 pageTable[i].valid = false;
+                break;
             }
-            pageTable[i].use = false;
-            pageTable[i].dirty = false;
-            pageTable[i].readOnly = false; // if code and data segments live
+//            pageTable[i].use = false;
+//            pageTable[i].dirty = false;
+//            pageTable[i].readOnly = false; // if code and data segments live
                                            // on
             // separate pages, we could set code
             // pages to be read-only
