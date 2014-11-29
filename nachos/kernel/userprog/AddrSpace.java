@@ -111,7 +111,7 @@ public class AddrSpace
     {
         NoffHeader noffH;
         long size;
-        long nonStackPages;
+        long stackSize;
 
         if ((noffH = NoffHeader.readHeader(executable)) == null)
             return (-1);
@@ -120,12 +120,11 @@ public class AddrSpace
         size = roundToPage(noffH.code.size)
                 + roundToPage(noffH.initData.size + noffH.uninitData.size)
                 + UserStackSize; // we need to increase the size
-        nonStackPages = roundToPage(noffH.code.size)
-                + roundToPage(noffH.initData.size + noffH.uninitData.size);
+        stackSize = roundToPage(noffH.code.size)+ roundToPage(noffH.initData.size + noffH.uninitData.size);
         // to leave room for the stack
         int numPages = (int) (size / Machine.PageSize);
 
-        nonStackPages = (int)(nonStackPages/Machine.PageSize);
+        int nonStackPages = (int)(stackSize/Machine.PageSize);
         
         Debug.ASSERT((numPages <= Machine.NumPhysPages),// check we're not
                                                         // trying
