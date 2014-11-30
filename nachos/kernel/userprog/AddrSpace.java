@@ -118,14 +118,16 @@ public class AddrSpace
 
         // how big is address space?
         size = roundToPage(noffH.code.size)
-                + roundToPage(noffH.initData.size + noffH.uninitData.size)
-                + UserStackSize; // we need to increase the size
-        stackSize = roundToPage(noffH.code.size)+ roundToPage(noffH.initData.size + noffH.uninitData.size);
+                + roundToPage(noffH.initData.size + noffH.uninitData.size);
+        
+        stackSize = roundToPage(noffH.code.size)
+                + roundToPage(noffH.initData.size + noffH.uninitData.size);
         // to leave room for the stack
+        
         int numPages = (int) (size / Machine.PageSize);
 
-        int nonStackPages = (int)(stackSize/Machine.PageSize);
-        
+        int nonStackPages = (int) (stackSize / Machine.PageSize);
+
         Debug.ASSERT((numPages <= Machine.NumPhysPages),// check we're not
                                                         // trying
                 "AddrSpace constructor: Not enough memory!");
@@ -144,7 +146,8 @@ public class AddrSpace
             pageTable[i] = new TranslationEntry();
             pageTable[i].virtualPage = i; // for now, virtual page# = phys
                                           // page#
-//            pageTable[i].physicalPage = MemAlloc.getInstance().allocatePage();
+                                          // pageTable[i].physicalPage =
+                                          // MemAlloc.getInstance().allocatePage();
 
             /**
              * This valid bit needs to change if i is inbetween code.size and
@@ -155,17 +158,19 @@ public class AddrSpace
             pageTable[i].readOnly = false;
             if (i < nonStackPages)
             {
-                pageTable[i].physicalPage = MemAlloc.getInstance().allocatePage();
+                pageTable[i].physicalPage = MemAlloc.getInstance()
+                        .allocatePage();
                 pageTable[i].valid = true;
             } else
             {
+                pageTable[i].physicalPage = -1;
                 pageTable[i].valid = false;
                 break;
             }
-//            pageTable[i].use = false;
-//            pageTable[i].dirty = false;
-//            pageTable[i].readOnly = false; // if code and data segments live
-                                           // on
+            // pageTable[i].use = false;
+            // pageTable[i].dirty = false;
+            // pageTable[i].readOnly = false; // if code and data segments live
+            // on
             // separate pages, we could set code
             // pages to be read-only
 
@@ -218,10 +223,11 @@ public class AddrSpace
         return (0);
     }
 
-    public void getNewPageException(){
-        
+    public void getNewPageException()
+    {
+
     }
-    
+
     /**
      * Loads this AddrSpace into the kernel
      */
