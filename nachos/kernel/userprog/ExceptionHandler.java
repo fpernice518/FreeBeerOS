@@ -168,10 +168,10 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
             addrSpace = ((UserThread) NachosThread.currentThread()).space;
             addrSpace.getNewPage();
             
-            CPU.writeRegister(MIPS.PrevPCReg, CPU.readRegister(MIPS.PCReg));
-            CPU.writeRegister(MIPS.PCReg, CPU.readRegister(MIPS.NextPCReg));
-            CPU.writeRegister(MIPS.NextPCReg,
-                    CPU.readRegister(MIPS.NextPCReg) + 4);
+//            CPU.writeRegister(MIPS.PrevPCReg, CPU.readRegister(MIPS.PCReg));
+//            CPU.writeRegister(MIPS.PCReg, CPU.readRegister(MIPS.NextPCReg));
+//            CPU.writeRegister(MIPS.NextPCReg,
+//                    CPU.readRegister(MIPS.NextPCReg) + 4);
             return;
         }
 

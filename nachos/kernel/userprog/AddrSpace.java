@@ -226,44 +226,21 @@ public class AddrSpace
 
     public void getNewPage()
     {
-        
-        
+
+   
+            pageTable[latestStackIndex] = new TranslationEntry();
+            pageTable[latestStackIndex].virtualPage = latestStackIndex;
+            pageTable[latestStackIndex].use = false;
+            pageTable[latestStackIndex].dirty = false;
+            pageTable[latestStackIndex].readOnly = false;
+            pageTable[latestStackIndex].physicalPage = MemAlloc.getInstance()
+            .allocatePage();
+            int j = pageTable[latestStackIndex].physicalPage * Machine.PageSize;
+            Machine.mainMemory[j] = (byte) 0;
+            pageTable[latestStackIndex].valid = true;
+   
+   
         latestStackIndex++;
-        System.out.println(latestStackIndex);
-        if(latestStackIndex < pageTable.length){
-        pageTable[latestStackIndex] = new TranslationEntry();
-        pageTable[latestStackIndex].virtualPage = latestStackIndex;
-
-        pageTable[latestStackIndex].use = false;
-        pageTable[latestStackIndex].dirty = false;
-        pageTable[latestStackIndex].readOnly = false;
-
-        pageTable[latestStackIndex].physicalPage = MemAlloc.getInstance()
-                .allocatePage();
-        pageTable[latestStackIndex].valid = true;
-        
-        }
-//        else{
-//            TranslationEntry[] pageTablec = new TranslationEntry[pageTable.length+1];
-//            
-//            System.arraycopy(pageTable, 0, pageTablec, 0, pageTable.length);
-//            
-//            pageTablec[latestStackIndex] = new TranslationEntry();
-//            pageTablec[latestStackIndex].virtualPage = latestStackIndex;
-//
-//            pageTablec[latestStackIndex].use = false;
-//            pageTablec[latestStackIndex].dirty = false;
-//            pageTablec[latestStackIndex].readOnly = false;
-//
-//            pageTablec[latestStackIndex].physicalPage = MemAlloc.getInstance()
-//                    .allocatePage();
-//            pageTablec[latestStackIndex].valid = true;
-//            
-//            pageTable = pageTablec;
-//            
-//        }
-        
-
     }
 
     /**
