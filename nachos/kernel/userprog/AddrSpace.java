@@ -140,15 +140,13 @@ public class AddrSpace
                 + ", size=" + size);
 
         // first, set up the translation
-        pageTable = new TranslationEntry[numPages];
-
-        for (int i = 0; i < numPages; i++)
+        int totalPages = numPages + stackPages;
+        pageTable = new TranslationEntry[totalPages];
+        
+        for (int i = 0; i < totalPages; i++)
         {
             pageTable[i] = new TranslationEntry();
-            pageTable[i].virtualPage = i; // for now, virtual page# = phys
-                                          // page#
-                                          // pageTable[i].physicalPage =
-                                          // MemAlloc.getInstance().allocatePage();
+            pageTable[i].virtualPage = i;
 
             /**
              * This valid bit needs to change if i is inbetween code.size and
@@ -157,16 +155,14 @@ public class AddrSpace
             pageTable[i].use = false;
             pageTable[i].dirty = false;
             pageTable[i].readOnly = false;
-            if (i < stackPages)
+            if (i < numPages)
             {
-                pageTable[i].physicalPage = MemAlloc.getInstance()
-                        .allocatePage();
+                pageTable[i].physicalPage = MemAlloc.getInstance().allocatePage();
                 pageTable[i].valid = true;
             } else
             {
                 pageTable[i].physicalPage = -1;
                 pageTable[i].valid = false;
-                break;
             }
             // pageTable[i].use = false;
             // pageTable[i].dirty = false;
@@ -174,18 +170,18 @@ public class AddrSpace
             // on
             // separate pages, we could set code
             // pages to be read-only
-
         }
 
         // Zero out the entire address space, to zero the uninitialized data
         // segment and the stack segment.
-        for (int i = 0; i < numPages; i++)
+        for (int i = 0; i < totalPages; i++)
         {
             int f = (pageTable[i].physicalPage + 1) * Machine.PageSize;
 
             for (int j = pageTable[i].physicalPage * Machine.PageSize; j < f; j++)
             {
-                Machine.mainMemory[j] = (byte) 0;
+                if(pageTable[i].valid == true)
+                    Machine.mainMemory[j] = (byte) 0;
             }
         }
 
