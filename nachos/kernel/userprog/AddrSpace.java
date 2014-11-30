@@ -228,18 +228,18 @@ public class AddrSpace
     {
 
    
-            pageTable[latestStackIndex] = new TranslationEntry();
-            pageTable[latestStackIndex].virtualPage = latestStackIndex;
-            pageTable[latestStackIndex].use = false;
-            pageTable[latestStackIndex].dirty = false;
-            pageTable[latestStackIndex].readOnly = false;
-            pageTable[latestStackIndex].physicalPage = MemAlloc.getInstance()
-            .allocatePage();
-            int j = pageTable[latestStackIndex].physicalPage * Machine.PageSize;
+//            pageTable[latestStackIndex] = new TranslationEntry();
+        pageTable[latestStackIndex].virtualPage = latestStackIndex;
+//            pageTable[latestStackIndex].use = false;
+//            pageTable[latestStackIndex].dirty = false;
+//            pageTable[latestStackIndex].readOnly = false;
+        pageTable[latestStackIndex].physicalPage = MemAlloc.getInstance().allocatePage();
+        int i = pageTable[latestStackIndex].physicalPage * Machine.PageSize;
+        
+        for(int j = 0; i < Machine.PageSize; ++i, ++j)
             Machine.mainMemory[j] = (byte) 0;
-            pageTable[latestStackIndex].valid = true;
-   
-   
+        
+        pageTable[latestStackIndex].valid = true;
         latestStackIndex++;
     }
 
