@@ -12,7 +12,7 @@ int main()
 
 void recursive(int x)
 {
-	if(x == 382000)
+	if(x == 5)
 		return;
 	else
 	{

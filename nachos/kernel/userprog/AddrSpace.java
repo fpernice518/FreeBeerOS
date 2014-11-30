@@ -64,6 +64,7 @@ public class AddrSpace
     private int argc;
     private int child;
     private int spaceId;
+    private int latestStackIndex;
 
     /**
      * Create a new address space.
@@ -119,11 +120,11 @@ public class AddrSpace
         // how big is address space?
         size = roundToPage(noffH.code.size)
                 + roundToPage(noffH.initData.size + noffH.uninitData.size);
-        
+
         stackSize = UserStackSize;
-        
+
         // to leave room for the stack
-        
+
         int numPages = (int) (size / Machine.PageSize);
 
         int stackPages = (int) (stackSize / Machine.PageSize);
@@ -133,16 +134,17 @@ public class AddrSpace
         // to run anything too big --
         // at least until we have
         // virtual memory
-        Debug.ASSERT((numPages <= Machine.NumPhysPages), "AddrSpace constructor: Not enough memory!");
-        
+        Debug.ASSERT((numPages <= Machine.NumPhysPages),
+                "AddrSpace constructor: Not enough memory!");
 
         Debug.println('a', "Initializing address space, numPages=" + numPages
                 + ", size=" + size);
 
+        latestStackIndex = 0;
         // first, set up the translation
         int totalPages = numPages + stackPages;
         pageTable = new TranslationEntry[totalPages];
-        
+
         for (int i = 0; i < totalPages; i++)
         {
             pageTable[i] = new TranslationEntry();
@@ -157,8 +159,10 @@ public class AddrSpace
             pageTable[i].readOnly = false;
             if (i < numPages)
             {
-                pageTable[i].physicalPage = MemAlloc.getInstance().allocatePage();
+                pageTable[i].physicalPage = MemAlloc.getInstance()
+                        .allocatePage();
                 pageTable[i].valid = true;
+                latestStackIndex++;
             } else
             {
                 pageTable[i].physicalPage = -1;
@@ -180,7 +184,7 @@ public class AddrSpace
 
             for (int j = pageTable[i].physicalPage * Machine.PageSize; j < f; j++)
             {
-                if(pageTable[i].valid == true)
+                if (pageTable[i].valid == true)
                     Machine.mainMemory[j] = (byte) 0;
             }
         }
@@ -220,8 +224,21 @@ public class AddrSpace
         return (0);
     }
 
-    public void getNewPageException()
+    public void getNewPage()
     {
+        latestStackIndex++;
+        
+        pageTable[latestStackIndex] = new TranslationEntry();
+        pageTable[latestStackIndex].virtualPage = latestStackIndex;
+
+        pageTable[latestStackIndex].use = false;
+        pageTable[latestStackIndex].dirty = false;
+        pageTable[latestStackIndex].readOnly = false;
+
+        pageTable[latestStackIndex].physicalPage = MemAlloc.getInstance()
+                .allocatePage();
+        pageTable[latestStackIndex].valid = true;
+        
 
     }
 
