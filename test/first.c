@@ -1,6 +1,6 @@
 #include "syscall.h"
 
-
+void recursive(int x);
 
 int main()
 {
@@ -12,7 +12,7 @@ int main()
 
 void recursive(int x)
 {
-	if(x == 5)
+	if(x == 37)
 		return;
 	else
 	{
