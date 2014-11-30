@@ -120,20 +120,21 @@ public class AddrSpace
         size = roundToPage(noffH.code.size)
                 + roundToPage(noffH.initData.size + noffH.uninitData.size);
         
-        stackSize = roundToPage(noffH.code.size)
-                + roundToPage(noffH.initData.size + noffH.uninitData.size);
+        stackSize = UserStackSize;
+        
         // to leave room for the stack
         
         int numPages = (int) (size / Machine.PageSize);
 
-        int nonStackPages = (int) (stackSize / Machine.PageSize);
+        int stackPages = (int) (stackSize / Machine.PageSize);
 
-        Debug.ASSERT((numPages <= Machine.NumPhysPages),// check we're not
-                                                        // trying
-                "AddrSpace constructor: Not enough memory!");
+        // check we're not
+        // trying
         // to run anything too big --
         // at least until we have
         // virtual memory
+        Debug.ASSERT((numPages <= Machine.NumPhysPages), "AddrSpace constructor: Not enough memory!");
+        
 
         Debug.println('a', "Initializing address space, numPages=" + numPages
                 + ", size=" + size);
@@ -156,7 +157,7 @@ public class AddrSpace
             pageTable[i].use = false;
             pageTable[i].dirty = false;
             pageTable[i].readOnly = false;
-            if (i < nonStackPages)
+            if (i < stackPages)
             {
                 pageTable[i].physicalPage = MemAlloc.getInstance()
                         .allocatePage();
