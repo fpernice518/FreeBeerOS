@@ -226,8 +226,11 @@ public class AddrSpace
 
     public void getNewPage()
     {
-        latestStackIndex++;
         
+        
+        latestStackIndex++;
+        System.out.println(latestStackIndex);
+        if(latestStackIndex < pageTable.length){
         pageTable[latestStackIndex] = new TranslationEntry();
         pageTable[latestStackIndex].virtualPage = latestStackIndex;
 
@@ -238,6 +241,27 @@ public class AddrSpace
         pageTable[latestStackIndex].physicalPage = MemAlloc.getInstance()
                 .allocatePage();
         pageTable[latestStackIndex].valid = true;
+        
+        }
+//        else{
+//            TranslationEntry[] pageTablec = new TranslationEntry[pageTable.length+1];
+//            
+//            System.arraycopy(pageTable, 0, pageTablec, 0, pageTable.length);
+//            
+//            pageTablec[latestStackIndex] = new TranslationEntry();
+//            pageTablec[latestStackIndex].virtualPage = latestStackIndex;
+//
+//            pageTablec[latestStackIndex].use = false;
+//            pageTablec[latestStackIndex].dirty = false;
+//            pageTablec[latestStackIndex].readOnly = false;
+//
+//            pageTablec[latestStackIndex].physicalPage = MemAlloc.getInstance()
+//                    .allocatePage();
+//            pageTablec[latestStackIndex].valid = true;
+//            
+//            pageTable = pageTablec;
+//            
+//        }
         
 
     }
