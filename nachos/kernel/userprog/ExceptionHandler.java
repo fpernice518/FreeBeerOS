@@ -164,11 +164,10 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
         }
         else if (which == MachineException.PageFaultException){
             
-            System.out.println("hello");
+            System.out.println("Page Fault Occured");
             addrSpace = ((UserThread) NachosThread.currentThread()).space;
 //            addrSpace.getNewPage();
-            int x =MIPS.BadVAddrReg;
-            addrSpace.getNewPage(x);
+            addrSpace.getNewPage(MIPS.BadVAddrReg);
 //            CPU.writeRegister(MIPS.PrevPCReg, CPU.readRegister(MIPS.PCReg));
 //            CPU.writeRegister(MIPS.PCReg, CPU.readRegister(MIPS.NextPCReg));
 //            CPU.writeRegister(MIPS.NextPCReg,

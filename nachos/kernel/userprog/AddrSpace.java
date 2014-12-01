@@ -229,19 +229,21 @@ public class AddrSpace
     {
 
         System.out.println(pageTable.length);
-        pageTable[badV] = new TranslationEntry();
-        pageTable[badV].virtualPage = badV;
-        pageTable[badV].use = false;
-        pageTable[badV].dirty = false;
-        pageTable[badV].readOnly = false;
-        pageTable[badV].physicalPage = MemAlloc.getInstance().allocatePage();
-        int i = pageTable[badV].physicalPage * Machine.PageSize;
+        int pageNumber = getPageNumber(badV);
+        
+        pageTable[pageNumber] = new TranslationEntry();
+        pageTable[pageNumber].virtualPage = badV;
+        pageTable[pageNumber].use = false;
+        pageTable[pageNumber].dirty = false;
+        pageTable[pageNumber].readOnly = false;
+        pageTable[pageNumber].physicalPage = MemAlloc.getInstance().allocatePage();
+        int i = pageTable[pageNumber].physicalPage * Machine.PageSize;
 
         for (int j = 0; i < Machine.PageSize; ++i, ++j)
             Machine.mainMemory[j] = (byte) 0;
 
-        pageTable[badV].valid = true;
-        // latestStackIndex++;
+        pageTable[pageNumber].valid = true;
+//       latestStackIndex++;
     }
 
     /**
@@ -410,5 +412,11 @@ public class AddrSpace
 
         return pageTable[pageNumber].physicalPage * Machine.PageSize
                 + pageOffset;
+    }
+    
+    private int getPageNumber(int virtAddr)
+    {
+        int pageNumber = virtAddr / Machine.PageSize;
+        return pageNumber;
     }
 }
