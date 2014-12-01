@@ -166,7 +166,6 @@ public class AddrSpace
                 // latestStackIndex++;
             } else
             {
-                pageTable[i].physicalPage = -1;
                 pageTable[i].valid = false;
             }
             // pageTable[i].use = false;
@@ -240,7 +239,7 @@ public class AddrSpace
         int i = pageTable[pageNumber].physicalPage * Machine.PageSize;
 
         for (int j = 0; i < Machine.PageSize; ++i, ++j)
-            Machine.mainMemory[j] = (byte) 0;
+            Machine.mainMemory[i] = (byte) 0;
 
         pageTable[pageNumber].valid = true;
 //       latestStackIndex++;
