@@ -166,8 +166,9 @@ public class ExceptionHandler implements nachos.machine.ExceptionHandler
             
             System.out.println("hello");
             addrSpace = ((UserThread) NachosThread.currentThread()).space;
-            addrSpace.getNewPage();
-            
+//            addrSpace.getNewPage();
+            int x =MIPS.BadVAddrReg;
+            addrSpace.getNewPage(x);
 //            CPU.writeRegister(MIPS.PrevPCReg, CPU.readRegister(MIPS.PCReg));
 //            CPU.writeRegister(MIPS.PCReg, CPU.readRegister(MIPS.NextPCReg));
 //            CPU.writeRegister(MIPS.NextPCReg,

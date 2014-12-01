@@ -64,7 +64,8 @@ public class AddrSpace
     private int argc;
     private int child;
     private int spaceId;
-    private int latestStackIndex;
+
+    // private int latestStackIndex;
 
     /**
      * Create a new address space.
@@ -140,7 +141,7 @@ public class AddrSpace
         Debug.println('a', "Initializing address space, numPages=" + numPages
                 + ", size=" + size);
 
-        latestStackIndex = 0;
+        // latestStackIndex = 0;
         // first, set up the translation
         int totalPages = numPages + stackPages;
         pageTable = new TranslationEntry[totalPages];
@@ -162,7 +163,7 @@ public class AddrSpace
                 pageTable[i].physicalPage = MemAlloc.getInstance()
                         .allocatePage();
                 pageTable[i].valid = true;
-                latestStackIndex++;
+                // latestStackIndex++;
             } else
             {
                 pageTable[i].physicalPage = -1;
@@ -224,23 +225,23 @@ public class AddrSpace
         return (0);
     }
 
-    public void getNewPage()
+    public void getNewPage(int badV)
     {
 
-   
-//            pageTable[latestStackIndex] = new TranslationEntry();
-        pageTable[latestStackIndex].virtualPage = latestStackIndex;
-//            pageTable[latestStackIndex].use = false;
-//            pageTable[latestStackIndex].dirty = false;
-//            pageTable[latestStackIndex].readOnly = false;
-        pageTable[latestStackIndex].physicalPage = MemAlloc.getInstance().allocatePage();
-        int i = pageTable[latestStackIndex].physicalPage * Machine.PageSize;
-        
-        for(int j = 0; i < Machine.PageSize; ++i, ++j)
+        System.out.println(pageTable.length);
+        pageTable[badV] = new TranslationEntry();
+        pageTable[badV].virtualPage = badV;
+        pageTable[badV].use = false;
+        pageTable[badV].dirty = false;
+        pageTable[badV].readOnly = false;
+        pageTable[badV].physicalPage = MemAlloc.getInstance().allocatePage();
+        int i = pageTable[badV].physicalPage * Machine.PageSize;
+
+        for (int j = 0; i < Machine.PageSize; ++i, ++j)
             Machine.mainMemory[j] = (byte) 0;
-        
-        pageTable[latestStackIndex].valid = true;
-        latestStackIndex++;
+
+        pageTable[badV].valid = true;
+        // latestStackIndex++;
     }
 
     /**
