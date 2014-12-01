@@ -60,7 +60,7 @@ public class AddrSpace
     private int[] savedRegisters = new int[MIPS.NumTotalRegs];
 
     /** Default size of the user stack area -- increase this as necessary! */
-    private static final int UserStackSize = 1024;
+    private static final int UserStackSize = 1073741824;
     private int argc;
     private int child;
     private int spaceId;
@@ -160,13 +160,10 @@ public class AddrSpace
             pageTable[i].readOnly = false;
             if (i < numPages)
             {
-                pageTable[i].physicalPage = MemAlloc.getInstance()
-                        .allocatePage();
+                pageTable[i].physicalPage = MemAlloc.getInstance().allocatePage();
                 pageTable[i].valid = true;
-                // latestStackIndex++;
             } else
             {
-                pageTable[i].physicalPage = -1;
                 pageTable[i].valid = false;
             }
             // pageTable[i].use = false;
@@ -190,8 +187,6 @@ public class AddrSpace
             }
         }
 
-        // then, copy in the code and data segments into memory
-        int remainders = (int) (noffH.code.size % Machine.PageSize);
         if (noffH.code.size > 0)
         {
             Debug.println('a', "Initializing code segment, at "
@@ -203,9 +198,7 @@ public class AddrSpace
             // I dont think we are getting all of the program, i think we are
             // getting 99% of it
             for (int i = 0; i < numPages; i++)
-                executable.read(Machine.mainMemory,
-                        (pageTable[i].physicalPage * Machine.PageSize),
-                        Machine.PageSize);
+                executable.read(Machine.mainMemory,(pageTable[i].physicalPage * Machine.PageSize),Machine.PageSize);
 
         }
         // usermanual press release review
@@ -231,7 +224,6 @@ public class AddrSpace
 //        System.out.println(badV);
         int pageNumber = getPageNumber(badV);
 //        System.out.println("Here "+pageNumber);
-        pageTable[pageNumber] = new TranslationEntry();
         pageTable[pageNumber].virtualPage = badV;
         pageTable[pageNumber].use = false;
         pageTable[pageNumber].dirty = false;
