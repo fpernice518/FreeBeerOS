@@ -228,9 +228,9 @@ public class AddrSpace
     public void getNewPage(int badV)
     {
 
-        System.out.println(pageTable.length);
+//        System.out.println(badV);
         int pageNumber = getPageNumber(badV);
-        
+//        System.out.println("Here "+pageNumber);
         pageTable[pageNumber] = new TranslationEntry();
         pageTable[pageNumber].virtualPage = badV;
         pageTable[pageNumber].use = false;
