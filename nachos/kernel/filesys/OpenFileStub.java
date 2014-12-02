@@ -30,6 +30,8 @@ class OpenFileStub implements OpenFile {
   /** The current file position. */
   private long currentOffset;
 
+private int id;
+
   /**
    * Open a file.  This constructor is not exported outside the package,
    * because users of the filesystem should be using the methods of the
@@ -160,14 +162,13 @@ class OpenFileStub implements OpenFile {
 @Override
 public int getId()
 {
-    // TODO Auto-generated method stub
-    return 0;
+    return id;
 }
 
 @Override
 public void setId(int x)
 {
-    // TODO Auto-generated method stub
+    this.id = x;
     
 }
 }
