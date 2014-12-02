@@ -1,0 +1,65 @@
+Frank Pernice
+Christian Barry
+
+HW5 README
+
+-----------------------------------------
+
+In this homework, we have (hopefully) implemented virtual memory.
+
+We provided a script file, "hw5Make.sh" which should make our test cases
+easy to compile. simply run the following commands in a bash shell:
+
+       chmod a+x hw5Make.sh
+       ./hw5Make.sh
+
+These commands will compile three subsets of programs; a master program and 5 child
+programs, a recursion test, and a read/write test.
+
+The master program perform an Exec() on each of its child programs (shown below). 
+
+  master  
+    one
+    two
+    three
+    four
+    five
+
+The recursion test simply performs a deeply nested (100 levels deep) recursion.
+It is important to note that the OS eventually crashes if the recursion is 
+too deep, but this only happens for extremely large recursions.
+
+Finally, the read/write test does the following:
+1) Writes the string "BOBS" to test/wt.txt
+2) Open test/wt.txt and read its contents into a buffer
+3) Write the buffer to the console
+4) Perform some recursion
+5) Finish
+
+
+
+IMPORTANT: In order to mantain consistency and speed, we reverted back to the
+           stub file system. So there is no need to format the disk nor
+           is there a need to maintain file names below 10 characters. 
+
+The above three tests are as follows:
+  test/master
+  test/recursion
+  test/ioTest
+
+
+Overall, we found this assignment to be very simple (after numerous stupid mistakes) and
+so our description of changes will be brief.
+
+Most of the changes occured in the AddrSpace class. We made the following changes:
+ * We made the UserStackSize larger.
+ * In the exec() method, we separated the stack pages from the non-stack pages. This 
+   allowed us to allocate stack pages on demand (when page-faults occur).
+ * The getNewPage() method tries to allocate a new page, zeroes it out, and sets it valid. 
+   This is called from the page-fault handler (which is really just the bottom of the ExceptionHandler).
+ * The pushToMemory method (our copyIn) was modified to handle page faults and page validity.
+
+
+
+
+

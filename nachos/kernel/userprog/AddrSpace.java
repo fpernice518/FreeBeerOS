@@ -56,7 +56,7 @@ public class AddrSpace
     private int[] savedRegisters = new int[MIPS.NumTotalRegs];
 
     /** Default size of the user stack area -- increase this as necessary! */
-    private static final int UserStackSize = 1048576;
+    private static final int UserStackSize = 8192;
     private int argc;
     private int child;
     private int spaceId;

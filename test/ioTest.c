@@ -16,14 +16,12 @@ int main()
   fd = Open("test/wt.txt");
   
   Read(str2, 5, fd);
-  Write("creat2\n\r", 8, ConsoleOutput);
   Write(str2, 5, ConsoleOutput);
-  Write("creat3\n\r", 8, ConsoleOutput);
   Close(fd);
 
   recursive(end);
 
-  Write("creat1\n\r", 8, ConsoleOutput);
+  Write("Done\n\r", 6, ConsoleOutput);
 }
 
 void recursive(int x)
