@@ -227,22 +227,23 @@ public class AddrSpace
     public void getNewPage(int badV)
     {
 
-//        System.out.println(badV);
+        // System.out.println(badV);
         int pageNumber = getPageNumber(badV);
-//        System.out.println("Here "+pageNumber);
+        // System.out.println("Here "+pageNumber);
         pageTable[pageNumber] = new TranslationEntry();
         pageTable[pageNumber].virtualPage = badV;
         pageTable[pageNumber].use = false;
         pageTable[pageNumber].dirty = false;
         pageTable[pageNumber].readOnly = false;
-        pageTable[pageNumber].physicalPage = MemAlloc.getInstance().allocatePage();
+        pageTable[pageNumber].physicalPage = MemAlloc.getInstance()
+                .allocatePage();
         int i = pageTable[pageNumber].physicalPage * Machine.PageSize;
 
         for (int j = 0; i < Machine.PageSize; ++i, ++j)
             Machine.mainMemory[i] = (byte) 0;
 
         pageTable[pageNumber].valid = true;
-//       latestStackIndex++;
+        // latestStackIndex++;
     }
 
     /**
@@ -260,18 +261,23 @@ public class AddrSpace
 
     public byte[] getCString(int ptr)
     {
-        int start = getPhysicalAddress(ptr);
-        int locationInMemory = start;
-        int length = 0;
-        while (Machine.mainMemory[locationInMemory] != 0)
+        if (!pageTable[getPageNumber(ptr)].valid)
         {
-            locationInMemory++;
-            length++;
+            getNewPage(ptr);
         }
-        byte[] copy = new byte[length];
-        System.arraycopy(Machine.mainMemory, start, copy, 0, length);
+            int start = getPhysicalAddress(ptr);
+            int locationInMemory = start;
+            int length = 0;
+            while (Machine.mainMemory[locationInMemory] != 0)
+            {
+                locationInMemory++;
+                length++;
+            }
+            byte[] copy = new byte[length];
+            System.arraycopy(Machine.mainMemory, start, copy, 0, length);
 
-        return copy;
+            return copy;
+      
     }
 
     public ArrayList<byte[]> getArgsList(int ptr, int wordSize)
@@ -367,8 +373,17 @@ public class AddrSpace
 
     public void pushToMemory(int virtAddr, byte b)
     {
-        int physAddr = getPhysicalAddress(virtAddr);
-        Machine.mainMemory[physAddr] = b;
+        if (!pageTable[getPageNumber(virtAddr)].valid)
+        {
+            getNewPage(virtAddr);
+            int physAddr = getPhysicalAddress(virtAddr);
+            Machine.mainMemory[physAddr] = b;
+            pageTable[getPageNumber(virtAddr)].valid = true;
+        } else
+        {
+            int physAddr = getPhysicalAddress(virtAddr);
+            Machine.mainMemory[physAddr] = b;
+        }
         // System.out.println();
     }
 
@@ -412,7 +427,7 @@ public class AddrSpace
         return pageTable[pageNumber].physicalPage * Machine.PageSize
                 + pageOffset;
     }
-    
+
     private int getPageNumber(int virtAddr)
     {
         int pageNumber = virtAddr / Machine.PageSize;
