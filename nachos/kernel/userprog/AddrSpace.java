@@ -399,7 +399,7 @@ public class AddrSpace
      *            -address to begin pushing data
      * @param i
      *            word to push.
-     */
+     */  
     public void pushToMemory(int virtAddr, int i)
     {
         byte[] bytes = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN)
