@@ -22,8 +22,6 @@ package nachos.kernel.userprog;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
-import java.util.Iterator;
-
 import nachos.Debug;
 import nachos.machine.CPU;
 import nachos.machine.MIPS;
@@ -32,8 +30,6 @@ import nachos.machine.NachosThread;
 import nachos.machine.TranslationEntry;
 import nachos.noff.NoffHeader;
 import nachos.kernel.filesys.OpenFile;
-
-import java.util.Arrays;
 
 /**
  * This class manages "address spaces", which are the contexts in which user
@@ -60,7 +56,7 @@ public class AddrSpace
     private int[] savedRegisters = new int[MIPS.NumTotalRegs];
 
     /** Default size of the user stack area -- increase this as necessary! */
-    private static final int UserStackSize = 1024;
+    private static final int UserStackSize = 1048576;
     private int argc;
     private int child;
     private int spaceId;
@@ -189,8 +185,6 @@ public class AddrSpace
             }
         }
 
-        // then, copy in the code and data segments into memory
-        int remainders = (int) (noffH.code.size % Machine.PageSize);
         if (noffH.code.size > 0)
         {
             Debug.println('a', "Initializing code segment, at "
@@ -239,7 +233,7 @@ public class AddrSpace
                 .allocatePage();
         int i = pageTable[pageNumber].physicalPage * Machine.PageSize;
 
-        for (int j = 0; i < Machine.PageSize; ++i, ++j)
+        for (int j = 0; j < Machine.PageSize; ++i, ++j)
             Machine.mainMemory[i] = (byte) 0;
 
         pageTable[pageNumber].valid = true;
